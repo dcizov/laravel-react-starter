@@ -5,7 +5,7 @@ const lintStagedConfig = {
         'eslint --fix --cache',
     ],
     '**/*.{md,mdx,json,css}': 'prettier --write --cache',
-    '**/*.php': 'sail pint',
+    '**/*.php': './vendor/bin/sail pint --dirty',
 };
 
 export default lintStagedConfig;
