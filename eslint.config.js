@@ -42,6 +42,11 @@ export default [
                         'sibling',
                         'index',
                     ],
+                    pathGroups: [
+                        { pattern: '@/actions/**', group: 'internal' },
+                        { pattern: '@/routes/**', group: 'internal' },
+                    ],
+                    pathGroupsExcludedImportTypes: ['type'],
                     alphabetize: {
                         order: 'asc',
                         caseInsensitive: true,
@@ -72,6 +77,7 @@ export default [
             'node_modules',
             'public',
             'bootstrap/ssr',
+            'resources/js/actions/**',
             'resources/js/components/ui/**',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
