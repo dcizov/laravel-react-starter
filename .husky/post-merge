@@ -1,1 +1,9 @@
-npm install
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+changed_files="$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)"
+
+if echo "$changed_files" | grep -qE '^(package\.json|package-lock\.json)$'; then
+  echo "package.json or package-lock.json changed, running npm ci..."
+  ./vendor/bin/sail npm ci --no-audit --no-fund
+fi
