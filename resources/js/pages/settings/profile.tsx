@@ -44,7 +44,7 @@ export default function Profile({
                     }}
                     className="space-y-6"
                 >
-                    {({ processing, errors }) => (
+                    {({ processing, errors, isDirty }) => (
                         <>
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Name</Label>
@@ -57,6 +57,7 @@ export default function Profile({
                                     required
                                     autoComplete="name"
                                     placeholder="Full name"
+                                    aria-invalid={!!errors.name}
                                 />
 
                                 <InputError
@@ -75,8 +76,9 @@ export default function Profile({
                                     defaultValue={auth.user.email}
                                     name="email"
                                     required
-                                    autoComplete="username"
+                                    autoComplete="email"
                                     placeholder="Email address"
+                                    aria-invalid={!!errors.email}
                                 />
 
                                 <InputError
@@ -87,35 +89,52 @@ export default function Profile({
 
                             {mustVerifyEmail &&
                                 auth.user.email_verified_at === null && (
-                                    <div>
-                                        <p className="-mt-4 text-sm text-muted-foreground">
-                                            Your email address is unverified.{' '}
+                                    <div
+                                        role="status"
+                                        aria-live="polite"
+                                        className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-200/20 dark:bg-amber-900/20 dark:text-amber-100"
+                                    >
+                                        <p className="font-medium">
+                                            Your email address is unverified.
+                                        </p>
+                                        <p className="mt-1 text-amber-800 dark:text-amber-200">
+                                            Changing your email address requires
+                                            verification again.{' '}
                                             <Link
                                                 href={send()}
                                                 as="button"
-                                                className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                                className="font-medium underline underline-offset-4 transition-colors hover:text-amber-950 dark:hover:text-amber-50"
                                             >
-                                                Click here to re-send the
-                                                verification email.
+                                                Resend verification email
                                             </Link>
                                         </p>
 
                                         {status ===
                                             'verification-link-sent' && (
-                                            <div className="mt-2 text-sm font-medium text-green-600">
+                                            <p className="mt-2 font-medium text-green-700 dark:text-green-400">
                                                 A new verification link has been
                                                 sent to your email address.
-                                            </div>
+                                            </p>
                                         )}
                                     </div>
                                 )}
+
+                            {isDirty && (
+                                <p
+                                    role="status"
+                                    className="text-sm text-muted-foreground"
+                                >
+                                    You have unsaved changes.
+                                </p>
+                            )}
 
                             <div className="flex items-center gap-4">
                                 <Button
                                     disabled={processing}
                                     data-test="update-profile-button"
+                                    aria-busy={processing}
                                 >
-                                    Save
+                                    {processing ? 'Saving…' : 'Save'}
                                 </Button>
                             </div>
                         </>

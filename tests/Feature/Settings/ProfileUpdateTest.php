@@ -83,3 +83,42 @@ test('correct password must be provided to delete account', function () {
 
     expect($user->fresh())->not->toBeNull();
 });
+
+test('profile page requires authentication', function () {
+    $response = $this->get(route('profile.edit'));
+
+    $response->assertRedirect(route('login'));
+});
+
+test('profile update requires valid data', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('profile.edit'))
+        ->patch(route('profile.update'), [
+            'name' => '',
+            'email' => 'not-an-email',
+        ]);
+
+    $response
+        ->assertSessionHasErrors(['name', 'email'])
+        ->assertRedirect(route('profile.edit'));
+});
+
+test('profile update rejects a duplicate email', function () {
+    $other = User::factory()->create();
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('profile.edit'))
+        ->patch(route('profile.update'), [
+            'name' => 'Test User',
+            'email' => $other->email,
+        ]);
+
+    $response
+        ->assertSessionHasErrors('email')
+        ->assertRedirect(route('profile.edit'));
+});
