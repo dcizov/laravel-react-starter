@@ -65,6 +65,13 @@ function TwoFactorSetupStep({
     const { resolvedAppearance } = useAppearance();
     const [copiedText, copy] = useClipboard();
     const IconComponent = copiedText === manualSetupKey ? Check : Copy;
+    const qrCodeImageUrl = useMemo(
+        () =>
+            qrCodeSvg
+                ? `data:image/svg+xml;utf8,${encodeURIComponent(qrCodeSvg)}`
+                : null,
+        [qrCodeSvg],
+    );
 
     return (
         <>
@@ -75,19 +82,22 @@ function TwoFactorSetupStep({
                     <div className="mx-auto flex max-w-md overflow-hidden">
                         <div className="mx-auto aspect-square w-64 rounded-lg border border-border">
                             <div className="z-10 flex h-full w-full items-center justify-center p-5">
-                                {qrCodeSvg ? (
+                                {qrCodeImageUrl ? (
                                     <div
-                                        className="aspect-square w-full rounded-lg bg-white p-2 [&_svg]:size-full"
-                                        dangerouslySetInnerHTML={{
-                                            __html: qrCodeSvg,
-                                        }}
+                                        className="aspect-square w-full rounded-lg bg-white p-2"
                                         style={{
                                             filter:
                                                 resolvedAppearance === 'dark'
                                                     ? 'invert(1) brightness(1.5)'
                                                     : undefined,
                                         }}
-                                    />
+                                    >
+                                        <img
+                                            src={qrCodeImageUrl}
+                                            alt="QR code to scan with your authenticator app"
+                                            className="size-full"
+                                        />
+                                    </div>
                                 ) : (
                                     <Spinner />
                                 )}
@@ -149,9 +159,11 @@ function TwoFactorVerificationStep({
     const pinInputContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setTimeout(() => {
+        const focusTimeout = setTimeout(() => {
             pinInputContainerRef.current?.querySelector('input')?.focus();
         }, 0);
+
+        return () => clearTimeout(focusTimeout);
     }, []);
 
     return (

@@ -12,6 +12,11 @@ import {
 } from '@/components/ui/card';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
 
+const recoveryCodePlaceholders = Array.from(
+    { length: 8 },
+    (_, position) => `recovery-code-placeholder-${position}`,
+);
+
 type Props = {
     recoveryCodesList: string[];
     fetchRecoveryCodes: () => Promise<void>;
@@ -115,9 +120,9 @@ export default function TwoFactorRecoveryCodes({
                                     aria-label="Recovery codes"
                                 >
                                     {recoveryCodesList.length ? (
-                                        recoveryCodesList.map((code, index) => (
+                                        recoveryCodesList.map((code) => (
                                             <div
-                                                key={index}
+                                                key={code}
                                                 role="listitem"
                                                 className="select-text"
                                             >
@@ -129,11 +134,10 @@ export default function TwoFactorRecoveryCodes({
                                             className="space-y-2"
                                             aria-label="Loading recovery codes"
                                         >
-                                            {Array.from(
-                                                { length: 8 },
-                                                (_, index) => (
+                                            {recoveryCodePlaceholders.map(
+                                                (placeholder) => (
                                                     <div
-                                                        key={index}
+                                                        key={placeholder}
                                                         className="h-4 animate-pulse rounded bg-muted-foreground/20"
                                                         aria-hidden="true"
                                                     />
