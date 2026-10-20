@@ -6,6 +6,10 @@ use App\Support\Rbac;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
+    // Pages are rendered without a built Vite manifest, so the test does not
+    // depend on whether `npm run build` has been run since the page was added.
+    $this->withoutVite();
+
     Rbac::sync();
 });
 
