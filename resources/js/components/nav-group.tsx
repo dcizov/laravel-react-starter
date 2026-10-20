@@ -1,26 +1,12 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRight } from 'lucide-react';
-import { useState } from 'react';
-import { isCollapsible } from '@/components/sidebar-items';
-import type {
-    SidebarCollapsible,
-    SidebarEntry,
-    SidebarLink,
-} from '@/components/sidebar-items';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import type { SidebarEntry, SidebarLink } from '@/components/sidebar-items';
 import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useTrans } from '@/hooks/use-trans';
@@ -34,27 +20,23 @@ export function NavGroup({
 }) {
     const t = useTrans();
     const { isCurrentUrl } = useCurrentUrl();
+    const { state, isMobile } = useSidebar();
+    // The icon rail has no room for headings, so they are left out there.
+    const iconRail = state === 'collapsed' && !isMobile;
 
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>{t(title)}</SidebarGroupLabel>
+            {!iconRail && <SidebarGroupLabel>{t(title)}</SidebarGroupLabel>}
             <SidebarMenu>
-                {items.map((entry) =>
-                    isCollapsible(entry) ? (
-                        <CollapsibleNavItem
-                            key={entry.id}
+                {items.map((entry) => (
+                    <SidebarMenuItem key={entry.id}>
+                        <LinkButton
                             item={entry}
-                            isActive={(href) => isCurrentUrl(href)}
+                            // Prefix match, so Settings stays active on its subpages.
+                            isActive={isCurrentUrl(entry.href, undefined, true)}
                         />
-                    ) : (
-                        <SidebarMenuItem key={entry.id}>
-                            <LinkButton
-                                item={entry}
-                                isActive={isCurrentUrl(entry.href)}
-                            />
-                        </SidebarMenuItem>
-                    ),
-                )}
+                    </SidebarMenuItem>
+                ))}
             </SidebarMenu>
         </SidebarGroup>
     );
@@ -89,65 +71,5 @@ function LinkButton({
             <item.icon />
             <span>{t(item.title)}</span>
         </SidebarMenuButton>
-    );
-}
-
-function CollapsibleNavItem({
-    item,
-    isActive,
-}: {
-    item: SidebarCollapsible;
-    isActive: (href: SidebarLink['href']) => boolean;
-}) {
-    const t = useTrans();
-    // Open the submenu on load when one of its pages is the current page.
-    const hasActiveChild = item.children.some((child) => isActive(child.href));
-    // Controlled open state: open once when a child page becomes current,
-    // without changing Base UI's defaultOpen after mount.
-    const [open, setOpen] = useState(hasActiveChild);
-    const [wasActive, setWasActive] = useState(hasActiveChild);
-
-    if (wasActive !== hasActiveChild) {
-        setWasActive(hasActiveChild);
-
-        if (hasActiveChild) {
-            setOpen(true);
-        }
-    }
-
-    return (
-        <Collapsible
-            open={open}
-            onOpenChange={setOpen}
-            className="group/collapsible"
-        >
-            <SidebarMenuItem>
-                <CollapsibleTrigger
-                    render={
-                        <SidebarMenuButton
-                            tooltip={{ children: t(item.title) }}
-                        />
-                    }
-                >
-                    <item.icon />
-                    <span>{t(item.title)}</span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[panel-open]/collapsible:rotate-90" />
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                    <SidebarMenuSub>
-                        {item.children.map((child) => (
-                            <SidebarMenuSubItem key={child.id}>
-                                <SidebarMenuSubButton
-                                    render={<Link href={child.href} prefetch />}
-                                    isActive={isActive(child.href)}
-                                >
-                                    <span>{t(child.title)}</span>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        ))}
-                    </SidebarMenuSub>
-                </CollapsibleContent>
-            </SidebarMenuItem>
-        </Collapsible>
     );
 }

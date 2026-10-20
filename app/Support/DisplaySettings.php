@@ -18,11 +18,7 @@ final class DisplaySettings
         'admin-roles',
         'admin-permissions',
         'tasks',
-        'settings-profile',
-        'settings-account',
-        'settings-appearance',
-        'settings-notifications',
-        'settings-display',
+        'settings',
         'repository',
         'documentation',
     ];

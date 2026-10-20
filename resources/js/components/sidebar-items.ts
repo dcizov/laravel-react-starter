@@ -1,27 +1,17 @@
 import {
-    Bell,
     BookOpen,
     KeyRound,
     ListChecks,
     FolderGit2,
     LayoutGrid,
-    Monitor,
-    Palette,
     Settings,
     ShieldCheck,
-    User,
-    UserCog,
     UserRound,
     Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { edit as editAccount } from '@/routes/account';
 import { index as indexAdminPermissions } from '@/routes/admin/permissions';
 import { index as indexAdminRoles } from '@/routes/admin/roles';
-import { edit as editAppearance } from '@/routes/appearance';
-import { edit as editDisplay } from '@/routes/display';
-import { edit as editNotifications } from '@/routes/notifications';
-import { edit as editProfile } from '@/routes/profile';
 import { index as indexTasks } from '@/routes/tasks';
 import { show as showUserProfile } from '@/routes/user-profile';
 import { index as indexUsers } from '@/routes/users';
@@ -35,25 +25,12 @@ export type SidebarLink = NavItem & {
     permission?: string;
 };
 
-export type SidebarCollapsible = {
-    id: string;
-    title: string;
-    icon: LucideIcon;
-    children: SidebarLink[];
-};
-
-export type SidebarEntry = SidebarLink | SidebarCollapsible;
+export type SidebarEntry = SidebarLink;
 
 export type SidebarGroupDef = {
     title: string;
     items: SidebarEntry[];
 };
-
-export function isCollapsible(
-    entry: SidebarEntry,
-): entry is SidebarCollapsible {
-    return 'children' in entry;
-}
 
 // The ids must match App\Support\DisplaySettings::ITEMS on the server.
 // The sidebar and the Display settings page both read from this structure.
@@ -94,39 +71,8 @@ export const sidebarGroups: SidebarGroupDef[] = [
             {
                 id: 'settings',
                 title: 'Settings',
+                href: '/settings',
                 icon: Settings,
-                children: [
-                    {
-                        id: 'settings-profile',
-                        title: 'Profile settings',
-                        href: editProfile(),
-                        icon: User,
-                    },
-                    {
-                        id: 'settings-account',
-                        title: 'Account',
-                        href: editAccount(),
-                        icon: UserCog,
-                    },
-                    {
-                        id: 'settings-appearance',
-                        title: 'Appearance',
-                        href: editAppearance(),
-                        icon: Palette,
-                    },
-                    {
-                        id: 'settings-notifications',
-                        title: 'Notifications',
-                        href: editNotifications(),
-                        icon: Bell,
-                    },
-                    {
-                        id: 'settings-display',
-                        title: 'Display',
-                        href: editDisplay(),
-                        icon: Monitor,
-                    },
-                ],
             },
         ],
     },
@@ -169,13 +115,10 @@ export const sidebarGroups: SidebarGroupDef[] = [
     },
 ];
 
-// Every linkable item in display order, with submenu items flattened.
-// The Display settings page lists these, grouped by sidebarGroups.
+// Every linkable item in display order. The Display settings page lists these, grouped by sidebarGroups.
 export const displayGroups = sidebarGroups.map((group) => ({
     title: group.title,
-    items: group.items
-        .flatMap((entry) => (isCollapsible(entry) ? entry.children : [entry]))
-        .map(({ id, title }) => ({ id, title })),
+    items: group.items.map(({ id, title }) => ({ id, title })),
 }));
 
 // The groups the user chose in Display settings. Empty groups and submenus are dropped.
@@ -191,24 +134,12 @@ export function visibleSidebarGroups(
     return sidebarGroups
         .map((group): SidebarGroupDef => ({
             ...group,
-            items: group.items.flatMap((entry): SidebarEntry[] => {
-                if (isCollapsible(entry)) {
-                    const children = entry.children.filter(allowed);
-
-                    return children.length > 0 ? [{ ...entry, children }] : [];
-                }
-
-                return allowed(entry) ? [entry] : [];
-            }),
+            items: group.items.filter(allowed),
         }))
         .filter((group) => group.items.length > 0);
 }
 
-// Every visible link in order, with submenu items flattened into the list.
+// Every visible link in order.
 export function flattenSidebarLinks(groups: SidebarGroupDef[]): SidebarLink[] {
-    return groups.flatMap((group) =>
-        group.items.flatMap((entry) =>
-            isCollapsible(entry) ? entry.children : [entry],
-        ),
-    );
+    return groups.flatMap((group) => group.items);
 }
