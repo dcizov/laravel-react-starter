@@ -3,6 +3,8 @@
 use App\Models\User;
 use App\Settings\AppSettings;
 use App\Support\Rbac;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -99,4 +101,96 @@ test('the default role cannot be deleted while it is the default', function () {
         ->assertSessionHasErrors('role');
 
     expect(Role::where('name', 'editor')->exists())->toBeTrue();
+});
+
+test('an admin can upload a logo and it is shared with every page', function () {
+    Storage::fake('public');
+    $admin = adminSettingsAdmin();
+
+    $this->actingAs($admin)
+        ->patch(route('admin-settings.update'), [
+            'app_name' => config('app.name'),
+            'default_role' => 'user',
+            'logo' => UploadedFile::fake()->image('logo.png', 120, 120),
+        ])
+        ->assertRedirect(route('admin-settings.edit'));
+
+    $path = app(AppSettings::class)->app_logo_path;
+
+    expect($path)->not->toBeNull();
+    Storage::disk('public')->assertExists($path);
+
+    $this->actingAs($admin)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page->where('appLogoUrl', Storage::disk('public')->url($path)));
+});
+
+test('replacing the logo deletes the old file', function () {
+    Storage::fake('public');
+    $admin = adminSettingsAdmin();
+
+    $this->actingAs($admin)->patch(route('admin-settings.update'), [
+        'app_name' => config('app.name'),
+        'default_role' => 'user',
+        'logo' => UploadedFile::fake()->image('first.png', 120, 120),
+    ]);
+    $first = app(AppSettings::class)->app_logo_path;
+
+    $this->actingAs($admin)->patch(route('admin-settings.update'), [
+        'app_name' => config('app.name'),
+        'default_role' => 'user',
+        'logo' => UploadedFile::fake()->image('second.png', 120, 120),
+    ]);
+    $second = app(AppSettings::class)->app_logo_path;
+
+    expect($second)->not->toBe($first);
+    Storage::disk('public')->assertMissing($first);
+    Storage::disk('public')->assertExists($second);
+});
+
+test('removing the logo deletes the file and falls back to the default mark', function () {
+    Storage::fake('public');
+    $admin = adminSettingsAdmin();
+
+    $this->actingAs($admin)->patch(route('admin-settings.update'), [
+        'app_name' => config('app.name'),
+        'default_role' => 'user',
+        'logo' => UploadedFile::fake()->image('logo.png', 120, 120),
+    ]);
+    $path = app(AppSettings::class)->app_logo_path;
+
+    $this->actingAs($admin)
+        ->patch(route('admin-settings.update'), [
+            'app_name' => config('app.name'),
+            'default_role' => 'user',
+            'remove_logo' => true,
+        ])
+        ->assertSessionHasNoErrors();
+
+    Storage::disk('public')->assertMissing($path);
+    expect(app(AppSettings::class)->app_logo_path)->toBeNull();
+});
+
+test('the logo must be a png, jpeg, or webp image of at most 2 MB', function () {
+    Storage::fake('public');
+    $admin = adminSettingsAdmin();
+
+    // SVG is refused on purpose: it can carry scripts.
+    $this->actingAs($admin)
+        ->patch(route('admin-settings.update'), [
+            'app_name' => config('app.name'),
+            'default_role' => 'user',
+            'logo' => UploadedFile::fake()->create('logo.svg', 10, 'image/svg+xml'),
+        ])
+        ->assertSessionHasErrors('logo');
+
+    $this->actingAs($admin)
+        ->patch(route('admin-settings.update'), [
+            'app_name' => config('app.name'),
+            'default_role' => 'user',
+            'logo' => UploadedFile::fake()->image('logo.png', 120, 120)->size(3000),
+        ])
+        ->assertSessionHasErrors('logo');
+
+    expect(app(AppSettings::class)->app_logo_path)->toBeNull();
 });

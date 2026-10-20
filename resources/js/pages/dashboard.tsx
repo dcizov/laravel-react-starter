@@ -1,18 +1,27 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     ArrowUp,
-    ArrowRight,
     CircleCheck,
     ListChecks,
     Plus,
     Timer,
+    TrendingDown,
+    TrendingUp,
     Users,
 } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { statuses, priorities } from '@/components/tasks/data';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import {
     Empty,
     EmptyContent,
@@ -21,6 +30,21 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import {
+    Item,
+    ItemActions,
+    ItemContent,
+    ItemDescription,
+    ItemGroup,
+    ItemMedia,
+    ItemTitle,
+} from '@/components/ui/item';
+import {
+    Progress,
+    ProgressLabel,
+    ProgressValue,
+} from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 import { edit as editAccount } from '@/routes/account';
@@ -46,6 +70,10 @@ type Props = {
         in_progress: number;
         done: number;
         high_priority: number;
+        completion: number;
+        created_this_week: number;
+        // Percent change against last week, or null when last week had no tasks.
+        created_change: number | null;
     };
     statusCounts: { status: string; count: number }[];
     attention: DashboardTask[];
@@ -55,7 +83,7 @@ type Props = {
     usersCount: number | null;
 };
 
-// The start page after sign-in. Counts and lists come from the server, scoped to the tasks the user can see.
+// The start page after sign-in. Every number and list comes from the server, scoped to the tasks the user can see.
 export default function Dashboard({
     summary,
     statusCounts,
@@ -66,31 +94,32 @@ export default function Dashboard({
 }: Props) {
     const t = useTrans();
     const { auth } = usePage().props;
+    const empty = summary.total === 0;
 
     const stats = [
+        {
+            title: t('Total tasks'),
+            value: summary.total,
+            icon: ListChecks,
+            change: summary.created_change,
+        },
         {
             title: t('Open tasks'),
             value: summary.open,
             hint: t('Not done or canceled'),
-            icon: ListChecks,
-        },
-        {
-            title: t('In progress'),
-            value: summary.in_progress,
-            hint: t('Being worked on now'),
             icon: Timer,
-        },
-        {
-            title: t('Done'),
-            value: summary.done,
-            hint: t('Finished tasks'),
-            icon: CircleCheck,
         },
         {
             title: t('High priority'),
             value: summary.high_priority,
             hint: t('Open and marked high'),
             icon: ArrowUp,
+        },
+        {
+            title: t('Done'),
+            value: summary.done,
+            hint: t('Finished tasks'),
+            icon: CircleCheck,
         },
         ...(usersCount !== null
             ? [
@@ -108,179 +137,291 @@ export default function Dashboard({
         <>
             <Head title={t('Dashboard')} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        {t('Welcome back, :name', { name: auth.user.name })}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {summary.total === 0
-                            ? t('There are no tasks yet.')
-                            : t('Here is where your tasks stand today.')}
-                    </p>
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div className="space-y-1">
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            {t('Welcome back, :name', {
+                                name: auth.user.name,
+                            })}
+                        </h1>
+                        <p className="text-muted-foreground">
+                            {empty
+                                ? t('There are no tasks yet.')
+                                : t('Here is where your tasks stand today.')}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href={tasksIndex()}
+                            className={cn(buttonVariants({ size: 'sm' }))}
+                        >
+                            <Plus />
+                            {t('Create task')}
+                        </Link>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-4">
-                    {stats.map((stat) => (
-                        <Card key={stat.title}>
-                            <CardHeader>
-                                <CardTitle className="flex items-center justify-between text-sm font-medium text-muted-foreground">
-                                    {stat.title}
-                                    <stat.icon className="size-4" />
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-1">
-                                <div className="text-3xl font-bold tabular-nums">
-                                    {stat.value}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    {stat.hint}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                <Tabs defaultValue="overview" className="space-y-4">
+                    <TabsList>
+                        <TabsTrigger value="overview">
+                            {t('Overview')}
+                        </TabsTrigger>
+                        <TabsTrigger value="activity">
+                            {t('Recent activity')}
+                        </TabsTrigger>
+                    </TabsList>
 
-                <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle>{t('Needs attention')}</CardTitle>
-                            <p className="text-sm text-muted-foreground">
-                                {t('Open tasks marked high priority.')}
-                            </p>
-                        </CardHeader>
-                        <CardContent>
-                            {attention.length === 0 ? (
-                                <p className="py-6 text-center text-sm text-muted-foreground">
-                                    {t('Nothing urgent right now.')}
-                                </p>
-                            ) : (
-                                <TaskList
-                                    tasks={attention}
-                                    showOwner={showOwner}
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
+                    <TabsContent value="overview" className="space-y-4">
+                        <div className="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-4">
+                            {stats.map((stat) => (
+                                <Card key={stat.title}>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">
+                                            {stat.title}
+                                        </CardTitle>
+                                        <stat.icon className="size-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent className="space-y-2">
+                                        <div className="text-3xl font-bold tabular-nums">
+                                            {stat.value}
+                                        </div>
+                                        {'change' in stat ? (
+                                            <ChangeBadge
+                                                change={stat.change ?? null}
+                                            />
+                                        ) : (
+                                            <p className="text-xs text-muted-foreground">
+                                                {stat.hint}
+                                            </p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('By status')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ul className="divide-y">
-                                {statusCounts.map((item) => {
-                                    const status = statuses.find(
-                                        (option) =>
-                                            option.value === item.status,
-                                    );
-
-                                    return (
-                                        <li
-                                            key={item.status}
-                                            className="flex items-center justify-between py-2 text-sm"
-                                        >
-                                            <span className="flex items-center gap-2">
-                                                {status?.icon && (
-                                                    <status.icon className="size-4 text-muted-foreground" />
+                        {empty ? (
+                            <Card>
+                                <CardContent>
+                                    <Empty>
+                                        <EmptyHeader>
+                                            <EmptyMedia variant="icon">
+                                                <ListChecks />
+                                            </EmptyMedia>
+                                            <EmptyTitle>
+                                                {t('No tasks yet')}
+                                            </EmptyTitle>
+                                            <EmptyDescription>
+                                                {showOwner
+                                                    ? t(
+                                                          'No one has created a task yet.',
+                                                      )
+                                                    : t(
+                                                          'Tasks belong to the account that created them, so you only see the ones you create.',
+                                                      )}
+                                            </EmptyDescription>
+                                        </EmptyHeader>
+                                        <EmptyContent>
+                                            <Link
+                                                href={tasksIndex()}
+                                                className={cn(
+                                                    buttonVariants({
+                                                        size: 'sm',
+                                                    }),
                                                 )}
-                                                {t(
-                                                    status?.label ??
-                                                        item.status,
-                                                )}
-                                            </span>
-                                            <span className="font-medium tabular-nums">
-                                                {item.count}
-                                            </span>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle>{t('Recent changes')}</CardTitle>
-                            <p className="text-sm text-muted-foreground">
-                                {t(
-                                    'The latest tasks that were created or updated.',
-                                )}
-                            </p>
-                        </CardHeader>
-                        <CardContent>
-                            {summary.total === 0 ? (
-                                <Empty>
-                                    <EmptyHeader>
-                                        <EmptyMedia variant="icon">
-                                            <ListChecks />
-                                        </EmptyMedia>
-                                        <EmptyTitle>
-                                            {t('No tasks yet')}
-                                        </EmptyTitle>
-                                        <EmptyDescription>
-                                            {showOwner
-                                                ? t(
-                                                      'No one has created a task yet.',
-                                                  )
-                                                : t(
-                                                      'Tasks belong to the account that created them, so you only see the ones you create.',
-                                                  )}
-                                        </EmptyDescription>
-                                    </EmptyHeader>
-                                    <EmptyContent>
+                                            >
+                                                <Plus />
+                                                {t('Create task')}
+                                            </Link>
+                                        </EmptyContent>
+                                    </Empty>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <div className="grid gap-4 lg:grid-cols-3">
+                                <Card className="lg:col-span-2">
+                                    <CardHeader>
+                                        <CardTitle>
+                                            {t('Needs attention')}
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {t(
+                                                'Open tasks marked high priority.',
+                                            )}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {attention.length === 0 ? (
+                                            <p className="py-6 text-center text-sm text-muted-foreground">
+                                                {t('Nothing urgent right now.')}
+                                            </p>
+                                        ) : (
+                                            <TaskItems
+                                                tasks={attention}
+                                                showOwner={showOwner}
+                                            />
+                                        )}
+                                    </CardContent>
+                                    <CardFooter className="justify-end">
                                         <Link
                                             href={tasksIndex()}
                                             className={cn(
-                                                buttonVariants({ size: 'sm' }),
+                                                buttonVariants({
+                                                    variant: 'outline',
+                                                    size: 'sm',
+                                                }),
                                             )}
                                         >
-                                            <Plus />
-                                            {t('Create task')}
+                                            {t('View all tasks')}
                                         </Link>
-                                    </EmptyContent>
-                                </Empty>
-                            ) : (
-                                <TaskList
-                                    tasks={recent}
-                                    showOwner={showOwner}
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
+                                    </CardFooter>
+                                </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('Quick actions')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-col gap-2">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>{t('By status')}</CardTitle>
+                                        <CardDescription>
+                                            {t(
+                                                'How many tasks are in each status.',
+                                            )}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-5">
+                                        <Progress value={summary.completion}>
+                                            <ProgressLabel>
+                                                {t('Completion')}
+                                            </ProgressLabel>
+                                            <ProgressValue>
+                                                {() => `${summary.completion}%`}
+                                            </ProgressValue>
+                                        </Progress>
+                                        <ul className="space-y-3">
+                                            {statusCounts.map((item) => (
+                                                <StatusRow
+                                                    key={item.status}
+                                                    status={item.status}
+                                                    count={item.count}
+                                                    total={summary.total}
+                                                />
+                                            ))}
+                                        </ul>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    <TabsContent value="activity">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('Recent changes')}</CardTitle>
+                                <CardDescription>
+                                    {t(
+                                        'The latest tasks that were created or updated.',
+                                    )}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {empty ? (
+                                    <p className="py-6 text-center text-sm text-muted-foreground">
+                                        {t('No tasks yet')}
+                                    </p>
+                                ) : (
+                                    <TaskItems
+                                        tasks={recent}
+                                        showOwner={showOwner}
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t('Quick actions')}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-2">
+                        <QuickAction
+                            href={tasksIndex()}
+                            label={t('Go to tasks')}
+                        />
+                        {usersCount !== null && (
                             <QuickAction
-                                href={tasksIndex()}
-                                label={t('Go to tasks')}
+                                href={usersIndex()}
+                                label={t('Manage users')}
                             />
-                            {usersCount !== null && (
-                                <QuickAction
-                                    href={usersIndex()}
-                                    label={t('Manage users')}
-                                />
-                            )}
-                            <QuickAction
-                                href={editProfile()}
-                                label={t('Edit profile')}
-                            />
-                            <QuickAction
-                                href={editAccount()}
-                                label={t('Account settings')}
-                            />
-                        </CardContent>
-                    </Card>
-                </div>
+                        )}
+                        <QuickAction
+                            href={editProfile()}
+                            label={t('Edit profile')}
+                        />
+                        <QuickAction
+                            href={editAccount()}
+                            label={t('Account settings')}
+                        />
+                    </CardContent>
+                </Card>
             </div>
         </>
     );
 }
 
-// A short list of tasks with their status and priority. Links go to the Tasks page.
-function TaskList({
+// Percent change against last week, shown as a badge. A new account has no last week, so it says so.
+function ChangeBadge({ change }: { change: number | null }) {
+    const t = useTrans();
+
+    if (change === null) {
+        return <Badge variant="outline">{t('New this week')}</Badge>;
+    }
+
+    const up = change >= 0;
+    const Icon = up ? TrendingUp : TrendingDown;
+
+    return (
+        <div className="flex items-center gap-2">
+            <Badge variant={up ? 'secondary' : 'outline'}>
+                <Icon />
+                {`${up ? '+' : ''}${change}%`}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+                {t('vs last week')}
+            </span>
+        </div>
+    );
+}
+
+// One status with its count and the share of all tasks it holds.
+function StatusRow({
+    status,
+    count,
+    total,
+}: {
+    status: string;
+    count: number;
+    total: number;
+}) {
+    const t = useTrans();
+    const option = statuses.find((item) => item.value === status);
+    const share = total > 0 ? Math.round((count / total) * 100) : 0;
+
+    return (
+        <li className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2">
+                    {option?.icon && (
+                        <option.icon className="size-4 text-muted-foreground" />
+                    )}
+                    {t(option?.label ?? status)}
+                </span>
+                <span className="font-medium tabular-nums">{count}</span>
+            </div>
+            <Progress value={share} aria-label={t(option?.label ?? status)} />
+        </li>
+    );
+}
+
+// Tasks as items: status icon, title, owner, and priority. Owners show as avatars when the user sees every task.
+function TaskItems({
     tasks,
     showOwner,
 }: {
@@ -290,7 +431,7 @@ function TaskList({
     const t = useTrans();
 
     return (
-        <ul className="divide-y">
+        <ItemGroup>
             {tasks.map((task) => {
                 const status = statuses.find(
                     (option) => option.value === task.status,
@@ -300,43 +441,42 @@ function TaskList({
                 );
 
                 return (
-                    <li
-                        key={task.id}
-                        className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
-                    >
-                        <div className="flex min-w-0 flex-col">
-                            <Link
-                                href={tasksIndex()}
-                                className="truncate font-medium hover:underline"
-                            >
-                                {task.title}
-                            </Link>
-                            <span className="text-xs text-muted-foreground">
+                    <Item key={task.id} variant="outline" size="sm">
+                        <ItemMedia variant="icon">
+                            {status?.icon && <status.icon />}
+                        </ItemMedia>
+                        <ItemContent>
+                            <ItemTitle>
+                                <Link
+                                    href={tasksIndex()}
+                                    className="truncate hover:underline"
+                                >
+                                    {task.title}
+                                </Link>
+                            </ItemTitle>
+                            <ItemDescription>
                                 {task.code}
-                                {showOwner && task.owner
-                                    ? ` · ${task.owner}`
-                                    : ''}
-                            </span>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2">
+                                {status && ` · ${t(status.label)}`}
+                            </ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                            {showOwner && task.owner && (
+                                <Avatar className="size-6" title={task.owner}>
+                                    <AvatarFallback className="text-[10px]">
+                                        {initials(task.owner)}
+                                    </AvatarFallback>
+                                </Avatar>
+                            )}
                             {priority && (
                                 <Badge variant="outline">
                                     {t(priority.label)}
                                 </Badge>
                             )}
-                            {status && (
-                                <Badge variant="secondary">
-                                    {status.icon && (
-                                        <status.icon className="size-3" />
-                                    )}
-                                    {t(status.label)}
-                                </Badge>
-                            )}
-                        </div>
-                    </li>
+                        </ItemActions>
+                    </Item>
                 );
             })}
-        </ul>
+        </ItemGroup>
     );
 }
 
@@ -350,15 +490,21 @@ function QuickAction({
     return (
         <Link
             href={href}
-            className={cn(
-                buttonVariants({ variant: 'outline' }),
-                'justify-between',
-            )}
+            className={cn(buttonVariants({ variant: 'outline' }))}
         >
             {label}
-            <ArrowRight />
         </Link>
     );
+}
+
+// Up to two letters from a name, such as "Ada Lovelace" becomes "AL".
+function initials(name: string): string {
+    return name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() ?? '')
+        .join('');
 }
 
 Dashboard.layout = {

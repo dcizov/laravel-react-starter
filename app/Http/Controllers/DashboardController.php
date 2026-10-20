@@ -52,13 +52,30 @@ class DashboardController extends Controller
             ->get()
             ->map(fn (Task $task) => $this->taskRow($task, $canViewAll));
 
+        $total = (int) $statusCounts->sum('count');
+        $done = (int) ($countsByStatus['done'] ?? 0);
+
+        // Tasks created in the last seven days, compared with the seven days before.
+        $now = now();
+        $createdThisWeek = $scope()->where('created_at', '>=', $now->copy()->subDays(7))->count();
+        $createdLastWeek = $scope()
+            ->whereBetween('created_at', [$now->copy()->subDays(14), $now->copy()->subDays(7)])
+            ->count();
+
         return Inertia::render('dashboard', [
             'summary' => [
-                'total' => $statusCounts->sum('count'),
+                'total' => $total,
                 'open' => $open()->count(),
                 'in_progress' => (int) ($countsByStatus['in progress'] ?? 0),
-                'done' => (int) ($countsByStatus['done'] ?? 0),
+                'done' => $done,
                 'high_priority' => $open()->where('priority', 'high')->count(),
+                // Share of all tasks that are done, from 0 to 100.
+                'completion' => $total > 0 ? (int) round($done / $total * 100) : 0,
+                'created_this_week' => $createdThisWeek,
+                // Change in percent against last week, or null when last week had no tasks.
+                'created_change' => $createdLastWeek > 0
+                    ? (int) round(($createdThisWeek - $createdLastWeek) / $createdLastWeek * 100)
+                    : null,
             ],
             'statusCounts' => $statusCounts,
             'attention' => $attention,

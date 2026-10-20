@@ -3,16 +3,16 @@ import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { Input } from '@/components/ui/input';
 import {
     InputOTP,
     InputOTPGroup,
     InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { Spinner } from '@/components/ui/spinner';
+import { useTrans } from '@/hooks/use-trans';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { store } from '@/routes/two-factor/login';
-import { useTrans } from '@/hooks/use-trans';
 
 export default function TwoFactorChallenge() {
     const t = useTrans();
@@ -120,15 +120,16 @@ export default function TwoFactorChallenge() {
 
                             <div className="text-center text-sm text-muted-foreground">
                                 <span>{t('or you can')}</span>
-                                <button
+                                <Button
                                     type="button"
-                                    className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                    variant="link"
+                                    className="h-auto p-0 text-foreground"
                                     onClick={() =>
                                         toggleRecoveryMode(clearErrors)
                                     }
                                 >
                                     {authConfigContent.toggleText}
-                                </button>
+                                </Button>
                             </div>
                         </>
                     )}

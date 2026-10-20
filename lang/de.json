@@ -368,5 +368,16 @@
     "Tasks belong to the account that created them, so you only see the ones you create.": "Aufgaben gehören dem Konto, das sie erstellt hat. Du siehst daher nur die, die du selbst erstellst.",
     "Quick actions": "Schnellzugriff",
     "Go to tasks": "Zu den Aufgaben",
-    "Manage users": "Benutzer verwalten"
+    "Manage users": "Benutzer verwalten",
+    "Logo": "Logo",
+    "PNG, JPEG or WebP, up to 2 MB. Shown in the sidebar, header, and sign-in pages.": "PNG, JPEG oder WebP, bis 2 MB. Wird in der Seitenleiste, der Kopfzeile und auf den Anmeldeseiten angezeigt.",
+    "Remove logo": "Logo entfernen",
+    "Total tasks": "Aufgaben gesamt",
+    "Overview": "Übersicht",
+    "Recent activity": "Letzte Aktivität",
+    "Completion": "Fortschritt",
+    "New this week": "Neu diese Woche",
+    "vs last week": "gegenüber letzter Woche",
+    "View all tasks": "Alle Aufgaben anzeigen",
+    "How many tasks are in each status.": "Wie viele Aufgaben in jedem Status sind."
 }

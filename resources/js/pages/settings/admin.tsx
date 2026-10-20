@@ -1,10 +1,17 @@
 import { Head, useForm } from '@inertiajs/react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
-import InputError from '@/components/input-error';
+import { AppLogoMark } from '@/components/app-logo';
 import ContentSection from '@/components/settings/content-section';
 import { Button } from '@/components/ui/button';
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -20,6 +27,14 @@ import { edit, update } from '@/routes/admin-settings';
 type AdminSettings = {
     app_name: string;
     default_role: string;
+    logo_url: string | null;
+};
+
+type AdminForm = {
+    app_name: string;
+    default_role: string;
+    logo: File | null;
+    remove_logo: boolean;
 };
 
 // App-wide settings. Only admins can open this page.
@@ -31,12 +46,58 @@ export default function AdminSettingsPage({
     roles: string[];
 }) {
     const t = useTrans();
-    const form = useForm<AdminSettings>(settings);
+    const [fileKey, setFileKey] = useState(0);
+    const form = useForm<AdminForm>({
+        app_name: settings.app_name,
+        default_role: settings.default_role,
+        logo: null,
+        remove_logo: false,
+    });
+
+    // A preview of the file the admin picked. Revoked when it changes, so the browser does not keep it.
+    const preview = useMemo(
+        () => (form.data.logo ? URL.createObjectURL(form.data.logo) : null),
+        [form.data.logo],
+    );
+
+    useEffect(() => {
+        return () => {
+            if (preview) {
+                URL.revokeObjectURL(preview);
+            }
+        };
+    }, [preview]);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        form.patch(update().url, { preserveScroll: true });
+
+        // Files need a multipart POST. The _method field tells Laravel to treat it as the PATCH route.
+        form.transform((data) => ({ ...data, _method: 'PATCH' }));
+        form.post(update().url, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setFileKey((key) => key + 1);
+                form.setData('logo', null);
+                form.setData('remove_logo', false);
+            },
+        });
     };
+
+    const chooseLogo = (file: File | undefined) => {
+        form.setData('logo', file ?? null);
+        form.setData('remove_logo', false);
+    };
+
+    const removeLogo = () => {
+        setFileKey((key) => key + 1);
+        form.setData('logo', null);
+        form.setData('remove_logo', true);
+    };
+
+    const showsCustomLogo =
+        (settings.logo_url !== null && !form.data.remove_logo) ||
+        form.data.logo !== null;
 
     return (
         <>
@@ -48,56 +109,116 @@ export default function AdminSettingsPage({
                 title={t('Admin')}
                 description={t('Settings that apply to the whole app.')}
             >
-                <form onSubmit={submit} className="space-y-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="app_name">
-                            {t('Application name')}
-                        </Label>
-                        <Input
-                            id="app_name"
-                            value={form.data.app_name}
-                            onChange={(event) =>
-                                form.setData('app_name', event.target.value)
-                            }
-                            maxLength={100}
-                            required
-                        />
-                        <InputError message={form.errors.app_name} />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="default_role">
-                            {t('Default role for new accounts')}
-                        </Label>
-                        <Select
-                            value={form.data.default_role}
-                            onValueChange={(value) => {
-                                if (value) {
-                                    form.setData('default_role', value);
+                <form onSubmit={submit} encType="multipart/form-data">
+                    <FieldGroup>
+                        <Field data-invalid={!!form.errors.app_name}>
+                            <FieldLabel htmlFor="app_name">
+                                {t('Application name')}
+                            </FieldLabel>
+                            <Input
+                                id="app_name"
+                                value={form.data.app_name}
+                                onChange={(event) =>
+                                    form.setData('app_name', event.target.value)
                                 }
-                            }}
-                        >
-                            <SelectTrigger
-                                id="default_role"
-                                className="w-full max-w-xs"
-                            >
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {roles.map((role) => (
-                                    <SelectItem key={role} value={role}>
-                                        {t(roleLabels[role] ?? role)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <InputError message={form.errors.default_role} />
-                    </div>
+                                aria-invalid={!!form.errors.app_name}
+                                maxLength={100}
+                                required
+                            />
+                            <FieldError>{form.errors.app_name}</FieldError>
+                        </Field>
 
-                    <Button type="submit" disabled={form.processing}>
-                        {form.processing && <Spinner />}
-                        {t('Save')}
-                    </Button>
+                        <Field data-invalid={!!form.errors.logo}>
+                            <FieldLabel htmlFor="logo">{t('Logo')}</FieldLabel>
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted p-2">
+                                    {preview ? (
+                                        <img
+                                            src={preview}
+                                            alt=""
+                                            className="size-full object-contain"
+                                        />
+                                    ) : showsCustomLogo ? (
+                                        <img
+                                            src={settings.logo_url ?? ''}
+                                            alt=""
+                                            className="size-full object-contain"
+                                        />
+                                    ) : (
+                                        <AppLogoMark className="size-full fill-current" />
+                                    )}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Input
+                                        key={fileKey}
+                                        id="logo"
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        className="max-w-xs"
+                                        aria-invalid={!!form.errors.logo}
+                                        onChange={(event) =>
+                                            chooseLogo(event.target.files?.[0])
+                                        }
+                                    />
+                                    <FieldDescription>
+                                        {t(
+                                            'PNG, JPEG or WebP, up to 2 MB. Shown in the sidebar, header, and sign-in pages.',
+                                        )}
+                                    </FieldDescription>
+                                    {showsCustomLogo && (
+                                        <div>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={removeLogo}
+                                            >
+                                                {t('Remove logo')}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <FieldError>{form.errors.logo}</FieldError>
+                        </Field>
+
+                        <Field data-invalid={!!form.errors.default_role}>
+                            <FieldLabel htmlFor="default_role">
+                                {t('Default role for new accounts')}
+                            </FieldLabel>
+                            <Select
+                                value={form.data.default_role}
+                                onValueChange={(value) => {
+                                    if (value) {
+                                        form.setData('default_role', value);
+                                    }
+                                }}
+                            >
+                                <SelectTrigger
+                                    id="default_role"
+                                    className="w-full max-w-xs"
+                                    aria-invalid={!!form.errors.default_role}
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {roles.map((role) => (
+                                        <SelectItem key={role} value={role}>
+                                            {t(roleLabels[role] ?? role)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FieldError>{form.errors.default_role}</FieldError>
+                        </Field>
+
+                        <Field orientation="horizontal">
+                            <Button type="submit" disabled={form.processing}>
+                                {form.processing && <Spinner />}
+                                {t('Save')}
+                            </Button>
+                        </Field>
+                    </FieldGroup>
                 </form>
             </ContentSection>
         </>

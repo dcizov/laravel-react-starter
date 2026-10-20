@@ -16,6 +16,11 @@ class AppSettings extends Settings
      */
     public string $default_role;
 
+    /**
+     * The path of the logo on the public disk, or null to show the default mark.
+     */
+    public ?string $app_logo_path;
+
     public static function group(): string
     {
         return 'app';

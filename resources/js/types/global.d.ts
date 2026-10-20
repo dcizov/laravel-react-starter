@@ -11,6 +11,8 @@ declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: {
             name: string;
+            // The admin's logo, or null to show the default mark.
+            appLogoUrl: string | null;
             auth: Auth;
             sidebarOpen: boolean;
             locale: string;

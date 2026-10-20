@@ -9,6 +9,7 @@ use App\Support\SidebarVariant;
 use App\Support\Locales;
 use App\Support\Timezones;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -41,9 +42,14 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $appSettings = app(AppSettings::class);
+
         return [
             ...parent::share($request),
-            'name' => app(AppSettings::class)->app_name,
+            'name' => $appSettings->app_name,
+            'appLogoUrl' => $appSettings->app_logo_path
+                ? Storage::disk('public')->url($appSettings->app_logo_path)
+                : null,
             'auth' => [
                 'user' => $request->user(),
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->values()->all() ?? [],

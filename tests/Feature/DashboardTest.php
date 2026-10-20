@@ -91,3 +91,32 @@ test('a new account sees an empty dashboard', function () {
             ->has('attention', 0)
             ->has('recent', 0));
 });
+
+test('the dashboard reports completion and the change against last week', function () {
+    $user = User::factory()->create();
+
+    // Two tasks created this week, one done.
+    Task::factory()->create(['user_id' => $user->id, 'status' => 'done']);
+    Task::factory()->create(['user_id' => $user->id, 'status' => 'todo']);
+
+    // Two tasks created 10 days ago, so last week had two and this week has two.
+    // created_at is not fillable on Task, so it is set with forceFill.
+    Task::factory()->count(2)->create(['user_id' => $user->id, 'status' => 'todo'])
+        ->each(fn (Task $task) => $task->forceFill(['created_at' => now()->subDays(10)])->save());
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->where('summary.completion', 25)
+            ->where('summary.created_this_week', 2)
+            ->where('summary.created_change', 0));
+});
+
+test('a new account has no change to report against last week', function () {
+    $user = User::factory()->create();
+    Task::factory()->create(['user_id' => $user->id]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page->where('summary.created_change', null));
+});
