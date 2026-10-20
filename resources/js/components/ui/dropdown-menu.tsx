@@ -240,17 +240,23 @@ function DropdownMenuSubTrigger({
 function DropdownMenuSubContent({
   className,
   sideOffset = 0,
+  side = "right",
   align = "start",
+  alignOffset = -3,
   ...props
 }: React.ComponentProps<typeof MenuPrimitive.Popup> & {
   sideOffset?: React.ComponentProps<typeof MenuPrimitive.Positioner>["sideOffset"]
+  side?: React.ComponentProps<typeof MenuPrimitive.Positioner>["side"]
   align?: React.ComponentProps<typeof MenuPrimitive.Positioner>["align"]
+  alignOffset?: React.ComponentProps<typeof MenuPrimitive.Positioner>["alignOffset"]
 }) {
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
         sideOffset={sideOffset}
+        side={side}
         align={align}
+        alignOffset={alignOffset}
         className="z-50"
       >
         <MenuPrimitive.Popup

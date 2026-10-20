@@ -502,9 +502,9 @@ function SidebarMenuButton({
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const { isMobile, state } = useSidebar()
 
-  const button = useRender({
+  const comp = useRender({
     defaultTagName: "button",
-    render,
+    render: !tooltip ? render : <TooltipTrigger render={render} />,
     props: {
       "data-slot": "sidebar-menu-button",
       "data-sidebar": "menu-button",
@@ -516,7 +516,7 @@ function SidebarMenuButton({
   })
 
   if (!tooltip) {
-    return button
+    return comp
   }
 
   if (typeof tooltip === "string") {
@@ -527,7 +527,7 @@ function SidebarMenuButton({
 
   return (
     <Tooltip>
-      <TooltipTrigger render={button} />
+      {comp}
       <TooltipContent
         side="right"
         align="center"

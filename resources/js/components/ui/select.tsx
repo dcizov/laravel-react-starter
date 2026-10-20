@@ -54,11 +54,15 @@ function SelectContent({
   side = "bottom",
   sideOffset = 4,
   align = "center",
+  alignOffset = 0,
+  alignItemWithTrigger = false,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Popup> & {
   side?: React.ComponentProps<typeof SelectPrimitive.Positioner>["side"]
   sideOffset?: React.ComponentProps<typeof SelectPrimitive.Positioner>["sideOffset"]
   align?: React.ComponentProps<typeof SelectPrimitive.Positioner>["align"]
+  alignOffset?: React.ComponentProps<typeof SelectPrimitive.Positioner>["alignOffset"]
+  alignItemWithTrigger?: boolean
 }) {
   return (
     <SelectPrimitive.Portal>
@@ -66,7 +70,8 @@ function SelectContent({
         side={side}
         sideOffset={sideOffset}
         align={align}
-        alignItemWithTrigger={false}
+        alignOffset={alignOffset}
+        alignItemWithTrigger={alignItemWithTrigger}
         collisionAvoidance={{ side: "none", align: "none" }}
         className="z-50"
       >
