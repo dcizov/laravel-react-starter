@@ -49,7 +49,10 @@ export default function Notifications({
 
     const submit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        form.patch(update().url, { preserveScroll: true });
+        form.patch(update().url, {
+            preserveScroll: true,
+            onSuccess: () => form.setDefaults(),
+        });
     };
 
     return (
@@ -139,7 +142,10 @@ export default function Notifications({
                         </Field>
                     </div>
 
-                    <Button type="submit" disabled={form.processing}>
+                    <Button
+                        type="submit"
+                        disabled={form.processing || !form.isDirty}
+                    >
                         {form.processing && <Spinner />}
                         {t('Save')}
                     </Button>

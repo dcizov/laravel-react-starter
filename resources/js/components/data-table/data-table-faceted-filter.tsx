@@ -1,9 +1,10 @@
 import type { Column, RowData } from '@tanstack/react-table';
-import { Check, CirclePlus } from 'lucide-react';
+import { CirclePlus } from 'lucide-react';
 import * as React from 'react';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Command,
     CommandEmpty,
@@ -20,7 +21,6 @@ import {
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { useTrans } from '@/hooks/use-trans';
-import { cn } from '@/lib/utils';
 
 export type FacetOption = {
     label: string;
@@ -125,16 +125,13 @@ export function DataTableFacetedFilter<TData extends RowData, TValue>({
                                         key={option.value}
                                         onSelect={() => toggle(option.value)}
                                     >
-                                        <div
-                                            className={cn(
-                                                'flex size-4 items-center justify-center rounded-[4px] border',
-                                                isSelected
-                                                    ? 'border-primary bg-primary text-primary-foreground'
-                                                    : 'border-input [&_svg]:invisible',
-                                            )}
-                                        >
-                                            <Check className="size-3.5" />
-                                        </div>
+                                        {/* The row is the click target; the checkbox only shows state. */}
+                                        <Checkbox
+                                            checked={isSelected}
+                                            tabIndex={-1}
+                                            aria-hidden="true"
+                                            className="pointer-events-none"
+                                        />
                                         {option.icon && (
                                             <option.icon className="size-4 text-muted-foreground" />
                                         )}

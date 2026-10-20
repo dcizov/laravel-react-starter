@@ -20,8 +20,8 @@ import { edit as editAccount } from '@/routes/account';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editProfile } from '@/routes/profile';
 import { show as showUserProfile } from '@/routes/user-profile';
-import { logout } from '@/routes';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import { logout } from '@/routes';
 
 // Top bar above the page content: sidebar toggle, breadcrumbs, search, and quick actions.
 export function AppSidebarHeader({
@@ -82,7 +82,7 @@ export function AppSidebarHeader({
             <SidebarTrigger className="-ml-1" />
             <Separator
                 orientation="vertical"
-                className="mx-1 h-4 w-px bg-foreground/20"
+                className="mx-1 w-px bg-foreground/20 data-[orientation=vertical]:h-4"
             />
             <Breadcrumbs breadcrumbs={breadcrumbs} />
 

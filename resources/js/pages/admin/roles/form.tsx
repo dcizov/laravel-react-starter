@@ -61,7 +61,10 @@ export default function RoleForm({
         event.preventDefault();
 
         if (role) {
-            form.patch(update.url(role.id), { preserveScroll: true });
+            form.patch(update.url(role.id), {
+                preserveScroll: true,
+                onSuccess: () => form.setDefaults(),
+            });
         } else {
             form.post(store.url());
         }
@@ -159,7 +162,10 @@ export default function RoleForm({
                         {isAdmin ? t('Back') : t('Cancel')}
                     </Link>
                     {!isAdmin && (
-                        <Button type="submit" disabled={form.processing}>
+                        <Button
+                            type="submit"
+                            disabled={form.processing || !form.isDirty}
+                        >
                             {form.processing && <Spinner />}
                             {t('Save')}
                         </Button>

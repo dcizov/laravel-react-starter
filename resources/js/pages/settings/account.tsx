@@ -62,7 +62,10 @@ export default function Account({
             locale: data.locale,
             timezone: data.timezone,
         }));
-        form.patch(update().url, { preserveScroll: true });
+        form.patch(update().url, {
+            preserveScroll: true,
+            onSuccess: () => form.setDefaults(),
+        });
     };
 
     return (
@@ -173,7 +176,10 @@ export default function Account({
                         <FieldError>{form.errors.timezone}</FieldError>
                     </Field>
 
-                    <Button type="submit" disabled={form.processing}>
+                    <Button
+                        type="submit"
+                        disabled={form.processing || !form.isDirty}
+                    >
                         {form.processing && <Spinner />}
                         {t('Save')}
                     </Button>

@@ -80,6 +80,7 @@ export default function AdminSettingsPage({
                 setFileKey((key) => key + 1);
                 form.setData('logo', null);
                 form.setData('remove_logo', false);
+                form.setDefaults();
             },
         });
     };
@@ -213,7 +214,10 @@ export default function AdminSettingsPage({
                         </Field>
 
                         <Field orientation="horizontal">
-                            <Button type="submit" disabled={form.processing}>
+                            <Button
+                                type="submit"
+                                disabled={form.processing || !form.isDirty}
+                            >
                                 {form.processing && <Spinner />}
                                 {t('Save')}
                             </Button>
