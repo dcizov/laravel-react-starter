@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Settings\AccountController;
 use App\Http\Controllers\Settings\DisplayController;
-use App\Http\Controllers\Settings\GeneralController;
 use App\Http\Controllers\Settings\NotificationsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
@@ -13,13 +12,13 @@ Route::middleware(['auth'])->group(function () {
     // TODO: Revert to Route::redirect once https://github.com/laravel/wayfinder/issues/326 is fixed.
     Route::get('settings', fn () => redirect('/settings/profile'));
 
-    Route::get('settings/general', [GeneralController::class, 'edit'])->name('general.edit');
-    Route::patch('settings/general', [GeneralController::class, 'update'])->name('general.update');
+    // Old settings URLs. General and Security now live on the account page.
+    Route::get('settings/general', fn () => redirect()->route('account.edit'));
+    Route::get('settings/security', fn () => redirect()->route('account.edit'));
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
 
-    Route::get('settings/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::patch('settings/account', [AccountController::class, 'update'])->name('account.update');
 
     Route::get('settings/display', [DisplayController::class, 'edit'])->name('display.edit');
@@ -32,9 +31,9 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('settings/security', [SecurityController::class, 'edit'])
+    Route::get('settings/account', [AccountController::class, 'edit'])
         ->middleware(RequirePassword::class)
-        ->name('security.edit');
+        ->name('account.edit');
 
     Route::put('settings/password', [SecurityController::class, 'update'])
         ->middleware('throttle:6,1')
@@ -45,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('.well-known/passkey-endpoints', function () {
     return response()->json([
-        'enroll' => route('security.edit'),
-        'manage' => route('security.edit'),
+        'enroll' => route('account.edit'),
+        'manage' => route('account.edit'),
     ]);
 })->name('well-known.passkeys');

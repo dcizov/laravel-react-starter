@@ -20,9 +20,9 @@ test('security page is displayed', function () {
 
     $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('security.edit'))
+        ->get(route('account.edit'))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/security')
+            ->component('settings/account')
             ->where('canManagePasskeys', true)
             ->where('passkeys', [])
             ->where('canManageTwoFactor', true)
@@ -41,7 +41,7 @@ test('security page requires password confirmation when enabled', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->get(route('security.edit'));
+        ->get(route('account.edit'));
 
     $response->assertRedirect(route('password.confirm'));
 });
@@ -55,10 +55,10 @@ test('security page renders without two factor when feature is disabled', functi
 
     $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('security.edit'))
+        ->get(route('account.edit'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/security')
+            ->component('settings/account')
             ->where('canManagePasskeys', false)
             ->where('passkeys', [])
             ->where('canManageTwoFactor', false)
@@ -72,7 +72,7 @@ test('password can be updated', function () {
 
     $response = $this
         ->actingAs($user)
-        ->from(route('security.edit'))
+        ->from(route('account.edit'))
         ->put(route('user-password.update'), [
             'current_password' => 'password',
             'password' => 'new-password',
@@ -81,7 +81,7 @@ test('password can be updated', function () {
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertRedirect(route('security.edit'));
+        ->assertRedirect(route('account.edit'));
 
     expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
 });
@@ -91,7 +91,7 @@ test('correct password must be provided to update password', function () {
 
     $response = $this
         ->actingAs($user)
-        ->from(route('security.edit'))
+        ->from(route('account.edit'))
         ->put(route('user-password.update'), [
             'current_password' => 'wrong-password',
             'password' => 'new-password',
@@ -100,5 +100,5 @@ test('correct password must be provided to update password', function () {
 
     $response
         ->assertSessionHasErrors('current_password')
-        ->assertRedirect(route('security.edit'));
+        ->assertRedirect(route('account.edit'));
 });

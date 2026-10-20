@@ -26,6 +26,7 @@ class AccountSettingsUpdateRequest extends FormRequest
         return [
             'date_of_birth' => ['nullable', 'date', 'before:today'],
             'locale' => ['required', 'string', Rule::in(['en', 'vi'])],
+            'timezone' => ['nullable', 'string', 'timezone'],
         ];
     }
 }

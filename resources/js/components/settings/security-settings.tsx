@@ -1,8 +1,8 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
-import ContentSection from '@/components/settings/content-section';
 import InputError from '@/components/input-error';
+import ContentSection from '@/components/settings/content-section';
 import type { Props as ManagePasskeysProps } from '@/components/manage-passkeys';
 import ManagePasskeys from '@/components/manage-passkeys';
 import type { Props as ManageTwoFactorProps } from '@/components/manage-two-factor';
@@ -10,24 +10,20 @@ import ManageTwoFactor from '@/components/manage-two-factor';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/security';
 
 // oxfmt-ignore
-type Props = {
+export type SecuritySettingsProps = {
     passwordRules: string;
 } & ManagePasskeysProps &
     ManageTwoFactorProps;
 
-export default function Security(props: Props) {
+// Password, two-factor, and passkey options. Rendered on the account settings page.
+export default function SecuritySettings(props: SecuritySettingsProps) {
     const passwordInputRef = useRef<HTMLInputElement>(null);
     const currentPasswordInputRef = useRef<HTMLInputElement>(null);
 
     return (
-        <>
-            <Head title="Security settings" />
-
-            <h1 className="sr-only">Security settings</h1>
-
+        <div className="space-y-12">
             <ContentSection
                 title="Update password"
                 description="Ensure your account is using a long, random password to stay secure"
@@ -132,15 +128,6 @@ export default function Security(props: Props) {
                 canManagePasskeys={props.canManagePasskeys}
                 passkeys={props.passkeys}
             />
-        </>
+        </div>
     );
 }
-
-Security.layout = {
-    breadcrumbs: [
-        {
-            title: 'Security settings',
-            href: edit(),
-        },
-    ],
-};

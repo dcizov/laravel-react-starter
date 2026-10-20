@@ -2,12 +2,54 @@
 
 use App\Models\User;
 
-test('account settings page is displayed', function () {
+test('account settings page is displayed after password confirmation', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('account.edit'))
+        ->assertOk();
+});
+
+test('account settings page requires password confirmation', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->get(route('account.edit'))
-        ->assertOk();
+        ->assertRedirect(route('password.confirm'));
+});
+
+test('timezone can be updated and cleared', function () {
+    $user = User::factory()->create(['timezone' => 'UTC']);
+
+    $this->actingAs($user)
+        ->patch(route('account.update'), [
+            'locale' => 'en',
+            'timezone' => 'Europe/Berlin',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($user->fresh()->timezone)->toBe('Europe/Berlin');
+
+    $this->actingAs($user)
+        ->patch(route('account.update'), [
+            'locale' => 'en',
+            'timezone' => null,
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($user->fresh()->timezone)->toBeNull();
+});
+
+test('timezone must be a valid timezone', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patch(route('account.update'), [
+            'locale' => 'en',
+            'timezone' => 'Mars/Olympus',
+        ])
+        ->assertSessionHasErrors('timezone');
 });
 
 test('account date of birth and language can be updated', function () {

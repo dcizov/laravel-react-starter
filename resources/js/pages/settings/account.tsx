@@ -1,6 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import ContentSection from '@/components/settings/content-section';
+import SecuritySettings, {
+    type SecuritySettingsProps,
+} from '@/components/settings/security-settings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { edit, update } from '@/routes/account';
 
 // Must match the locales accepted by AccountSettingsUpdateRequest.
@@ -22,20 +26,27 @@ const languages = [
 type AccountSettings = {
     date_of_birth: string | null;
     language: string;
+    timezone: string | null;
 };
 
-export default function Account({ settings }: { settings: AccountSettings }) {
+type Props = {
+    settings: AccountSettings;
+} & SecuritySettingsProps;
+
+export default function Account({ settings, ...security }: Props) {
     const form = useForm({
         date_of_birth: settings.date_of_birth ?? '',
         locale: settings.language,
+        timezone: settings.timezone ?? '',
     });
 
     const submit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         form.transform((data) => ({
-            // An empty date means "not set", so send null.
+            // Empty fields mean "not set", so send null.
             date_of_birth: data.date_of_birth || null,
             locale: data.locale,
+            timezone: data.timezone || null,
         }));
         form.patch(update().url, { preserveScroll: true });
     };
@@ -48,7 +59,7 @@ export default function Account({ settings }: { settings: AccountSettings }) {
 
             <ContentSection
                 title="Account"
-                description="Update your date of birth and language"
+                description="Update your date of birth, language, and timezone"
             >
                 <form onSubmit={submit} className="space-y-6">
                     <div className="grid gap-2">
@@ -104,11 +115,29 @@ export default function Account({ settings }: { settings: AccountSettings }) {
                         <InputError message={form.errors.locale} />
                     </div>
 
+                    <div className="grid gap-2">
+                        <Label htmlFor="timezone">Timezone</Label>
+                        <Input
+                            id="timezone"
+                            className="mt-1 block w-full"
+                            value={form.data.timezone}
+                            onChange={(event) =>
+                                form.setData('timezone', event.target.value)
+                            }
+                            placeholder="Europe/Berlin"
+                        />
+                        <InputError message={form.errors.timezone} />
+                    </div>
+
                     <Button type="submit" disabled={form.processing}>
                         Save
                     </Button>
                 </form>
             </ContentSection>
+
+            <Separator className="my-12" />
+
+            <SecuritySettings {...security} />
         </>
     );
 }
