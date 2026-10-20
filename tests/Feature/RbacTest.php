@@ -3,7 +3,6 @@
 use App\Models\Task;
 use App\Models\User;
 use App\Support\Rbac;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -163,7 +162,6 @@ test('a user cannot manage roles or permissions', function () {
     $this->actingAs($user)->get(route('admin.roles.index'))->assertForbidden();
     $this->actingAs($user)->post(route('admin.roles.store'), ['name' => 'editor'])->assertForbidden();
     $this->actingAs($user)->get(route('admin.permissions.index'))->assertForbidden();
-    $this->actingAs($user)->post(route('admin.permissions.store'), ['name' => 'reports.export'])->assertForbidden();
 });
 
 test('the admin and user roles cannot be deleted', function () {
@@ -199,33 +197,13 @@ test('the admin role keeps every permission when it is saved', function () {
         ->toEqual(collect(Rbac::PERMISSIONS)->sort()->values()->all());
 });
 
-test('a custom permission is created and the admin role gets it', function () {
+test('the permissions page is read-only', function () {
     $this->actingAs(admin())
-        ->post(route('admin.permissions.store'), ['name' => 'reports.export'])
-        ->assertRedirect(route('admin.permissions.index'));
+        ->get(route('admin.permissions.index'))
+        ->assertOk();
 
-    expect(Role::findByName('admin')->permissions->pluck('name'))->toContain('reports.export');
-});
-
-test('built-in permissions cannot be renamed or deleted', function () {
-    $permission = Permission::findByName(Rbac::PERMISSION_TASKS_VIEW_ANY);
-
+    // Permissions are defined in code, so there is no route to create, rename or delete them.
     $this->actingAs(admin())
-        ->patch(route('admin.permissions.update', $permission), ['name' => 'tasks.all'])
-        ->assertForbidden();
-
-    $this->actingAs(admin())
-        ->delete(route('admin.permissions.destroy', $permission))
-        ->assertForbidden();
-});
-
-test('a custom permission that is still on a role cannot be deleted', function () {
-    $permission = Permission::findOrCreate('reports.export');
-    Role::findByName('user')->givePermissionTo($permission);
-
-    $this->actingAs(admin())
-        ->delete(route('admin.permissions.destroy', $permission))
-        ->assertSessionHasErrors('name');
-
-    expect(Permission::where('name', 'reports.export')->exists())->toBeTrue();
+        ->post('/admin/permissions', ['name' => 'reports.export'])
+        ->assertMethodNotAllowed();
 });

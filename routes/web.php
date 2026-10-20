@@ -23,9 +23,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->except('show')
             ->middleware('can:roles.manage');
 
-        Route::resource('permissions', PermissionController::class)
-            ->only(['index', 'store', 'update', 'destroy'])
-            ->middleware('can:permissions.manage');
+        // Read-only: permissions are defined in code (App\Support\Rbac), not created in the UI.
+        Route::get('permissions', [PermissionController::class, 'index'])
+            ->middleware('can:permissions.manage')
+            ->name('permissions.index');
     });
 });
 
