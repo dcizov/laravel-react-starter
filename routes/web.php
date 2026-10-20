@@ -5,8 +5,26 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::inertia('/', 'welcome')->name('home');
+
+// Local only: preview the error pages at /errors/404 and so on. Production uses them through bootstrap/app.php.
+if (app()->environment('local')) {
+    Route::get('errors/{code}', function (string $code) {
+        $pages = [
+            '401' => 'errors/unauthorized-error',
+            '403' => 'errors/forbidden',
+            '404' => 'errors/not-found-error',
+            '500' => 'errors/general-error',
+            '503' => 'errors/maintenance-error',
+        ];
+
+        abort_unless(isset($pages[$code]), 404);
+
+        return Inertia::render($pages[$code]);
+    })->whereIn('code', ['401', '403', '404', '500', '503']);
+}
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
