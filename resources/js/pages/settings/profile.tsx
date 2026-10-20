@@ -6,6 +6,7 @@ import ContentSection from '@/components/settings/content-section';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -108,11 +109,13 @@ export default function Profile({
                 >
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label>{t('Header image')}</Label>
+                            <section className="space-y-4">
+                                <h2 className="text-sm font-medium">
+                                    {t('Images')}
+                                </h2>
 
-                                <div className="flex flex-col gap-3">
-                                    <div className="relative h-24 w-full overflow-hidden rounded-lg border bg-muted md:h-32">
+                                <div className="grid gap-2">
+                                    <div className="relative h-24 w-full overflow-hidden rounded-lg border bg-muted md:h-28">
                                         {shownHeader && (
                                             <img
                                                 src={shownHeader}
@@ -129,6 +132,7 @@ export default function Profile({
                                             name="header"
                                             type="file"
                                             accept="image/*"
+                                            aria-label={t('Header image')}
                                             className="max-w-xs"
                                             onChange={(event) =>
                                                 chooseHeader(
@@ -148,26 +152,24 @@ export default function Profile({
                                             </Button>
                                         )}
                                     </div>
+
+                                    <input
+                                        type="hidden"
+                                        name="remove_header"
+                                        value={removeHeader ? '1' : '0'}
+                                    />
+
+                                    <p className="text-sm text-muted-foreground">
+                                        {t(
+                                            'JPG, PNG, GIF or WebP, up to 4 MB.',
+                                        )}
+                                    </p>
+
+                                    <InputError message={errors.header} />
                                 </div>
 
-                                <input
-                                    type="hidden"
-                                    name="remove_header"
-                                    value={removeHeader ? '1' : '0'}
-                                />
-
-                                <p className="text-sm text-muted-foreground">
-                                    {t('JPG, PNG, GIF or WebP, up to 4 MB.')}
-                                </p>
-
-                                <InputError message={errors.header} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label>{t('Profile picture')}</Label>
-
                                 <div className="flex flex-wrap items-center gap-4">
-                                    <Avatar className="size-16">
+                                    <Avatar className="size-14">
                                         <AvatarImage
                                             src={shownAvatar ?? undefined}
                                             alt={user.name}
@@ -177,32 +179,44 @@ export default function Profile({
                                         </AvatarFallback>
                                     </Avatar>
 
-                                    <div className="flex flex-col gap-2">
-                                        <Input
-                                            ref={fileInput}
-                                            id="avatar"
-                                            name="avatar"
-                                            type="file"
-                                            accept="image/*"
-                                            className="max-w-xs"
-                                            onChange={(event) =>
-                                                chooseFile(
-                                                    event.target.files?.[0],
-                                                )
-                                            }
-                                        />
+                                    <div className="grid gap-2">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Input
+                                                ref={fileInput}
+                                                id="avatar"
+                                                name="avatar"
+                                                type="file"
+                                                accept="image/*"
+                                                aria-label={t(
+                                                    'Profile picture',
+                                                )}
+                                                className="max-w-xs"
+                                                onChange={(event) =>
+                                                    chooseFile(
+                                                        event.target.files?.[0],
+                                                    )
+                                                }
+                                            />
 
-                                        {shownAvatar && (
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                className="w-fit"
-                                                onClick={removePicture}
-                                            >
-                                                {t('Remove picture')}
-                                            </Button>
-                                        )}
+                                            {shownAvatar && (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={removePicture}
+                                                >
+                                                    {t('Remove picture')}
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        <p className="text-sm text-muted-foreground">
+                                            {t(
+                                                'JPG, PNG, GIF or WebP, up to 2 MB.',
+                                            )}
+                                        </p>
+
+                                        <InputError message={errors.avatar} />
                                     </div>
                                 </div>
 
@@ -211,139 +225,148 @@ export default function Profile({
                                     name="remove_avatar"
                                     value={removeAvatar ? '1' : '0'}
                                 />
+                            </section>
 
-                                <p className="text-sm text-muted-foreground">
-                                    {t('JPG, PNG, GIF or WebP, up to 2 MB.')}
-                                </p>
+                            <Separator />
 
-                                <InputError message={errors.avatar} />
-                            </div>
+                            <section className="grid gap-4 md:grid-cols-2">
+                                <h2 className="text-sm font-medium md:col-span-2">
+                                    {t('Personal')}
+                                </h2>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">{t('Name')}</Label>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="name">{t('Name')}</Label>
+                                    <Input
+                                        id="name"
+                                        defaultValue={user.name}
+                                        name="name"
+                                        required
+                                        autoComplete="name"
+                                        placeholder={t('Full name')}
+                                    />
+                                    <InputError message={errors.name} />
+                                </div>
 
-                                <Input
-                                    id="name"
-                                    className="mt-1 block w-full"
-                                    defaultValue={user.name}
-                                    name="name"
-                                    required
-                                    autoComplete="name"
-                                    placeholder={t('Full name')}
-                                />
+                                <div className="grid gap-2">
+                                    <Label htmlFor="email">
+                                        {t('Email address')}
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        defaultValue={user.email}
+                                        name="email"
+                                        required
+                                        autoComplete="username"
+                                        placeholder={t('Email address')}
+                                    />
+                                    <InputError message={errors.email} />
+                                </div>
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.name}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
-                                    {t('Email address')}
-                                </Label>
-
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    className="mt-1 block w-full"
-                                    defaultValue={user.email}
-                                    name="email"
-                                    required
-                                    autoComplete="username"
-                                    placeholder={t('Email address')}
-                                />
-
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.email}
-                                />
-                            </div>
-
-                            {mustVerifyEmail &&
-                                user.email_verified_at === null && (
-                                    <div>
-                                        <p className="-mt-4 text-sm text-muted-foreground">
-                                            {t(
-                                                'Your email address is unverified.',
-                                            )}{' '}
-                                            <Link
-                                                href={send()}
-                                                as="button"
-                                                className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                            >
+                                {mustVerifyEmail &&
+                                    user.email_verified_at === null && (
+                                        <div className="md:col-span-2">
+                                            <p className="text-sm text-muted-foreground">
                                                 {t(
-                                                    'Click here to re-send the verification email.',
-                                                )}
-                                            </Link>
-                                        </p>
+                                                    'Your email address is unverified.',
+                                                )}{' '}
+                                                <Link
+                                                    href={send()}
+                                                    as="button"
+                                                    className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                                >
+                                                    {t(
+                                                        'Click here to re-send the verification email.',
+                                                    )}
+                                                </Link>
+                                            </p>
 
-                                        {status ===
-                                            'verification-link-sent' && (
-                                            <div className="mt-2 text-sm font-medium text-green-600">
-                                                {t(
-                                                    'A new verification link has been sent to your email address.',
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                            {status ===
+                                                'verification-link-sent' && (
+                                                <div className="mt-2 text-sm font-medium text-green-600">
+                                                    {t(
+                                                        'A new verification link has been sent to your email address.',
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                            </section>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="job_title">
-                                    {t('Job title')}
+                            <Separator />
+
+                            <section className="grid gap-4 md:grid-cols-2">
+                                <h2 className="text-sm font-medium md:col-span-2">
+                                    {t('Work')}
+                                </h2>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="job_title">
+                                        {t('Job title')}
+                                    </Label>
+                                    <Input
+                                        id="job_title"
+                                        name="job_title"
+                                        defaultValue={user.job_title ?? ''}
+                                        autoComplete="organization-title"
+                                        placeholder={t('Product designer')}
+                                    />
+                                    <InputError message={errors.job_title} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="company">
+                                        {t('Company')}
+                                    </Label>
+                                    <Input
+                                        id="company"
+                                        name="company"
+                                        defaultValue={user.company ?? ''}
+                                        autoComplete="organization"
+                                        placeholder={t('Acme Inc.')}
+                                    />
+                                    <InputError message={errors.company} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="location">
+                                        {t('Location')}
+                                    </Label>
+                                    <Input
+                                        id="location"
+                                        name="location"
+                                        defaultValue={user.location ?? ''}
+                                        autoComplete="address-level2"
+                                        placeholder={t('Hannover, Germany')}
+                                    />
+                                    <InputError message={errors.location} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="website">
+                                        {t('Website')}
+                                    </Label>
+                                    <Input
+                                        id="website"
+                                        name="website"
+                                        type="url"
+                                        defaultValue={user.website ?? ''}
+                                        autoComplete="url"
+                                        placeholder="https://example.com"
+                                    />
+                                    <InputError message={errors.website} />
+                                </div>
+                            </section>
+
+                            <Separator />
+
+                            <section className="grid gap-2">
+                                <h2 className="text-sm font-medium">
+                                    {t('About')}
+                                </h2>
+                                <Label htmlFor="bio" className="sr-only">
+                                    {t('Bio')}
                                 </Label>
-                                <Input
-                                    id="job_title"
-                                    name="job_title"
-                                    defaultValue={user.job_title ?? ''}
-                                    autoComplete="organization-title"
-                                    placeholder={t('Product designer')}
-                                />
-                                <InputError message={errors.job_title} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="company">{t('Company')}</Label>
-                                <Input
-                                    id="company"
-                                    name="company"
-                                    defaultValue={user.company ?? ''}
-                                    autoComplete="organization"
-                                    placeholder={t('Acme Inc.')}
-                                />
-                                <InputError message={errors.company} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="location">
-                                    {t('Location')}
-                                </Label>
-                                <Input
-                                    id="location"
-                                    name="location"
-                                    defaultValue={user.location ?? ''}
-                                    autoComplete="address-level2"
-                                    placeholder={t('Hannover, Germany')}
-                                />
-                                <InputError message={errors.location} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="website">{t('Website')}</Label>
-                                <Input
-                                    id="website"
-                                    name="website"
-                                    type="url"
-                                    defaultValue={user.website ?? ''}
-                                    autoComplete="url"
-                                    placeholder="https://example.com"
-                                />
-                                <InputError message={errors.website} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="bio">{t('Bio')}</Label>
                                 <Textarea
                                     id="bio"
                                     name="bio"
@@ -358,7 +381,7 @@ export default function Profile({
                                     {t('Up to 500 characters.')}
                                 </p>
                                 <InputError message={errors.bio} />
-                            </div>
+                            </section>
 
                             <div className="flex items-center gap-4">
                                 <Button
