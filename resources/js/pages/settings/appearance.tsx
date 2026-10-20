@@ -1,12 +1,12 @@
 import { Head, useForm } from '@inertiajs/react';
 import AppearanceTabs from '@/components/appearance-tabs';
-import InputError from '@/components/input-error';
 import ContentSection from '@/components/settings/content-section';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
+import { FieldError } from '@/components/ui/field';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 import { edit as editAppearance, update } from '@/routes/appearance';
@@ -158,7 +158,7 @@ export default function Appearance({
                                     );
                                 })}
                             </RadioGroup>
-                            <InputError message={form.errors.font} />
+                            <FieldError>{form.errors.font}</FieldError>
                         </section>
 
                         <Separator />
@@ -223,7 +223,9 @@ export default function Appearance({
                                 })}
                             </RadioGroup>
 
-                            <InputError message={form.errors.sidebar_variant} />
+                            <FieldError>
+                                {form.errors.sidebar_variant}
+                            </FieldError>
                         </section>
 
                         <Button type="submit" disabled={form.processing}>

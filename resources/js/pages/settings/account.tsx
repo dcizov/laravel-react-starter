@@ -1,14 +1,11 @@
 import { Head, useForm } from '@inertiajs/react';
-import InputError from '@/components/input-error';
-import ContentSection from '@/components/settings/content-section';
 import DeleteUser from '@/components/delete-user';
-import SecuritySettings, {
-    type SecuritySettingsProps,
-} from '@/components/settings/security-settings';
+import ContentSection from '@/components/settings/content-section';
+import SecuritySettings from '@/components/settings/security-settings';
+import type { SecuritySettingsProps } from '@/components/settings/security-settings';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -17,6 +14,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/account';
 
@@ -72,10 +70,10 @@ export default function Account({
                 )}
             >
                 <form onSubmit={submit} className="space-y-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="date_of_birth">
+                    <Field data-invalid={!!form.errors.date_of_birth}>
+                        <FieldLabel htmlFor="date_of_birth">
                             {t('Date of birth')}
-                        </Label>
+                        </FieldLabel>
                         <Input
                             id="date_of_birth"
                             type="date"
@@ -93,11 +91,13 @@ export default function Account({
                                 'Used to personalise your account. Leave empty to keep it private.',
                             )}
                         </p>
-                        <InputError message={form.errors.date_of_birth} />
-                    </div>
+                        <FieldError>{form.errors.date_of_birth}</FieldError>
+                    </Field>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="locale">{t('Language')}</Label>
+                    <Field data-invalid={!!form.errors.locale}>
+                        <FieldLabel htmlFor="locale">
+                            {t('Language')}
+                        </FieldLabel>
                         <Select
                             value={form.data.locale}
                             onValueChange={(value) =>
@@ -125,11 +125,13 @@ export default function Account({
                                 ))}
                             </SelectContent>
                         </Select>
-                        <InputError message={form.errors.locale} />
-                    </div>
+                        <FieldError>{form.errors.locale}</FieldError>
+                    </Field>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="timezone">{t('Timezone')}</Label>
+                    <Field data-invalid={!!form.errors.timezone}>
+                        <FieldLabel htmlFor="timezone">
+                            {t('Timezone')}
+                        </FieldLabel>
                         <Select
                             value={form.data.timezone}
                             onValueChange={(value) =>
@@ -152,8 +154,8 @@ export default function Account({
                                 'Used to show times on your profile in your local time.',
                             )}
                         </p>
-                        <InputError message={form.errors.timezone} />
-                    </div>
+                        <FieldError>{form.errors.timezone}</FieldError>
+                    </Field>
 
                     <Button type="submit" disabled={form.processing}>
                         {form.processing && <Spinner />}

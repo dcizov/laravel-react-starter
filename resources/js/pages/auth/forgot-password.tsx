@@ -1,14 +1,13 @@
 // Components
 import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { login } from '@/routes';
-import { email } from '@/routes/password';
+import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
+import { email } from '@/routes/password';
+import { login } from '@/routes';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     const t = useTrans();
@@ -26,10 +25,10 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 <Form {...email.form()}>
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
+                            <Field data-invalid={!!errors.email}>
+                                <FieldLabel htmlFor="email">
                                     {t('Email address')}
-                                </Label>
+                                </FieldLabel>
                                 <Input
                                     id="email"
                                     type="email"
@@ -39,8 +38,8 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     placeholder="email@example.com"
                                 />
 
-                                <InputError message={errors.email} />
-                            </div>
+                                <FieldError>{errors.email}</FieldError>
+                            </Field>
 
                             <div className="my-6 flex items-center justify-start">
                                 <Button

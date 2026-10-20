@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
 import {
     Select,
     SelectContent,
@@ -45,7 +46,7 @@ export function DataTablePagination<TData extends RowData>({
                             }
                         }}
                     >
-                        <SelectTrigger className="h-8 w-[70px]">
+                        <SelectTrigger size="sm" className="w-[70px]">
                             <SelectValue placeholder={pageSize} />
                         </SelectTrigger>
                         <SelectContent side="top">
@@ -63,7 +64,7 @@ export function DataTablePagination<TData extends RowData>({
                         pages: Math.max(table.getPageCount(), 1),
                     })}
                 </div>
-                <div className="flex items-center space-x-2">
+                <ButtonGroup>
                     <Button
                         variant="outline"
                         size="icon"
@@ -108,7 +109,7 @@ export function DataTablePagination<TData extends RowData>({
                         <span className="sr-only">{t('Go to last page')}</span>
                         <ChevronsRight />
                     </Button>
-                </div>
+                </ButtonGroup>
             </div>
         </div>
     );

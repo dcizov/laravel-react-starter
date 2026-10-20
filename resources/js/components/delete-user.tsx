@@ -2,10 +2,8 @@ import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import {
     Dialog,
     DialogClose,
@@ -15,7 +13,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 
 export default function DeleteUser() {
@@ -71,13 +70,13 @@ export default function DeleteUser() {
                         >
                             {({ resetAndClearErrors, processing, errors }) => (
                                 <>
-                                    <div className="grid gap-2">
-                                        <Label
+                                    <Field data-invalid={!!errors.password}>
+                                        <FieldLabel
                                             htmlFor="password"
                                             className="sr-only"
                                         >
                                             {t('Password')}
-                                        </Label>
+                                        </FieldLabel>
 
                                         <PasswordInput
                                             id="password"
@@ -87,8 +86,10 @@ export default function DeleteUser() {
                                             autoComplete="current-password"
                                         />
 
-                                        <InputError message={errors.password} />
-                                    </div>
+                                        <FieldError>
+                                            {errors.password}
+                                        </FieldError>
+                                    </Field>
 
                                     <DialogFooter className="gap-2">
                                         <DialogClose

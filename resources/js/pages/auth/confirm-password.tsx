@@ -3,14 +3,13 @@ import {
     index as confirmOptions,
     store as confirmStore,
 } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyConfirmationController';
-import InputError from '@/components/input-error';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
-import { store } from '@/routes/password/confirm';
 import { useTrans } from '@/hooks/use-trans';
+import { store } from '@/routes/password/confirm';
 
 export default function ConfirmPassword() {
     const t = useTrans();
@@ -31,8 +30,10 @@ export default function ConfirmPassword() {
             <Form {...store.form()} resetOnSuccess={['password']}>
                 {({ processing, errors }) => (
                     <div className="space-y-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">{t('Password')}</Label>
+                        <Field data-invalid={!!errors.password}>
+                            <FieldLabel htmlFor="password">
+                                {t('Password')}
+                            </FieldLabel>
                             <PasswordInput
                                 id="password"
                                 name="password"
@@ -41,8 +42,8 @@ export default function ConfirmPassword() {
                                 autoFocus
                             />
 
-                            <InputError message={errors.password} />
-                        </div>
+                            <FieldError>{errors.password}</FieldError>
+                        </Field>
 
                         <div className="flex items-center">
                             <Button

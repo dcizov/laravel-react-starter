@@ -3,7 +3,6 @@ import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { Check, Copy, ScanLine } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AlertError from '@/components/alert-error';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -12,7 +11,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { FieldError } from '@/components/ui/field';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput,
+} from '@/components/ui/input-group';
 import {
     InputOTP,
     InputOTPGroup,
@@ -123,32 +128,30 @@ function TwoFactorSetupStep({
                         </span>
                     </div>
 
-                    <div className="flex w-full space-x-2">
-                        <div className="flex w-full items-stretch overflow-hidden rounded-xl border border-border">
-                            {!manualSetupKey ? (
-                                <div className="flex h-full w-full items-center justify-center bg-muted p-3">
-                                    <Spinner />
-                                </div>
-                            ) : (
-                                <>
-                                    <Input
-                                        type="text"
-                                        readOnly
-                                        value={manualSetupKey}
-                                        className="h-full w-full rounded-none border-0 bg-background p-3 text-foreground shadow-none focus-visible:ring-0"
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
+                    <div className="flex w-full">
+                        {!manualSetupKey ? (
+                            <div className="flex h-9 w-full items-center justify-center rounded-md border bg-muted">
+                                <Spinner />
+                            </div>
+                        ) : (
+                            <InputGroup>
+                                <InputGroupInput
+                                    type="text"
+                                    readOnly
+                                    value={manualSetupKey}
+                                    className="font-mono text-sm"
+                                />
+                                <InputGroupAddon align="inline-end">
+                                    <InputGroupButton
+                                        size="icon-sm"
                                         onClick={() => copy(manualSetupKey)}
-                                        className="h-full rounded-none border-l border-border px-3"
+                                        aria-label={t('Copy setup key')}
                                     >
-                                        <IconComponent className="w-4" />
-                                    </Button>
-                                </>
-                            )}
-                        </div>
+                                        <IconComponent />
+                                    </InputGroupButton>
+                                </InputGroupAddon>
+                            </InputGroup>
+                        )}
                     </div>
                 </>
             )}
@@ -216,11 +219,9 @@ function TwoFactorVerificationStep({
                                     )}
                                 </InputOTPGroup>
                             </InputOTP>
-                            <InputError
-                                message={
-                                    errors?.confirmTwoFactorAuthentication?.code
-                                }
-                            />
+                            <FieldError>
+                                {errors?.confirmTwoFactorAuthentication?.code}
+                            </FieldError>
                         </div>
 
                         <div className="flex w-full space-x-5">

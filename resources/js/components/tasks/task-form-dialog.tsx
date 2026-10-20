@@ -1,12 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { store, update } from '@/actions/App/Http/Controllers/TaskController';
-import InputError from '@/components/input-error';
-import {
-    labels,
-    priorities,
-    statuses,
-    type Task,
-} from '@/components/tasks/data';
+import { labels, priorities, statuses } from '@/components/tasks/data';
+import type { Task } from '@/components/tasks/data';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -16,8 +11,8 @@ import {
     DialogFooter,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -87,8 +82,10 @@ export function TaskFormDialog({
                 </DialogDescription>
 
                 <form onSubmit={submit} className="grid gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="task-title">{t('Title')}</Label>
+                    <Field data-invalid={!!form.errors.title}>
+                        <FieldLabel htmlFor="task-title">
+                            {t('Title')}
+                        </FieldLabel>
                         <Input
                             id="task-title"
                             value={form.data.title}
@@ -97,12 +94,14 @@ export function TaskFormDialog({
                             }
                             autoFocus
                         />
-                        <InputError message={form.errors.title} />
-                    </div>
+                        <FieldError>{form.errors.title}</FieldError>
+                    </Field>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="grid gap-2">
-                            <Label htmlFor="task-status">{t('Status')}</Label>
+                        <Field data-invalid={!!form.errors.status}>
+                            <FieldLabel htmlFor="task-status">
+                                {t('Status')}
+                            </FieldLabel>
                             <Select
                                 value={form.data.status}
                                 onValueChange={(value) =>
@@ -130,13 +129,13 @@ export function TaskFormDialog({
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <InputError message={form.errors.status} />
-                        </div>
+                            <FieldError>{form.errors.status}</FieldError>
+                        </Field>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="task-priority">
+                        <Field data-invalid={!!form.errors.priority}>
+                            <FieldLabel htmlFor="task-priority">
                                 {t('Priority')}
-                            </Label>
+                            </FieldLabel>
                             <Select
                                 value={form.data.priority}
                                 onValueChange={(value) =>
@@ -164,12 +163,14 @@ export function TaskFormDialog({
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <InputError message={form.errors.priority} />
-                        </div>
+                            <FieldError>{form.errors.priority}</FieldError>
+                        </Field>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="task-label">{t('Label')}</Label>
+                    <Field data-invalid={!!form.errors.label}>
+                        <FieldLabel htmlFor="task-label">
+                            {t('Label')}
+                        </FieldLabel>
                         <Select
                             value={form.data.label}
                             onValueChange={(value) =>
@@ -194,8 +195,8 @@ export function TaskFormDialog({
                                 ))}
                             </SelectContent>
                         </Select>
-                        <InputError message={form.errors.label} />
-                    </div>
+                        <FieldError>{form.errors.label}</FieldError>
+                    </Field>
 
                     <DialogFooter className="gap-2">
                         <DialogClose

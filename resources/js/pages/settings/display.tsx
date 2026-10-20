@@ -1,11 +1,11 @@
 import { Head, useForm } from '@inertiajs/react';
-import InputError from '@/components/input-error';
-import { displayGroups } from '@/components/sidebar-items';
 import ContentSection from '@/components/settings/content-section';
+import { displayGroups } from '@/components/sidebar-items';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FieldError } from '@/components/ui/field';
 import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/display';
 
@@ -68,7 +68,7 @@ export default function Display({ items }: { items: string[] }) {
                                 ))}
                             </fieldset>
                         ))}
-                        <InputError message={form.errors.items} />
+                        <FieldError>{form.errors.items}</FieldError>
                     </div>
 
                     <Button type="submit" disabled={form.processing}>

@@ -38,7 +38,7 @@ export default function SettingsSidebarNav({
                         }
                     }}
                 >
-                    <SelectTrigger className="h-10 w-full sm:w-48">
+                    <SelectTrigger className="w-full sm:w-48">
                         <SelectValue placeholder={t('Settings section')}>
                             {(value: string) => {
                                 const item = items.find(

@@ -1,7 +1,7 @@
 import { usePasskeyRegister } from '@laravel/passkeys/react';
 import { useState } from 'react';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-trans';
@@ -95,7 +95,7 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
                 </p>
             </div>
 
-            {error && <InputError message={error} />}
+            {error && <FieldError>{error}</FieldError>}
 
             <div className="flex gap-2">
                 <Button type="submit" disabled={isLoading || !name.trim()}>

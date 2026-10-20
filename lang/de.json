@@ -379,5 +379,9 @@
     "New this week": "Neu diese Woche",
     "vs last week": "gegenüber letzter Woche",
     "View all tasks": "Alle Aufgaben anzeigen",
-    "How many tasks are in each status.": "Wie viele Aufgaben in jedem Status sind."
+    "How many tasks are in each status.": "Wie viele Aufgaben in jedem Status sind.",
+    "Copy setup key": "Setup-Schlüssel kopieren",
+    "Clear search": "Suche löschen",
+    "Hide password": "Passwort verbergen",
+    "Show password": "Passwort anzeigen"
 }

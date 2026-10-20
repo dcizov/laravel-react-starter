@@ -1,14 +1,14 @@
 import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
-import { store } from '@/routes/register';
 import { useTrans } from '@/hooks/use-trans';
+import { store } from '@/routes/register';
+import { login } from '@/routes';
 
 type Props = {
     passwordRules: string;
@@ -40,16 +40,15 @@ export default function Register({ passwordRules }: Props) {
                                     name="name"
                                     placeholder={t('Full name')}
                                 />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
+                                <FieldError className="mt-2">
+                                    {errors.name}
+                                </FieldError>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
+                            <Field data-invalid={!!errors.email}>
+                                <FieldLabel htmlFor="email">
                                     {t('Email address')}
-                                </Label>
+                                </FieldLabel>
                                 <Input
                                     id="email"
                                     type="email"
@@ -59,13 +58,13 @@ export default function Register({ passwordRules }: Props) {
                                     name="email"
                                     placeholder="email@example.com"
                                 />
-                                <InputError message={errors.email} />
-                            </div>
+                                <FieldError>{errors.email}</FieldError>
+                            </Field>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">
+                            <Field data-invalid={!!errors.password}>
+                                <FieldLabel htmlFor="password">
                                     {t('Password')}
-                                </Label>
+                                </FieldLabel>
                                 <PasswordInput
                                     id="password"
                                     required
@@ -75,13 +74,15 @@ export default function Register({ passwordRules }: Props) {
                                     placeholder={t('Password')}
                                     passwordrules={passwordRules}
                                 />
-                                <InputError message={errors.password} />
-                            </div>
+                                <FieldError>{errors.password}</FieldError>
+                            </Field>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
+                            <Field
+                                data-invalid={!!errors.password_confirmation}
+                            >
+                                <FieldLabel htmlFor="password_confirmation">
                                     {t('Confirm password')}
-                                </Label>
+                                </FieldLabel>
                                 <PasswordInput
                                     id="password_confirmation"
                                     required
@@ -91,10 +92,10 @@ export default function Register({ passwordRules }: Props) {
                                     placeholder={t('Confirm password')}
                                     passwordrules={passwordRules}
                                 />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
+                                <FieldError>
+                                    {errors.password_confirmation}
+                                </FieldError>
+                            </Field>
 
                             <Button
                                 type="submit"

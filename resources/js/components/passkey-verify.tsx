@@ -2,8 +2,8 @@ import type { UrlMethodPair } from '@inertiajs/core';
 import { router } from '@inertiajs/react';
 import { usePasskeyVerify } from '@laravel/passkeys/react';
 import { KeyRound } from 'lucide-react';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
@@ -57,7 +57,7 @@ export default function PasskeyVerify({
                         : (label ?? t('Sign in with a passkey'))}
                 </Button>
                 {error && (
-                    <InputError message={error} className="text-center" />
+                    <FieldError className="text-center">{error}</FieldError>
                 )}
             </div>
 

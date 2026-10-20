@@ -1,8 +1,8 @@
 import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useMemo, useState } from 'react';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
     InputOTP,
@@ -76,9 +76,9 @@ export default function TwoFactorChallenge() {
                                         autoFocus={showRecoveryInput}
                                         required
                                     />
-                                    <InputError
-                                        message={errors.recovery_code}
-                                    />
+                                    <FieldError>
+                                        {errors.recovery_code}
+                                    </FieldError>
                                 </>
                             ) : (
                                 <div className="flex flex-col items-center justify-center space-y-3 text-center">
@@ -105,7 +105,7 @@ export default function TwoFactorChallenge() {
                                             </InputOTPGroup>
                                         </InputOTP>
                                     </div>
-                                    <InputError message={errors.code} />
+                                    <FieldError>{errors.code}</FieldError>
                                 </div>
                             )}
 

@@ -1,13 +1,13 @@
 import { Head, useForm } from '@inertiajs/react';
-import InputError from '@/components/input-error';
 import ContentSection from '@/components/settings/content-section';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FieldError } from '@/components/ui/field';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/notifications';
 
@@ -101,7 +101,7 @@ export default function Notifications({
                                 </div>
                             ))}
                         </RadioGroup>
-                        <InputError message={form.errors.type} />
+                        <FieldError>{form.errors.type}</FieldError>
                     </div>
 
                     <div className="grid gap-3">

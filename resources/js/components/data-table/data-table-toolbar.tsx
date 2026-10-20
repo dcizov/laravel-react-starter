@@ -1,12 +1,17 @@
 import type { ReactTable, RowData } from '@tanstack/react-table';
-import { X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import type * as React from 'react';
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter';
 import type { FacetOption } from '@/components/data-table/data-table-faceted-filter';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { DataTableViewOptions } from '@/components/data-table/data-table-view-options';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput,
+} from '@/components/ui/input-group';
 import { useTrans } from '@/hooks/use-trans';
 
 // A faceted filter above the table. `column` is the column id it filters.
@@ -48,14 +53,33 @@ export function DataTableToolbar<TData extends RowData>({
         <div className="flex items-center justify-between gap-2">
             <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
                 {options.search && searchColumn && (
-                    <Input
-                        placeholder={options.search.placeholder}
-                        value={(searchColumn.getFilterValue() as string) ?? ''}
-                        onChange={(event) =>
-                            searchColumn.setFilterValue(event.target.value)
-                        }
-                        className="h-8 w-[150px] lg:w-[250px]"
-                    />
+                    <InputGroup className="h-8 w-[150px] lg:w-[250px]">
+                        <InputGroupInput
+                            placeholder={options.search.placeholder}
+                            value={
+                                (searchColumn.getFilterValue() as string) ?? ''
+                            }
+                            onChange={(event) =>
+                                searchColumn.setFilterValue(event.target.value)
+                            }
+                        />
+                        <InputGroupAddon>
+                            <Search />
+                        </InputGroupAddon>
+                        {(searchColumn.getFilterValue() as string) && (
+                            <InputGroupAddon align="inline-end">
+                                <InputGroupButton
+                                    size="icon-xs"
+                                    aria-label={t('Clear search')}
+                                    onClick={() =>
+                                        searchColumn.setFilterValue('')
+                                    }
+                                >
+                                    <X />
+                                </InputGroupButton>
+                            </InputGroupAddon>
+                        )}
+                    </InputGroup>
                 )}
                 {options.filters && options.filters.length > 0 && (
                     <div className="flex gap-x-2">

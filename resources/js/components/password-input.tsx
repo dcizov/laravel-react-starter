@@ -1,40 +1,42 @@
 import { Eye, EyeOff } from 'lucide-react';
 import type { ComponentProps, Ref } from 'react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput,
+} from '@/components/ui/input-group';
+import { useTrans } from '@/hooks/use-trans';
 
 export default function PasswordInput({
     className,
     ref,
     ...props
 }: Omit<ComponentProps<'input'>, 'type'> & { ref?: Ref<HTMLInputElement> }) {
+    const t = useTrans();
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <div className="relative">
-            <Input
+        <InputGroup>
+            <InputGroupInput
                 type={showPassword ? 'text' : 'password'}
-                className={cn('pr-10', className)}
+                className={className}
                 ref={ref}
                 {...props}
             />
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 h-full rounded-l-none px-3 text-muted-foreground hover:bg-transparent hover:text-foreground"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                tabIndex={-1}
-            >
-                {showPassword ? (
-                    <EyeOff className="size-4" />
-                ) : (
-                    <Eye className="size-4" />
-                )}
-            </Button>
-        </div>
+            <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                    size="icon-xs"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={
+                        showPassword ? t('Hide password') : t('Show password')
+                    }
+                    tabIndex={-1}
+                >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                </InputGroupButton>
+            </InputGroupAddon>
+        </InputGroup>
     );
 }

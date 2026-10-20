@@ -1,17 +1,17 @@
 import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { register } from '@/routes';
+import { useTrans } from '@/hooks/use-trans';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
-import { useTrans } from '@/hooks/use-trans';
+import { register } from '@/routes';
 
 type Props = {
     status?: string;
@@ -34,10 +34,10 @@ export default function Login({ status, canResetPassword }: Props) {
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
+                            <Field data-invalid={!!errors.email}>
+                                <FieldLabel htmlFor="email">
                                     {t('Email address')}
-                                </Label>
+                                </FieldLabel>
                                 <Input
                                     id="email"
                                     type="email"
@@ -48,14 +48,14 @@ export default function Login({ status, canResetPassword }: Props) {
                                     autoComplete="email"
                                     placeholder="email@example.com"
                                 />
-                                <InputError message={errors.email} />
-                            </div>
+                                <FieldError>{errors.email}</FieldError>
+                            </Field>
 
-                            <div className="grid gap-2">
+                            <Field data-invalid={!!errors.password}>
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">
+                                    <FieldLabel htmlFor="password">
                                         {t('Password')}
-                                    </Label>
+                                    </FieldLabel>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
@@ -74,8 +74,8 @@ export default function Login({ status, canResetPassword }: Props) {
                                     autoComplete="current-password"
                                     placeholder={t('Password')}
                                 />
-                                <InputError message={errors.password} />
-                            </div>
+                                <FieldError>{errors.password}</FieldError>
+                            </Field>
 
                             <div className="flex items-center space-x-3">
                                 <Checkbox

@@ -1,14 +1,14 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import InputError from '@/components/input-error';
 import ContentSection from '@/components/settings/content-section';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useInitials } from '@/hooks/use-initials';
 import { useTrans } from '@/hooks/use-trans';
@@ -162,7 +162,7 @@ export default function Profile({
                                             )}
                                         </p>
 
-                                        <InputError message={errors.avatar} />
+                                        <FieldError>{errors.avatar}</FieldError>
                                     </div>
                                 </div>
 
@@ -223,7 +223,7 @@ export default function Profile({
                                         )}
                                     </p>
 
-                                    <InputError message={errors.header} />
+                                    <FieldError>{errors.header}</FieldError>
                                 </div>
                             </section>
 
@@ -234,8 +234,10 @@ export default function Profile({
                                     {t('Personal')}
                                 </h2>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="name">{t('Name')}</Label>
+                                <Field data-invalid={!!errors.name}>
+                                    <FieldLabel htmlFor="name">
+                                        {t('Name')}
+                                    </FieldLabel>
                                     <Input
                                         id="name"
                                         defaultValue={user.name}
@@ -244,13 +246,13 @@ export default function Profile({
                                         autoComplete="name"
                                         placeholder={t('Full name')}
                                     />
-                                    <InputError message={errors.name} />
-                                </div>
+                                    <FieldError>{errors.name}</FieldError>
+                                </Field>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="email">
+                                <Field data-invalid={!!errors.email}>
+                                    <FieldLabel htmlFor="email">
                                         {t('Email address')}
-                                    </Label>
+                                    </FieldLabel>
                                     <Input
                                         id="email"
                                         type="email"
@@ -260,8 +262,8 @@ export default function Profile({
                                         autoComplete="username"
                                         placeholder={t('Email address')}
                                     />
-                                    <InputError message={errors.email} />
-                                </div>
+                                    <FieldError>{errors.email}</FieldError>
+                                </Field>
 
                                 {mustVerifyEmail &&
                                     user.email_verified_at === null && (
@@ -300,10 +302,10 @@ export default function Profile({
                                     {t('Work')}
                                 </h2>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="job_title">
+                                <Field data-invalid={!!errors.job_title}>
+                                    <FieldLabel htmlFor="job_title">
                                         {t('Job title')}
-                                    </Label>
+                                    </FieldLabel>
                                     <Input
                                         id="job_title"
                                         name="job_title"
@@ -311,13 +313,13 @@ export default function Profile({
                                         autoComplete="organization-title"
                                         placeholder={t('Product designer')}
                                     />
-                                    <InputError message={errors.job_title} />
-                                </div>
+                                    <FieldError>{errors.job_title}</FieldError>
+                                </Field>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="company">
+                                <Field data-invalid={!!errors.company}>
+                                    <FieldLabel htmlFor="company">
                                         {t('Company')}
-                                    </Label>
+                                    </FieldLabel>
                                     <Input
                                         id="company"
                                         name="company"
@@ -325,13 +327,13 @@ export default function Profile({
                                         autoComplete="organization"
                                         placeholder={t('Acme Inc.')}
                                     />
-                                    <InputError message={errors.company} />
-                                </div>
+                                    <FieldError>{errors.company}</FieldError>
+                                </Field>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="location">
+                                <Field data-invalid={!!errors.location}>
+                                    <FieldLabel htmlFor="location">
                                         {t('Location')}
-                                    </Label>
+                                    </FieldLabel>
                                     <Input
                                         id="location"
                                         name="location"
@@ -339,13 +341,13 @@ export default function Profile({
                                         autoComplete="address-level2"
                                         placeholder={t('Hannover, Germany')}
                                     />
-                                    <InputError message={errors.location} />
-                                </div>
+                                    <FieldError>{errors.location}</FieldError>
+                                </Field>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="website">
+                                <Field data-invalid={!!errors.website}>
+                                    <FieldLabel htmlFor="website">
                                         {t('Website')}
-                                    </Label>
+                                    </FieldLabel>
                                     <Input
                                         id="website"
                                         name="website"
@@ -354,8 +356,8 @@ export default function Profile({
                                         autoComplete="url"
                                         placeholder="https://example.com"
                                     />
-                                    <InputError message={errors.website} />
-                                </div>
+                                    <FieldError>{errors.website}</FieldError>
+                                </Field>
                             </section>
 
                             <Separator />
@@ -380,7 +382,7 @@ export default function Profile({
                                 <p className="text-sm text-muted-foreground">
                                     {t('Up to 500 characters.')}
                                 </p>
-                                <InputError message={errors.bio} />
+                                <FieldError>{errors.bio}</FieldError>
                             </section>
 
                             <div className="flex items-center gap-4">

@@ -1,16 +1,15 @@
 import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
-import InputError from '@/components/input-error';
-import ContentSection from '@/components/settings/content-section';
 import type { Props as ManagePasskeysProps } from '@/components/manage-passkeys';
 import ManagePasskeys from '@/components/manage-passkeys';
 import type { Props as ManageTwoFactorProps } from '@/components/manage-two-factor';
 import ManageTwoFactor from '@/components/manage-two-factor';
 import PasswordInput from '@/components/password-input';
+import ContentSection from '@/components/settings/content-section';
 import { Button } from '@/components/ui/button';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
-import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-trans';
 
 // oxfmt-ignore
@@ -57,10 +56,10 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                 >
                     {({ errors, processing }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="current_password">
+                            <Field data-invalid={!!errors.current_password}>
+                                <FieldLabel htmlFor="current_password">
                                     {t('Current password')}
-                                </Label>
+                                </FieldLabel>
 
                                 <PasswordInput
                                     id="current_password"
@@ -71,13 +70,15 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                     placeholder={t('Current password')}
                                 />
 
-                                <InputError message={errors.current_password} />
-                            </div>
+                                <FieldError>
+                                    {errors.current_password}
+                                </FieldError>
+                            </Field>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">
+                            <Field data-invalid={!!errors.password}>
+                                <FieldLabel htmlFor="password">
                                     {t('New password')}
-                                </Label>
+                                </FieldLabel>
 
                                 <PasswordInput
                                     id="password"
@@ -89,13 +90,15 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                     passwordrules={props.passwordRules}
                                 />
 
-                                <InputError message={errors.password} />
-                            </div>
+                                <FieldError>{errors.password}</FieldError>
+                            </Field>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
+                            <Field
+                                data-invalid={!!errors.password_confirmation}
+                            >
+                                <FieldLabel htmlFor="password_confirmation">
                                     {t('Confirm password')}
-                                </Label>
+                                </FieldLabel>
 
                                 <PasswordInput
                                     id="password_confirmation"
@@ -106,10 +109,10 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                     passwordrules={props.passwordRules}
                                 />
 
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
+                                <FieldError>
+                                    {errors.password_confirmation}
+                                </FieldError>
+                            </Field>
 
                             <div className="flex items-center gap-4">
                                 <Button

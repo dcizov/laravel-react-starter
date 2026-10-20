@@ -1,9 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useMemo } from 'react';
 import type { FormEvent } from 'react';
-import InputError from '@/components/input-error';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -102,7 +102,7 @@ export default function RoleForm({
                         placeholder="editor"
                         autoComplete="off"
                     />
-                    <InputError message={form.errors.name} />
+                    <FieldError>{form.errors.name}</FieldError>
                 </div>
 
                 <div className="grid gap-4">
@@ -151,7 +151,7 @@ export default function RoleForm({
                             })}
                         </fieldset>
                     ))}
-                    <InputError message={form.errors.permissions} />
+                    <FieldError>{form.errors.permissions}</FieldError>
                 </div>
 
                 <div className="flex gap-2">
