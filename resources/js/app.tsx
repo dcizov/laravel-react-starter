@@ -1,3 +1,6 @@
+import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/manrope';
 import { createInertiaApp } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';

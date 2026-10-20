@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Support\DisplaySettings;
+use App\Support\Fonts;
 use App\Support\SidebarVariant;
 use App\Support\Locales;
 use App\Support\Timezones;
@@ -52,6 +53,7 @@ class HandleInertiaRequests extends Middleware
             'displayItems' => DisplaySettings::forUser($request->user()),
             'sidebarVariant' => SidebarVariant::forUser($request->user()),
             'locales' => Locales::options(),
+            'font' => Fonts::forUser($request->user()),
         ];
     }
 }

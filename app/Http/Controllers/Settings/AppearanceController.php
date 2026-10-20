@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\AppearanceUpdateRequest;
+use App\Support\Fonts;
 use App\Support\SidebarVariant;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -16,6 +17,7 @@ class AppearanceController extends Controller
     {
         return Inertia::render('settings/appearance', [
             'sidebarVariant' => SidebarVariant::forUser($request->user()),
+            'font' => Fonts::forUser($request->user()),
         ]);
     }
 
@@ -23,6 +25,7 @@ class AppearanceController extends Controller
     {
         $request->user()->update([
             'sidebar_variant' => $request->validated('sidebar_variant'),
+            'font' => $request->validated('font'),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Appearance settings updated.')]);

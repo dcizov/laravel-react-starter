@@ -19,6 +19,7 @@ declare module '@inertiajs/core' {
             displayItems: string[];
             sidebarVariant: 'inset' | 'floating';
             locales: { value: string; label: string }[];
+            font: 'instrument-sans' | 'inter' | 'manrope' | 'system';
             [key: string]: unknown;
         };
     }

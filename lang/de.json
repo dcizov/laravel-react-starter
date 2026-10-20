@@ -199,8 +199,6 @@
     "Choose how the sidebar is placed on the page. Your choice applies everywhere you sign in.": "Wähle, wie die Seitenleiste auf der Seite platziert wird. Deine Auswahl gilt überall, wo du angemeldet bist.",
     "Inset": "Eingebettet",
     "Floating": "Schwebend",
-    "The sidebar sits beside the page in one rounded panel.": "Die Seitenleiste liegt neben dem Inhalt in einem abgerundeten Bereich.",
-    "The sidebar floats above the page with its own border.": "Die Seitenleiste schwebt mit eigenem Rahmen über der Seite.",
     "Appearance settings updated.": "Darstellungseinstellungen aktualisiert.",
     "Mark all as read": "Alle als gelesen markieren",
     "No notifications yet": "Noch keine Benachrichtigungen",
@@ -212,5 +210,12 @@
     "Explore the sidebar and display settings.": "Entdecke die Seitenleiste und die Anzeigeeinstellungen.",
     "Complete your profile": "Vervollständige dein Profil",
     "Add a job title and a bio to your profile.": "Füge deinem Profil eine Berufsbezeichnung und eine Biografie hinzu.",
-    "Change language": "Sprache ändern"
+    "Change language": "Sprache ändern",
+    "The sidebar sits flush against the page edge.": "Die Seitenleiste liegt bündig am Seitenrand.",
+    "The sidebar floats above the page with its own border and shadow.": "Die Seitenleiste schwebt mit eigenem Rahmen und Schatten über der Seite.",
+    "Theme": "Farbschema",
+    "Font": "Schriftart",
+    "Light and dark apply right away on this device.": "Hell und Dunkel gelten sofort auf diesem Gerät.",
+    "Choose the typeface used across the app.": "Wähle die Schriftart, die in der ganzen App verwendet wird.",
+    "System font": "Systemschrift"
 }

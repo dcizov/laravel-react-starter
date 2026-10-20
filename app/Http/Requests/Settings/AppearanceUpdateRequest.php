@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Settings;
 
+use App\Support\Fonts;
 use App\Support\SidebarVariant;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,6 +27,7 @@ class AppearanceUpdateRequest extends FormRequest
     {
         return [
             'sidebar_variant' => ['required', 'string', Rule::in(SidebarVariant::VARIANTS)],
+            'font' => ['required', 'string', Rule::in(Fonts::KEYS)],
         ];
     }
 }
