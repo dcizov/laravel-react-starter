@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, CornerDownLeft } from 'lucide-react';
+import { ArrowDown, ArrowUp, CornerDownLeft, SearchX } from 'lucide-react';
 import { ShortcutHint } from '@/components/shortcut-hint';
 import {
     flattenSidebarLinks,
@@ -15,6 +15,13 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { useTrans } from '@/hooks/use-trans';
 
@@ -63,7 +70,19 @@ export function CommandSearch({ open, onOpenChange, onToggleTheme }: Props) {
         >
             <CommandInput placeholder={t('Search pages and actions...')} />
             <CommandList>
-                <CommandEmpty>{t('No results found.')}</CommandEmpty>
+                <CommandEmpty>
+                    <Empty className="p-6">
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                                <SearchX />
+                            </EmptyMedia>
+                            <EmptyTitle>{t('No results found')}</EmptyTitle>
+                            <EmptyDescription>
+                                {t('Try a different search term.')}
+                            </EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
+                </CommandEmpty>
 
                 {groups.map((group) => (
                     <CommandGroup key={group.title} heading={t(group.title)}>

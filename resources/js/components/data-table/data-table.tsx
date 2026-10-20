@@ -7,12 +7,19 @@ import type {
     RowSelectionState,
     SortingState,
 } from '@tanstack/react-table';
+import { SearchX } from 'lucide-react';
 import * as React from 'react';
 import { dataTableFeatures } from '@/components/data-table/data-table-features';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar';
 import type { DataTableToolbarOptions } from '@/components/data-table/data-table-toolbar';
+import {
+    Empty,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import {
     Table,
     TableBody,
@@ -134,7 +141,17 @@ export function DataTable<TData extends RowData>({
                                     colSpan={columns.length}
                                     className="h-24 text-center"
                                 >
-                                    {emptyMessage ?? t('No results.')}
+                                    <Empty className="p-0">
+                                        <EmptyHeader>
+                                            <EmptyMedia variant="icon">
+                                                <SearchX />
+                                            </EmptyMedia>
+                                            <EmptyTitle>
+                                                {emptyMessage ??
+                                                    t('No results.')}
+                                            </EmptyTitle>
+                                        </EmptyHeader>
+                                    </Empty>
                                 </TableCell>
                             </TableRow>
                         )}

@@ -14,6 +14,7 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
+import { Empty, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
 import {
     Popover,
     PopoverContent,
@@ -115,7 +116,15 @@ export function DataTableFacetedFilter<TData extends RowData, TValue>({
                 <Command>
                     <CommandInput placeholder={title} />
                     <CommandList>
-                        <CommandEmpty>{t('No results found.')}</CommandEmpty>
+                        <CommandEmpty>
+                            <Empty className="p-4">
+                                <EmptyHeader>
+                                    <EmptyTitle>
+                                        {t('No results found')}
+                                    </EmptyTitle>
+                                </EmptyHeader>
+                            </Empty>
+                        </CommandEmpty>
                         <CommandGroup>
                             {options.map((option) => {
                                 const isSelected = selected.has(option.value);
