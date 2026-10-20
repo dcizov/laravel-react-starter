@@ -47,6 +47,20 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user has filled in the profile details.
+     */
+    public function withProfile(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'bio' => fake()->sentence(12),
+            'job_title' => fake()->jobTitle(),
+            'company' => fake()->company(),
+            'location' => fake()->city(),
+            'website' => fake()->url(),
+        ]);
+    }
+
+    /**
      * Indicate that the model has two-factor authentication configured.
      */
     public function withTwoFactor(): static

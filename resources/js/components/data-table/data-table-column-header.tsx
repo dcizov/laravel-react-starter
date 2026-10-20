@@ -1,5 +1,6 @@
-import type { Column } from '@tanstack/react-table';
+import type { Column, RowData } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff } from 'lucide-react';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -12,12 +13,12 @@ import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 
 // A column title that opens a menu to sort ascending or descending, or hide the column.
-export function DataTableColumnHeader<TData, TValue>({
+export function DataTableColumnHeader<TData extends RowData, TValue>({
     column,
     title,
     className,
 }: {
-    column: Column<TData, TValue>;
+    column: Column<DataTableFeatures, TData, TValue>;
     title: string;
     className?: string;
 }) {

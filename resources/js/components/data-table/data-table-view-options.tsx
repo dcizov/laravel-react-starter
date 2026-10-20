@@ -1,5 +1,6 @@
-import type { RowData, Table } from '@tanstack/react-table';
+import type { ReactTable, RowData } from '@tanstack/react-table';
 import { Settings2 } from 'lucide-react';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -11,18 +12,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTrans } from '@/hooks/use-trans';
 
-declare module '@tanstack/react-table' {
-    // The label shown in the View menu for a column.
-    interface ColumnMeta<TData extends RowData, TValue> {
-        label?: string;
-    }
-}
-
 // Shows or hides columns. Columns that cannot be hidden are left out.
-export function DataTableViewOptions<TData>({
+export function DataTableViewOptions<TData extends RowData>({
     table,
 }: {
-    table: Table<TData>;
+    table: ReactTable<DataTableFeatures, TData>;
 }) {
     const t = useTrans();
 

@@ -1,6 +1,7 @@
-import type { Column } from '@tanstack/react-table';
+import type { Column, RowData } from '@tanstack/react-table';
 import { Check, CirclePlus } from 'lucide-react';
 import * as React from 'react';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,12 +29,12 @@ export type FacetOption = {
 };
 
 // A dashed filter button with a searchable list of options. Shows how many rows each option has.
-export function DataTableFacetedFilter<TData, TValue>({
+export function DataTableFacetedFilter<TData extends RowData, TValue>({
     column,
     title,
     options,
 }: {
-    column?: Column<TData, TValue>;
+    column?: Column<DataTableFeatures, TData, TValue>;
     title: string;
     options: FacetOption[];
 }) {

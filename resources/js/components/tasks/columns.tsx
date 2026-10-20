@@ -1,4 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { Ellipsis } from 'lucide-react';
 import * as React from 'react';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
@@ -26,18 +27,18 @@ import {
 import { useTrans } from '@/hooks/use-trans';
 
 type TaskActions = {
-    onLabelChange: (id: string, label: string) => void;
-    onDelete: (id: string) => void;
+    onLabelChange: (id: number, label: string) => void;
+    onDelete: (id: number) => void;
 };
 
 // The table columns for tasks. Titles and option labels are translated here.
 export function useTaskColumns({
     onLabelChange,
     onDelete,
-}: TaskActions): ColumnDef<Task>[] {
+}: TaskActions): ColumnDef<DataTableFeatures, Task>[] {
     const t = useTrans();
 
-    return React.useMemo<ColumnDef<Task>[]>(
+    return React.useMemo<ColumnDef<DataTableFeatures, Task>[]>(
         () => [
             {
                 id: 'select',
@@ -67,18 +68,19 @@ export function useTaskColumns({
                 enableHiding: false,
             },
             {
-                accessorKey: 'id',
+                accessorKey: 'code',
                 header: ({ column }) => (
                     <DataTableColumnHeader column={column} title={t('Task')} />
                 ),
                 cell: ({ row }) => (
-                    <span className="font-medium">{row.getValue('id')}</span>
+                    <span className="font-medium">{row.getValue('code')}</span>
                 ),
                 enableSorting: false,
                 enableHiding: false,
             },
             {
                 accessorKey: 'title',
+                filterFn: 'includesString',
                 meta: { label: 'Title' },
                 header: ({ column }) => (
                     <DataTableColumnHeader column={column} title={t('Title')} />

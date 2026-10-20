@@ -1,23 +1,19 @@
-'use client';
-
+import * as React from 'react';
 import {
+    useTable,
     type ColumnDef,
+    type ReactTable,
     type ColumnFiltersState,
+    type ColumnVisibilityState,
+    type RowData,
     type RowSelectionState,
     type SortingState,
-    type Table as TableInstance,
-    type VisibilityState,
-    flexRender,
-    getCoreRowModel,
-    getFacetedRowModel,
-    getFacetedUniqueValues,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    useReactTable,
 } from '@tanstack/react-table';
-import * as React from 'react';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
+import {
+    dataTableFeatures,
+    type DataTableFeatures,
+} from '@/components/data-table/data-table-features';
 import {
     Table,
     TableBody,
@@ -28,11 +24,11 @@ import {
 } from '@/components/ui/table';
 import { useTrans } from '@/hooks/use-trans';
 
-type DataTableProps<TData, TValue> = {
-    columns: ColumnDef<TData, TValue>[];
+type DataTableProps<TData extends RowData> = {
+    columns: ColumnDef<DataTableFeatures, TData>[];
     data: TData[];
     // Filters, search, and view options. Receives the table so it can read and change state.
-    toolbar?: (table: TableInstance<TData>) => React.ReactNode;
+    toolbar?: (table: ReactTable<DataTableFeatures, TData>) => React.ReactNode;
     initialPageSize?: number;
     pageSizes?: number[];
     getRowId?: (row: TData, index: number) => string;
@@ -40,9 +36,43 @@ type DataTableProps<TData, TValue> = {
     emptyMessage?: string;
 };
 
+type UseDataTableOptions<TData extends RowData> = Pick<
+    DataTableProps<TData>,
+    'columns' | 'data' | 'getRowId' | 'enableRowSelection' | 'initialPageSize'
+>;
+
+function useDataTable<TData extends RowData>(
+    props: UseDataTableOptions<TData>,
+) {
+    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(
+        {},
+    );
+    const [columnVisibility, setColumnVisibility] =
+        React.useState<ColumnVisibilityState>({});
+    const [columnFilters, setColumnFilters] =
+        React.useState<ColumnFiltersState>([]);
+    const [sorting, setSorting] = React.useState<SortingState>([]);
+
+    return useTable({
+        features: dataTableFeatures,
+        data: props.data,
+        columns: props.columns,
+        getRowId: props.getRowId,
+        state: { sorting, columnVisibility, rowSelection, columnFilters },
+        initialState: {
+            pagination: { pageIndex: 0, pageSize: props.initialPageSize ?? 10 },
+        },
+        enableRowSelection: props.enableRowSelection ?? true,
+        onRowSelectionChange: setRowSelection,
+        onSortingChange: setSorting,
+        onColumnFiltersChange: setColumnFilters,
+        onColumnVisibilityChange: setColumnVisibility,
+    });
+}
+
 // A reusable table with sorting, filtering (with facets), column visibility,
-// row selection, and pagination. Columns and filters are provided by the caller.
-export function DataTable<TData, TValue>({
+// row selection, and pagination. Columns and the toolbar come from the caller.
+export function DataTable<TData extends RowData>({
     columns,
     data,
     toolbar,
@@ -51,41 +81,14 @@ export function DataTable<TData, TValue>({
     getRowId,
     enableRowSelection = true,
     emptyMessage,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData>) {
     const t = useTrans();
-    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(
-        {},
-    );
-    const [columnVisibility, setColumnVisibility] =
-        React.useState<VisibilityState>({});
-    const [columnFilters, setColumnFilters] =
-        React.useState<ColumnFiltersState>([]);
-    const [sorting, setSorting] = React.useState<SortingState>([]);
-
-    const table = useReactTable({
-        data,
+    const table = useDataTable({
         columns,
+        data,
         getRowId,
-        state: {
-            sorting,
-            columnVisibility,
-            rowSelection,
-            columnFilters,
-        },
-        initialState: {
-            pagination: { pageIndex: 0, pageSize: initialPageSize },
-        },
         enableRowSelection,
-        onRowSelectionChange: setRowSelection,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
-        onColumnVisibilityChange: setColumnVisibility,
-        getCoreRowModel: getCoreRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFacetedRowModel: getFacetedRowModel(),
-        getFacetedUniqueValues: getFacetedUniqueValues(),
+        initialPageSize,
     });
 
     return (
@@ -102,13 +105,9 @@ export function DataTable<TData, TValue>({
                                         key={header.id}
                                         colSpan={header.colSpan}
                                     >
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                  header.column.columnDef
-                                                      .header,
-                                                  header.getContext(),
-                                              )}
+                                        {header.isPlaceholder ? null : (
+                                            <table.FlexRender header={header} />
+                                        )}
                                     </TableHead>
                                 ))}
                             </TableRow>
@@ -125,10 +124,7 @@ export function DataTable<TData, TValue>({
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext(),
-                                            )}
+                                            <table.FlexRender cell={cell} />
                                         </TableCell>
                                     ))}
                                 </TableRow>

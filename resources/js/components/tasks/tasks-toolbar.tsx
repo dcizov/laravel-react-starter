@@ -1,4 +1,5 @@
-import type { Table } from '@tanstack/react-table';
+import type { ReactTable } from '@tanstack/react-table';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { X } from 'lucide-react';
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter';
 import { DataTableViewOptions } from '@/components/data-table/data-table-view-options';
@@ -8,9 +9,13 @@ import { Input } from '@/components/ui/input';
 import { useTrans } from '@/hooks/use-trans';
 
 // Filters above the task table: title search, status and priority facets, and column visibility.
-export function TasksToolbar({ table }: { table: Table<Task> }) {
+export function TasksToolbar({
+    table,
+}: {
+    table: ReactTable<DataTableFeatures, Task>;
+}) {
     const t = useTrans();
-    const filtered = table.getState().columnFilters.length > 0;
+    const filtered = table.state.columnFilters.length > 0;
 
     return (
         <div className="flex items-center justify-between gap-2">

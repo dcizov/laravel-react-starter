@@ -31,7 +31,8 @@ export const priorities = [
 ];
 
 export type Task = {
-    id: string;
+    id: number;
+    code: string;
     title: string;
     status: string;
     label: string;

@@ -1,10 +1,11 @@
-import type { Table } from '@tanstack/react-table';
+import type { ReactTable, RowData } from '@tanstack/react-table';
 import {
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
     ChevronsRight,
 } from 'lucide-react';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -16,26 +17,22 @@ import {
 import { useTrans } from '@/hooks/use-trans';
 
 // Selection summary, rows per page, and page controls for a DataTable.
-export function DataTablePagination<TData>({
+export function DataTablePagination<TData extends RowData>({
     table,
     pageSizes,
 }: {
-    table: Table<TData>;
+    table: ReactTable<DataTableFeatures, TData>;
     pageSizes: number[];
 }) {
     const t = useTrans();
     const selected = table.getFilteredSelectedRowModel().rows.length;
     const total = table.getFilteredRowModel().rows.length;
-    const pageIndex = table.getState().pagination.pageIndex;
-    const pageSize = table.getState().pagination.pageSize;
+    const { pageIndex, pageSize } = table.state.pagination;
 
     return (
         <div className="flex items-center justify-between px-2">
             <div className="flex-1 text-sm text-muted-foreground">
-                {t(':selected of :total row(s) selected.', {
-                    selected,
-                    total,
-                })}
+                {t(':selected of :total row(s) selected.', { selected, total })}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
                 <div className="flex items-center space-x-2">

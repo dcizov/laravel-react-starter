@@ -8,13 +8,13 @@ import { toast } from '@/components/ui/toast';
 import { useTrans } from '@/hooks/use-trans';
 import { index as tasksIndex } from '@/routes/tasks';
 
-// Row edits and deletes only change this page's state. The server keeps no task records yet.
+// Label changes and deletes only change this page's state. They are not saved to the database yet.
 export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
     const t = useTrans();
     const [tasks, setTasks] = useState(initialTasks);
 
     const changeLabel = useCallback(
-        (id: string, label: string) => {
+        (id: number, label: string) => {
             setTasks((current) =>
                 current.map((task) =>
                     task.id === id ? { ...task, label } : task,
@@ -26,15 +26,17 @@ export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
     );
 
     const deleteTask = useCallback(
-        (id: string) => {
+        (id: number) => {
+            const code = tasks.find((task) => task.id === id)?.code;
+
             setTasks((current) => current.filter((task) => task.id !== id));
             toast.add({
                 type: 'success',
                 title: t('Task deleted.'),
-                description: id,
+                description: code,
             });
         },
-        [t],
+        [t, tasks],
     );
 
     const columns = useTaskColumns({
@@ -59,7 +61,7 @@ export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
                 <DataTable
                     columns={columns}
                     data={tasks}
-                    getRowId={(row) => row.id}
+                    getRowId={(row) => String(row.id)}
                     pageSizes={pageSizes}
                     enableRowSelection
                     emptyMessage={t('No tasks found.')}
