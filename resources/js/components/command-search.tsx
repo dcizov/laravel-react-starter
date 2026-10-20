@@ -1,10 +1,12 @@
 import { router, usePage } from '@inertiajs/react';
+import { ArrowDown, ArrowUp, CornerDownLeft } from 'lucide-react';
 import { ShortcutHint } from '@/components/shortcut-hint';
 import {
     flattenSidebarLinks,
     visibleSidebarGroups,
     type SidebarLink,
 } from '@/components/sidebar-items';
+import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import {
     CommandDialog,
     CommandEmpty,
@@ -90,6 +92,34 @@ export function CommandSearch({ open, onOpenChange, onToggleTheme }: Props) {
                     </CommandItem>
                 </CommandGroup>
             </CommandList>
+
+            <div className="flex items-center gap-4 border-t px-3 py-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                    <KbdGroup>
+                        <Kbd>
+                            <CornerDownLeft />
+                        </Kbd>
+                    </KbdGroup>
+                    {t('Open')}
+                </span>
+                <span className="flex items-center gap-1.5">
+                    <KbdGroup>
+                        <Kbd>
+                            <ArrowUp />
+                        </Kbd>
+                        <Kbd>
+                            <ArrowDown />
+                        </Kbd>
+                    </KbdGroup>
+                    {t('Navigate')}
+                </span>
+                <span className="ml-auto flex items-center gap-1.5">
+                    <KbdGroup>
+                        <Kbd>Esc</Kbd>
+                    </KbdGroup>
+                    {t('Close')}
+                </span>
+            </div>
         </CommandDialog>
     );
 }
