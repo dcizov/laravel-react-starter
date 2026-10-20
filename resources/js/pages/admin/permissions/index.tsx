@@ -63,6 +63,12 @@ export default function Permissions({
                     getRowId={(row) => String(row.id)}
                     pageSizes={pageSizes}
                     emptyMessage={t('No permissions yet.')}
+                    toolbar={{
+                        search: {
+                            column: 'name',
+                            placeholder: t('Filter permissions...'),
+                        },
+                    }}
                 />
             </div>
         </>

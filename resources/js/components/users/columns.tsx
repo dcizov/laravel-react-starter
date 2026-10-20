@@ -1,9 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import * as React from 'react';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
-import type { AccountUser } from '@/components/users/data';
-import { roleLabels } from '@/components/users/data';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import {
     Select,
     SelectContent,
@@ -11,6 +9,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import type { AccountUser } from '@/components/users/data';
+import { roleLabels } from '@/components/users/data';
 import { useTrans } from '@/hooks/use-trans';
 
 type UserActions = {
@@ -55,6 +55,8 @@ export function useUserColumns({
             {
                 accessorKey: 'role',
                 meta: { label: 'Role' },
+                filterFn: (row, id, value: string[]) =>
+                    value.includes(row.getValue(id)),
                 header: ({ column }) => (
                     <DataTableColumnHeader column={column} title={t('Role')} />
                 ),

@@ -2,9 +2,9 @@ import { Head, router } from '@inertiajs/react';
 import { useCallback, useMemo } from 'react';
 import { updateRole } from '@/actions/App/Http/Controllers/UserController';
 import { DataTable } from '@/components/data-table/data-table';
-import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/toast';
 import { useUserColumns } from '@/components/users/columns';
+import { roleLabels } from '@/components/users/data';
 import type { AccountUser } from '@/components/users/data';
 import { useTrans } from '@/hooks/use-trans';
 import { index as usersIndex } from '@/routes/users';
@@ -19,21 +19,25 @@ export default function Users({
 }) {
     const t = useTrans();
 
-    const changeRole = useCallback((user: AccountUser, role: string) => {
-        router.patch(
-            updateRole.url(user.id),
-            { role },
-            {
-                preserveScroll: true,
-                onError: (errors) => {
-                    toast.add({
-                        type: 'error',
-                        title: errors.role ?? t('Could not change the role.'),
-                    });
+    const changeRole = useCallback(
+        (user: AccountUser, role: string) => {
+            router.patch(
+                updateRole.url(user.id),
+                { role },
+                {
+                    preserveScroll: true,
+                    onError: (errors) => {
+                        toast.add({
+                            type: 'error',
+                            title:
+                                errors.role ?? t('Could not change the role.'),
+                        });
+                    },
                 },
-            },
-        );
-    }, [t]);
+            );
+        },
+        [t],
+    );
 
     const columns = useUserColumns({ roles, onRoleChange: changeRole });
     const pageSizes = useMemo(() => [10, 20, 30, 40, 50], []);
@@ -57,24 +61,22 @@ export default function Users({
                     getRowId={(row) => String(row.id)}
                     pageSizes={pageSizes}
                     emptyMessage={t('No users found.')}
-                    toolbar={(table) => (
-                        <div className="flex items-center gap-2">
-                            <Input
-                                placeholder={t('Filter users...')}
-                                value={
-                                    (table
-                                        .getColumn('name')
-                                        ?.getFilterValue() as string) ?? ''
-                                }
-                                onChange={(event) =>
-                                    table
-                                        .getColumn('name')
-                                        ?.setFilterValue(event.target.value)
-                                }
-                                className="h-8 w-[150px] lg:w-[250px]"
-                            />
-                        </div>
-                    )}
+                    toolbar={{
+                        search: {
+                            column: 'name',
+                            placeholder: t('Filter users...'),
+                        },
+                        filters: [
+                            {
+                                column: 'role',
+                                title: t('Role'),
+                                options: roles.map((role) => ({
+                                    value: role,
+                                    label: t(roleLabels[role] ?? role),
+                                })),
+                            },
+                        ],
+                    }}
                 />
             </div>
         </>

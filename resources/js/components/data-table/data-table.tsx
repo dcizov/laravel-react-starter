@@ -1,19 +1,18 @@
-import * as React from 'react';
-import {
-    useTable,
-    type ColumnDef,
-    type ReactTable,
-    type ColumnFiltersState,
-    type ColumnVisibilityState,
-    type RowData,
-    type RowSelectionState,
-    type SortingState,
+import { useTable } from '@tanstack/react-table';
+import type {
+    ColumnDef,
+    ColumnFiltersState,
+    ColumnVisibilityState,
+    RowData,
+    RowSelectionState,
+    SortingState,
 } from '@tanstack/react-table';
+import * as React from 'react';
+import { dataTableFeatures } from '@/components/data-table/data-table-features';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
-import {
-    dataTableFeatures,
-    type DataTableFeatures,
-} from '@/components/data-table/data-table-features';
+import { DataTableToolbar } from '@/components/data-table/data-table-toolbar';
+import type { DataTableToolbarOptions } from '@/components/data-table/data-table-toolbar';
 import {
     Table,
     TableBody,
@@ -27,8 +26,8 @@ import { useTrans } from '@/hooks/use-trans';
 type DataTableProps<TData extends RowData> = {
     columns: ColumnDef<DataTableFeatures, TData>[];
     data: TData[];
-    // Filters, search, and view options. Receives the table so it can read and change state.
-    toolbar?: (table: ReactTable<DataTableFeatures, TData>) => React.ReactNode;
+    // Search, filters, actions, and view options. Omit for the defaults (View menu only).
+    toolbar?: DataTableToolbarOptions<TData>;
     initialPageSize?: number;
     pageSizes?: number[];
     getRowId?: (row: TData, index: number) => string;
@@ -93,7 +92,7 @@ export function DataTable<TData extends RowData>({
 
     return (
         <div className="flex flex-col gap-4">
-            {toolbar?.(table)}
+            <DataTableToolbar table={table} options={toolbar ?? {}} />
 
             <div className="overflow-hidden rounded-md border">
                 <Table>

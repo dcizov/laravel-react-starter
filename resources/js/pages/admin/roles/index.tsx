@@ -159,6 +159,12 @@ export default function Roles({ roles }: { roles: RoleRow[] }) {
                     getRowId={(row) => String(row.id)}
                     pageSizes={pageSizes}
                     emptyMessage={t('No roles yet.')}
+                    toolbar={{
+                        search: {
+                            column: 'name',
+                            placeholder: t('Filter roles...'),
+                        },
+                    }}
                 />
             </div>
 

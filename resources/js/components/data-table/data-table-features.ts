@@ -1,4 +1,3 @@
-import type { CellData, RowData, TableFeatures } from '@tanstack/table-core';
 import {
     columnFacetingFeature,
     columnFilteringFeature,
@@ -16,6 +15,7 @@ import {
     sortFn_text,
     tableFeatures,
 } from '@tanstack/react-table';
+import type { CellData, RowData, TableFeatures } from '@tanstack/table-core';
 
 // TanStack Table v9 is feature based. Only the features listed here are included in the bundle.
 // Every DataTable, column, and toolbar component shares this object, so they all agree on the APIs.
@@ -39,6 +39,8 @@ export const dataTableFeatures = tableFeatures({
 export type DataTableFeatures = typeof dataTableFeatures;
 
 declare module '@tanstack/table-core' {
+    // The generics must match the library's ColumnMeta declaration, even though this body does not use them.
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     interface ColumnMeta<
         TFeatures extends TableFeatures,
         TData extends RowData,
@@ -47,4 +49,5 @@ declare module '@tanstack/table-core' {
         // The label shown in the View menu. It is translated where it is rendered.
         label?: string;
     }
+    /* eslint-enable @typescript-eslint/no-unused-vars */
 }

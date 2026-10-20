@@ -4,9 +4,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { destroy, update } from '@/actions/App/Http/Controllers/TaskController';
 import { DataTable } from '@/components/data-table/data-table';
 import { useTaskColumns } from '@/components/tasks/columns';
+import { priorities, statuses } from '@/components/tasks/data';
 import type { Task } from '@/components/tasks/data';
 import { TaskFormDialog } from '@/components/tasks/task-form-dialog';
-import { TasksToolbar } from '@/components/tasks/tasks-toolbar';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -129,12 +129,40 @@ export default function Tasks({
                         getRowId={(row) => String(row.id)}
                         pageSizes={pageSizes}
                         enableRowSelection
-                        toolbar={(table) => (
-                            <TasksToolbar
-                                table={table}
-                                onCreate={() => openDialog(null)}
-                            />
-                        )}
+                        toolbar={{
+                            search: {
+                                column: 'title',
+                                placeholder: t('Filter tasks...'),
+                            },
+                            filters: [
+                                {
+                                    column: 'status',
+                                    title: t('Status'),
+                                    options: statuses.map((status) => ({
+                                        ...status,
+                                        label: t(status.label),
+                                    })),
+                                },
+                                {
+                                    column: 'priority',
+                                    title: t('Priority'),
+                                    options: priorities.map((priority) => ({
+                                        ...priority,
+                                        label: t(priority.label),
+                                    })),
+                                },
+                            ],
+                            actions: () => (
+                                <Button
+                                    size="sm"
+                                    className="h-8"
+                                    onClick={() => openDialog(null)}
+                                >
+                                    <Plus />
+                                    {t('Create task')}
+                                </Button>
+                            ),
+                        }}
                     />
                 )}
             </div>
