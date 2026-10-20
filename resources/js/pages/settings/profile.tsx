@@ -114,60 +114,6 @@ export default function Profile({
                                     {t('Images')}
                                 </h2>
 
-                                <div className="grid gap-2">
-                                    <div className="relative h-24 w-full overflow-hidden rounded-lg border bg-muted md:h-28">
-                                        {shownHeader && (
-                                            <img
-                                                src={shownHeader}
-                                                alt=""
-                                                className="size-full object-cover"
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <Input
-                                            ref={headerInput}
-                                            id="header"
-                                            name="header"
-                                            type="file"
-                                            accept="image/*"
-                                            aria-label={t('Header image')}
-                                            className="max-w-xs"
-                                            onChange={(event) =>
-                                                chooseHeader(
-                                                    event.target.files?.[0],
-                                                )
-                                            }
-                                        />
-
-                                        {shownHeader && (
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={removeHeaderImage}
-                                            >
-                                                {t('Remove header image')}
-                                            </Button>
-                                        )}
-                                    </div>
-
-                                    <input
-                                        type="hidden"
-                                        name="remove_header"
-                                        value={removeHeader ? '1' : '0'}
-                                    />
-
-                                    <p className="text-sm text-muted-foreground">
-                                        {t(
-                                            'JPG, PNG, GIF or WebP, up to 4 MB.',
-                                        )}
-                                    </p>
-
-                                    <InputError message={errors.header} />
-                                </div>
-
                                 <div className="flex flex-wrap items-center gap-4">
                                     <Avatar className="size-14">
                                         <AvatarImage
@@ -225,6 +171,60 @@ export default function Profile({
                                     name="remove_avatar"
                                     value={removeAvatar ? '1' : '0'}
                                 />
+
+                                <div className="grid gap-2">
+                                    <div className="relative h-24 w-full overflow-hidden rounded-lg border bg-muted md:h-28">
+                                        {shownHeader && (
+                                            <img
+                                                src={shownHeader}
+                                                alt=""
+                                                className="size-full object-cover"
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Input
+                                            ref={headerInput}
+                                            id="header"
+                                            name="header"
+                                            type="file"
+                                            accept="image/*"
+                                            aria-label={t('Header image')}
+                                            className="max-w-xs"
+                                            onChange={(event) =>
+                                                chooseHeader(
+                                                    event.target.files?.[0],
+                                                )
+                                            }
+                                        />
+
+                                        {shownHeader && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={removeHeaderImage}
+                                            >
+                                                {t('Remove header image')}
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <input
+                                        type="hidden"
+                                        name="remove_header"
+                                        value={removeHeader ? '1' : '0'}
+                                    />
+
+                                    <p className="text-sm text-muted-foreground">
+                                        {t(
+                                            'JPG, PNG, GIF or WebP, up to 4 MB.',
+                                        )}
+                                    </p>
+
+                                    <InputError message={errors.header} />
+                                </div>
                             </section>
 
                             <Separator />

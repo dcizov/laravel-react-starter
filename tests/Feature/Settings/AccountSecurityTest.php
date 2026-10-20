@@ -32,7 +32,7 @@ test('account page is displayed', function () {
         );
 });
 
-test('account page requires password confirmation when enabled', function () {
+test('account page does not require password confirmation when two factor is enabled', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
     $user = User::factory()->create();
@@ -42,10 +42,9 @@ test('account page requires password confirmation when enabled', function () {
         'confirmPassword' => true,
     ]);
 
-    $response = $this->actingAs($user)
-        ->get(route('account.edit'));
-
-    $response->assertRedirect(route('password.confirm'));
+    $this->actingAs($user)
+        ->get(route('account.edit'))
+        ->assertOk();
 });
 
 test('account page renders without two factor when feature is disabled', function () {

@@ -2,6 +2,7 @@ import '@fontsource-variable/instrument-sans';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/manrope';
 import { createInertiaApp } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import { AppToaster } from '@/components/app-toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -11,29 +12,32 @@ import SettingsLayout from '@/layouts/settings/layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+// The outermost layout. It renders the toaster inside the Inertia page context, so
+// toasts can use usePage (for translations) and survive page changes.
+function WithToaster({ children }: { children: ReactNode }) {
+    return (
+        <TooltipProvider delay={0}>
+            {children}
+            <AppToaster />
+        </TooltipProvider>
+    );
+}
+
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
             case name === 'welcome':
-                return null;
+                return WithToaster;
             case name.startsWith('auth/'):
-                return AuthLayout;
+                return [WithToaster, AuthLayout];
             case name.startsWith('settings/'):
-                return [AppLayout, SettingsLayout];
+                return [WithToaster, AppLayout, SettingsLayout];
             default:
-                return AppLayout;
+                return [WithToaster, AppLayout];
         }
     },
     strictMode: true,
-    withApp(app) {
-        return (
-            <TooltipProvider delay={0}>
-                {app}
-                <AppToaster />
-            </TooltipProvider>
-        );
-    },
     progress: {
         color: '#4B5563',
     },

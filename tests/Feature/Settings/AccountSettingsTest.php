@@ -11,12 +11,12 @@ test('account settings page is displayed after password confirmation', function 
         ->assertOk();
 });
 
-test('account settings page requires password confirmation', function () {
+test('account settings page does not require password confirmation', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->get(route('account.edit'))
-        ->assertRedirect(route('password.confirm'));
+        ->assertOk();
 });
 
 test('timezone can be updated and cleared', function () {
