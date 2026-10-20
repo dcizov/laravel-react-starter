@@ -10,6 +10,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
@@ -145,10 +146,9 @@ export default function TwoFactorRecoveryCodes({
                                         >
                                             {recoveryCodePlaceholders.map(
                                                 (placeholder) => (
-                                                    <div
+                                                    <Skeleton
                                                         key={placeholder}
-                                                        className="h-4 animate-pulse rounded bg-muted-foreground/20"
-                                                        aria-hidden="true"
+                                                        className="h-4 rounded"
                                                     />
                                                 ),
                                             )}

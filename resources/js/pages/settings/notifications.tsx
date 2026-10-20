@@ -3,11 +3,12 @@ import ContentSection from '@/components/settings/content-section';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Field } from '@/components/ui/field';
 import { FieldError } from '@/components/ui/field';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/notifications';
 
@@ -107,11 +108,8 @@ export default function Notifications({
                     <div className="grid gap-3">
                         <h4 className="text-sm font-medium">{t('Email')}</h4>
                         {emailChannels.map((channel) => (
-                            <div
-                                key={channel.key}
-                                className="flex items-center gap-2"
-                            >
-                                <Checkbox
+                            <Field orientation="horizontal" key={channel.key}>
+                                <Switch
                                     id={`notify-${channel.key}`}
                                     checked={form.data[channel.key]}
                                     onCheckedChange={(checked) =>
@@ -121,14 +119,14 @@ export default function Notifications({
                                 <Label htmlFor={`notify-${channel.key}`}>
                                     {t(channel.label)}
                                 </Label>
-                            </div>
+                            </Field>
                         ))}
                     </div>
 
                     <div className="grid gap-3">
                         <h4 className="text-sm font-medium">{t('Mobile')}</h4>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
+                        <Field orientation="horizontal">
+                            <Switch
                                 id="notify-mobile"
                                 checked={form.data.mobile}
                                 onCheckedChange={(checked) =>
@@ -138,7 +136,7 @@ export default function Notifications({
                             <Label htmlFor="notify-mobile">
                                 {t('Push notifications on mobile')}
                             </Label>
-                        </div>
+                        </Field>
                     </div>
 
                     <Button type="submit" disabled={form.processing}>

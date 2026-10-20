@@ -2,10 +2,11 @@ import { Head, useForm } from '@inertiajs/react';
 import ContentSection from '@/components/settings/content-section';
 import { displayGroups } from '@/components/sidebar-items';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Field } from '@/components/ui/field';
 import { FieldError } from '@/components/ui/field';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/display';
 
@@ -48,11 +49,11 @@ export default function Display({ items }: { items: string[] }) {
                                     {t(group.title)}
                                 </legend>
                                 {group.items.map((item) => (
-                                    <div
+                                    <Field
+                                        orientation="horizontal"
                                         key={item.id}
-                                        className="flex items-center gap-2"
                                     >
-                                        <Checkbox
+                                        <Switch
                                             id={`display-${item.id}`}
                                             checked={form.data.items.includes(
                                                 item.id,
@@ -64,7 +65,7 @@ export default function Display({ items }: { items: string[] }) {
                                         <Label htmlFor={`display-${item.id}`}>
                                             {t(item.title)}
                                         </Label>
-                                    </div>
+                                    </Field>
                                 ))}
                             </fieldset>
                         ))}

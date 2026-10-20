@@ -18,7 +18,7 @@ export function UserInfo({
                     src={user.avatar_url ?? undefined}
                     alt={user.name}
                 />
-                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                <AvatarFallback className="rounded-lg">
                     {getInitials(user.name)}
                 </AvatarFallback>
             </Avatar>

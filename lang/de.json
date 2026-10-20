@@ -383,5 +383,7 @@
     "Copy setup key": "Setup-Schlüssel kopieren",
     "Clear search": "Suche löschen",
     "Hide password": "Passwort verbergen",
-    "Show password": "Passwort anzeigen"
+    "Show password": "Passwort anzeigen",
+    "Search timezones": "Zeitzonen suchen",
+    "No timezone found.": "Keine Zeitzone gefunden."
 }

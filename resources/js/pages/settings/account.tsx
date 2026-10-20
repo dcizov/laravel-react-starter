@@ -4,6 +4,14 @@ import ContentSection from '@/components/settings/content-section';
 import SecuritySettings from '@/components/settings/security-settings';
 import type { SecuritySettingsProps } from '@/components/settings/security-settings';
 import { Button } from '@/components/ui/button';
+import {
+    Combobox,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList,
+} from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
@@ -132,23 +140,31 @@ export default function Account({
                         <FieldLabel htmlFor="timezone">
                             {t('Timezone')}
                         </FieldLabel>
-                        <Select
+                        <Combobox
+                            items={timezones}
                             value={form.data.timezone}
                             onValueChange={(value) =>
                                 form.setData('timezone', value ?? 'UTC')
                             }
                         >
-                            <SelectTrigger id="timezone" className="w-full">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {timezones.map((zone) => (
-                                    <SelectItem key={zone} value={zone}>
-                                        {zone}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            <ComboboxInput
+                                id="timezone"
+                                placeholder={t('Search timezones')}
+                                className="w-full"
+                            />
+                            <ComboboxContent>
+                                <ComboboxEmpty>
+                                    {t('No timezone found.')}
+                                </ComboboxEmpty>
+                                <ComboboxList>
+                                    {(zone: string) => (
+                                        <ComboboxItem key={zone} value={zone}>
+                                            {zone}
+                                        </ComboboxItem>
+                                    )}
+                                </ComboboxList>
+                            </ComboboxContent>
+                        </Combobox>
                         <p className="text-sm text-muted-foreground">
                             {t(
                                 'Used to show times on your profile in your local time.',
