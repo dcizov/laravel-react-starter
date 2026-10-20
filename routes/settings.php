@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Settings\DisplayController;
 use App\Http\Controllers\Settings\GeneralController;
+use App\Http\Controllers\Settings\NotificationsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
@@ -15,6 +17,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('settings/display', [DisplayController::class, 'edit'])->name('display.edit');
+    Route::patch('settings/display', [DisplayController::class, 'update'])->name('display.update');
+
+    Route::get('settings/notifications', [NotificationsController::class, 'edit'])->name('notifications.edit');
+    Route::patch('settings/notifications', [NotificationsController::class, 'update'])->name('notifications.update');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

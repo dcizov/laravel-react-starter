@@ -1,6 +1,15 @@
-import { Palette, ShieldCheck, SlidersHorizontal, User } from 'lucide-react';
+import {
+    Bell,
+    Monitor,
+    Palette,
+    ShieldCheck,
+    SlidersHorizontal,
+    User,
+} from 'lucide-react';
 import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editDisplay } from '@/routes/display';
 import { edit as editGeneral } from '@/routes/general';
+import { edit as editNotifications } from '@/routes/notifications';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
@@ -26,5 +35,15 @@ export const settingsNavItems: NavItem[] = [
         title: 'Appearance',
         href: editAppearance(),
         icon: Palette,
+    },
+    {
+        title: 'Notifications',
+        href: editNotifications(),
+        icon: Bell,
+    },
+    {
+        title: 'Display',
+        href: editDisplay(),
+        icon: Monitor,
     },
 ];
