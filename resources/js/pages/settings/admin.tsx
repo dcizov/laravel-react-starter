@@ -78,9 +78,14 @@ export default function AdminSettingsPage({
             preserveScroll: true,
             onSuccess: () => {
                 setFileKey((key) => key + 1);
+                // The saved state has no pending logo, so the baseline must not keep the uploaded file.
+                form.setDefaults({
+                    ...form.data,
+                    logo: null,
+                    remove_logo: false,
+                });
                 form.setData('logo', null);
                 form.setData('remove_logo', false);
-                form.setDefaults();
             },
         });
     };

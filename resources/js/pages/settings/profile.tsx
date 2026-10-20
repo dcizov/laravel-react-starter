@@ -106,9 +106,10 @@ export default function Profile({
                         setHeaderPreview(null);
                         setRemoveHeader(false);
                     }}
+                    setDefaultsOnSuccess
                     className="space-y-6"
                 >
-                    {({ processing, errors }) => (
+                    {({ processing, errors, isDirty }) => (
                         <>
                             <section className="space-y-4">
                                 <h2 className="text-sm font-medium">
@@ -389,7 +390,7 @@ export default function Profile({
                             <div className="flex items-center gap-4">
                                 <Button
                                     type="submit"
-                                    disabled={processing}
+                                    disabled={processing || !isDirty}
                                     data-test="update-profile-button"
                                 >
                                     {processing && <Spinner />}

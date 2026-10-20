@@ -54,7 +54,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                     }}
                     className="space-y-6"
                 >
-                    {({ errors, processing }) => (
+                    {({ errors, processing, isDirty }) => (
                         <>
                             <Field data-invalid={!!errors.current_password}>
                                 <FieldLabel htmlFor="current_password">
@@ -117,7 +117,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                             <div className="flex items-center gap-4">
                                 <Button
                                     type="submit"
-                                    disabled={processing}
+                                    disabled={processing || !isDirty}
                                     data-test="update-password-button"
                                 >
                                     {processing && <Spinner />}
