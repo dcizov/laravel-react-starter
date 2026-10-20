@@ -70,7 +70,9 @@ export default function General({ timezone, locale }: Props) {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <Button disabled={processing}>Save</Button>
+                                <Button type="submit" disabled={processing}>
+                                    Save
+                                </Button>
                             </div>
                         </>
                     )}
