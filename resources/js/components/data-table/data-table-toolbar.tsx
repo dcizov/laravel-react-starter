@@ -101,7 +101,8 @@ export function DataTableToolbar<TData extends RowData>({
                     <Button
                         variant="ghost"
                         onClick={() => table.resetColumnFilters()}
-                        className="h-8 px-2 lg:px-3"
+                        size="sm"
+                        className="px-2 lg:px-3"
                     >
                         {t('Reset')}
                         <X />

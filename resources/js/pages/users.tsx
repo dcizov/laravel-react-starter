@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { useCallback, useMemo } from 'react';
 import { updateRole } from '@/actions/App/Http/Controllers/UserController';
 import { DataTable } from '@/components/data-table/data-table';
+import PageHeader from '@/components/page-header';
 import { toast } from '@/components/ui/toast';
 import { useUserColumns } from '@/components/users/columns';
 import { roleLabels } from '@/components/users/data';
@@ -46,14 +47,12 @@ export default function Users({
         <>
             <Head title={t('Users')} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        {t('Users')}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {t('Manage the roles of everyone with an account.')}
-                    </p>
-                </div>
+                <PageHeader
+                    title={t('Users')}
+                    description={t(
+                        'Manage the roles of everyone with an account.',
+                    )}
+                />
 
                 <DataTable
                     columns={columns}

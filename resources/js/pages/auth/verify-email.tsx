@@ -3,9 +3,9 @@ import { Form, Head } from '@inertiajs/react';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { logout } from '@/routes';
-import { send } from '@/routes/verification';
 import { useTrans } from '@/hooks/use-trans';
+import { send } from '@/routes/verification';
+import { logout } from '@/routes';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     const t = useTrans();

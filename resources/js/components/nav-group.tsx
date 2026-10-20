@@ -1,10 +1,10 @@
 import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
-import {
-    isCollapsible,
-    type SidebarCollapsible,
-    type SidebarEntry,
-    type SidebarLink,
+import { isCollapsible } from '@/components/sidebar-items';
+import type {
+    SidebarCollapsible,
+    SidebarEntry,
+    SidebarLink,
 } from '@/components/sidebar-items';
 import {
     Collapsible,

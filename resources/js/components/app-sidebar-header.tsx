@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { CommandSearch } from '@/components/command-search';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -13,14 +14,13 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useTrans } from '@/hooks/use-trans';
-import { cn } from '@/lib/utils';
 import { isMac, modifierKeys } from '@/lib/shortcuts';
+import { cn } from '@/lib/utils';
 import { edit as editAccount } from '@/routes/account';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editProfile } from '@/routes/profile';
 import { show as showUserProfile } from '@/routes/user-profile';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { useEffect, useState } from 'react';
 import { logout } from '@/routes';
 
 // Top bar above the page content: sidebar toggle, breadcrumbs, search, and quick actions.

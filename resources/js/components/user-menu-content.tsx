@@ -10,12 +10,12 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { useTrans } from '@/hooks/use-trans';
-import { logout } from '@/routes';
 import { edit as editAccount } from '@/routes/account';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editProfile } from '@/routes/profile';
 import { show as showUserProfile } from '@/routes/user-profile';
 import type { User } from '@/types';
+import { logout } from '@/routes';
 
 type Props = {
     user: User;

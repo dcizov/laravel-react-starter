@@ -4,6 +4,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DataTable } from '@/components/data-table/data-table';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
+import PageHeader from '@/components/page-header';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -133,25 +134,21 @@ export default function Roles({ roles }: { roles: RoleRow[] }) {
         <>
             <Head title={t('Roles')} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="space-y-1">
-                        <h1 className="text-2xl font-bold tracking-tight">
-                            {t('Roles')}
-                        </h1>
-                        <p className="text-muted-foreground">
-                            {t(
-                                'Group permissions into roles and give roles to users.',
-                            )}
-                        </p>
-                    </div>
-                    <Link
-                        href={create.url()}
-                        className={cn(buttonVariants({ size: 'default' }))}
-                    >
-                        <Plus />
-                        {t('Create role')}
-                    </Link>
-                </div>
+                <PageHeader
+                    title={t('Roles')}
+                    description={t(
+                        'Group permissions into roles and give roles to users.',
+                    )}
+                    actions={
+                        <Link
+                            href={create.url()}
+                            className={cn(buttonVariants({ size: 'default' }))}
+                        >
+                            <Plus />
+                            {t('Create role')}
+                        </Link>
+                    }
+                />
 
                 <DataTable
                     columns={columns}

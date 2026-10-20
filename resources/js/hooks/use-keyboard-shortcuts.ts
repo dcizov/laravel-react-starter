@@ -4,8 +4,8 @@ import {
     isShortcutComplete,
     isShortcutPrefix,
     shortcuts,
-    type ShortcutId,
 } from '@/lib/shortcuts';
+import type { ShortcutId } from '@/lib/shortcuts';
 
 export type ShortcutHandlers = Partial<Record<ShortcutId, () => void>>;
 

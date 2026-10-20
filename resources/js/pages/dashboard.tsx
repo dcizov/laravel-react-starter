@@ -10,6 +10,7 @@ import {
     Users,
 } from 'lucide-react';
 import type { ComponentProps } from 'react';
+import PageHeader from '@/components/page-header';
 import { statuses, priorities } from '@/components/tasks/data';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -137,29 +138,27 @@ export default function Dashboard({
         <>
             <Head title={t('Dashboard')} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-                <div className="flex flex-wrap items-end justify-between gap-4">
-                    <div className="space-y-1">
-                        <h1 className="text-2xl font-bold tracking-tight">
-                            {t('Welcome back, :name', {
-                                name: auth.user.name,
-                            })}
-                        </h1>
-                        <p className="text-muted-foreground">
-                            {empty
-                                ? t('There are no tasks yet.')
-                                : t('Here is where your tasks stand today.')}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Link
-                            href={tasksIndex()}
-                            className={cn(buttonVariants({ size: 'sm' }))}
-                        >
-                            <Plus />
-                            {t('Create task')}
-                        </Link>
-                    </div>
-                </div>
+                <PageHeader
+                    title={t('Welcome back, :name', {
+                        name: auth.user.name,
+                    })}
+                    description={
+                        empty
+                            ? t('There are no tasks yet.')
+                            : t('Here is where your tasks stand today.')
+                    }
+                    actions={
+                        <>
+                            <Link
+                                href={tasksIndex()}
+                                className={cn(buttonVariants({ size: 'sm' }))}
+                            >
+                                <Plus />
+                                {t('Create task')}
+                            </Link>
+                        </>
+                    }
+                />
 
                 <Tabs defaultValue="overview" className="space-y-4">
                     <TabsList>

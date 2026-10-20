@@ -1,7 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useTrans } from '@/hooks/use-trans';
 import { dashboard, login } from '@/routes';
 import { register } from '@/routes';
-import { useTrans } from '@/hooks/use-trans';
 
 export default function Welcome() {
     const t = useTrans();

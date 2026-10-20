@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useMemo } from 'react';
 import type { FormEvent } from 'react';
+import PageHeader from '@/components/page-header';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FieldError } from '@/components/ui/field';
@@ -73,14 +74,10 @@ export default function RoleForm({
                 onSubmit={submit}
                 className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6"
             >
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        {role ? t('Edit role') : t('Create role')}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {t('Choose what people with this role can do.')}
-                    </p>
-                </div>
+                <PageHeader
+                    title={role ? t('Edit role') : t('Create role')}
+                    description={t('Choose what people with this role can do.')}
+                />
 
                 {isAdmin && (
                     <p className="rounded-md border p-3 text-sm text-muted-foreground">

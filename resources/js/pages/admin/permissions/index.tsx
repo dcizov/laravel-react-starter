@@ -3,6 +3,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useMemo } from 'react';
 import { DataTable } from '@/components/data-table/data-table';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
+import PageHeader from '@/components/page-header';
 import { useTrans } from '@/hooks/use-trans';
 import { index as indexPermissions } from '@/routes/admin/permissions';
 
@@ -46,16 +47,12 @@ export default function Permissions({
         <>
             <Head title={t('Permissions')} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        {t('Permissions')}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {t(
-                            'The app defines these permissions in its code. Give them to roles on the Roles page.',
-                        )}
-                    </p>
-                </div>
+                <PageHeader
+                    title={t('Permissions')}
+                    description={t(
+                        'The app defines these permissions in its code. Give them to roles on the Roles page.',
+                    )}
+                />
 
                 <DataTable
                     columns={columns}

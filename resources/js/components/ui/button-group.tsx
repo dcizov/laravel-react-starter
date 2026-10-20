@@ -1,19 +1,19 @@
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
-import * as React from "react"
-
-import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
-// Joins related buttons into one control. Inner corners are squared off and borders overlap.
+import { Separator } from "@/components/ui/separator"
+
 const buttonGroupVariants = cva(
-  "flex w-fit items-stretch [&>*]:focus-visible:relative [&>*]:focus-visible:z-10",
+  "cn-button-group flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
   {
     variants: {
       orientation: {
         horizontal:
-          "[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none",
+          "cn-button-group-orientation-horizontal *:data-slot:rounded-r-none [&>[data-slot]~[data-slot]]:rounded-l-none [&>[data-slot]~[data-slot]]:border-l-0",
         vertical:
-          "flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none",
+          "cn-button-group-orientation-vertical flex-col *:data-slot:rounded-b-none [&>[data-slot]~[data-slot]]:rounded-t-none [&>[data-slot]~[data-slot]]:border-t-0",
       },
     },
     defaultVariants: {
@@ -38,6 +38,29 @@ function ButtonGroup({
   )
 }
 
+function ButtonGroupText({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(
+      {
+        className: cn(
+          "cn-button-group-text flex items-center [&_svg]:pointer-events-none",
+          className
+        ),
+      },
+      props
+    ),
+    render,
+    state: {
+      slot: "button-group-text",
+    },
+  })
+}
+
 function ButtonGroupSeparator({
   className,
   orientation = "vertical",
@@ -48,7 +71,7 @@ function ButtonGroupSeparator({
       data-slot="button-group-separator"
       orientation={orientation}
       className={cn(
-        "bg-input relative !m-0 self-stretch data-[orientation=vertical]:h-auto",
+        "cn-button-group-separator relative self-stretch data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px data-vertical:h-auto",
         className
       )}
       {...props}
@@ -56,18 +79,9 @@ function ButtonGroupSeparator({
   )
 }
 
-function ButtonGroupText({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="button-group-text"
-      className={cn(
-        "bg-muted text-muted-foreground flex items-center gap-2 rounded-md border px-2.5 text-sm shadow-xs",
-        "[&_svg:not([class*='size-'])]:size-4",
-        className
-      )}
-      {...props}
-    />
-  )
+export {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+  buttonGroupVariants,
 }
-
-export { ButtonGroup, ButtonGroupSeparator, ButtonGroupText, buttonGroupVariants }

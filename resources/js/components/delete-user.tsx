@@ -1,8 +1,10 @@
 import { Form } from '@inertiajs/react';
+import { TriangleAlertIcon } from 'lucide-react';
 import { useRef } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/heading';
 import PasswordInput from '@/components/password-input';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -28,100 +30,95 @@ export default function DeleteUser() {
                 title={t('Delete account')}
                 description={t('Delete your account and all of its resources')}
             />
-            <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
-                <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
-                    <p className="font-medium">{t('Warning')}</p>
-                    <p className="text-sm">
+            <Alert variant="destructive">
+                <TriangleAlertIcon />
+                <AlertTitle>{t('Warning')}</AlertTitle>
+                <AlertDescription>
+                    {t('Please proceed with caution, this cannot be undone.')}
+                </AlertDescription>
+            </Alert>
+
+            <Dialog>
+                <DialogTrigger
+                    render={
+                        <Button
+                            variant="destructive"
+                            data-test="delete-user-button"
+                        />
+                    }
+                >
+                    {t('Delete account')}
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogTitle>
+                        {t('Are you sure you want to delete your account?')}
+                    </DialogTitle>
+                    <DialogDescription>
                         {t(
-                            'Please proceed with caution, this cannot be undone.',
+                            'Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.',
                         )}
-                    </p>
-                </div>
+                    </DialogDescription>
 
-                <Dialog>
-                    <DialogTrigger
-                        render={
-                            <Button
-                                variant="destructive"
-                                data-test="delete-user-button"
-                            />
-                        }
+                    <Form
+                        {...ProfileController.destroy.form()}
+                        options={{
+                            preserveScroll: true,
+                        }}
+                        onError={() => passwordInputRef.current?.focus()}
+                        resetOnSuccess
+                        className="space-y-6"
                     >
-                        {t('Delete account')}
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogTitle>
-                            {t('Are you sure you want to delete your account?')}
-                        </DialogTitle>
-                        <DialogDescription>
-                            {t(
-                                'Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.',
-                            )}
-                        </DialogDescription>
+                        {({ resetAndClearErrors, processing, errors }) => (
+                            <>
+                                <Field data-invalid={!!errors.password}>
+                                    <FieldLabel
+                                        htmlFor="password"
+                                        className="sr-only"
+                                    >
+                                        {t('Password')}
+                                    </FieldLabel>
 
-                        <Form
-                            {...ProfileController.destroy.form()}
-                            options={{
-                                preserveScroll: true,
-                            }}
-                            onError={() => passwordInputRef.current?.focus()}
-                            resetOnSuccess
-                            className="space-y-6"
-                        >
-                            {({ resetAndClearErrors, processing, errors }) => (
-                                <>
-                                    <Field data-invalid={!!errors.password}>
-                                        <FieldLabel
-                                            htmlFor="password"
-                                            className="sr-only"
-                                        >
-                                            {t('Password')}
-                                        </FieldLabel>
+                                    <PasswordInput
+                                        id="password"
+                                        name="password"
+                                        ref={passwordInputRef}
+                                        placeholder={t('Password')}
+                                        autoComplete="current-password"
+                                    />
 
-                                        <PasswordInput
-                                            id="password"
-                                            name="password"
-                                            ref={passwordInputRef}
-                                            placeholder={t('Password')}
-                                            autoComplete="current-password"
-                                        />
+                                    <FieldError>{errors.password}</FieldError>
+                                </Field>
 
-                                        <FieldError>
-                                            {errors.password}
-                                        </FieldError>
-                                    </Field>
+                                <DialogFooter className="gap-2">
+                                    <DialogClose
+                                        render={
+                                            <Button
+                                                type="button"
+                                                variant="secondary"
+                                                onClick={() =>
+                                                    resetAndClearErrors()
+                                                }
+                                            />
+                                        }
+                                    >
+                                        {t('Cancel')}
+                                    </DialogClose>
 
-                                    <DialogFooter className="gap-2">
-                                        <DialogClose
-                                            render={
-                                                <Button
-                                                    type="button"
-                                                    variant="secondary"
-                                                    onClick={() =>
-                                                        resetAndClearErrors()
-                                                    }
-                                                />
-                                            }
-                                        >
-                                            {t('Cancel')}
-                                        </DialogClose>
-
-                                        <Button
-                                            type="submit"
-                                            variant="destructive"
-                                            disabled={processing}
-                                            data-test="confirm-delete-user-button"
-                                        >
-                                            {processing && <Spinner />}
-                                            {t('Delete account')}
-                                        </Button>
-                                    </DialogFooter>
-                                </>
-                            )}
-                        </Form>
-                    </DialogContent>
-                </Dialog>
-            </div>
+                                    <Button
+                                        type="submit"
+                                        variant="destructive"
+                                        disabled={processing}
+                                        data-test="confirm-delete-user-button"
+                                    >
+                                        {processing && <Spinner />}
+                                        {t('Delete account')}
+                                    </Button>
+                                </DialogFooter>
+                            </>
+                        )}
+                    </Form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

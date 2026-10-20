@@ -1,14 +1,10 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { Ellipsis } from 'lucide-react';
 import * as React from 'react';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
-import {
-    labels,
-    priorities,
-    statuses,
-    type Task,
-} from '@/components/tasks/data';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
+import { labels, priorities, statuses } from '@/components/tasks/data';
+import type { Task } from '@/components/tasks/data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -195,8 +191,8 @@ export function useTaskColumns({
                             render={
                                 <Button
                                     variant="ghost"
-                                    size="icon"
-                                    className="size-8 data-[popup-open]:bg-muted"
+                                    size="icon-sm"
+                                    className="data-[popup-open]:bg-muted"
                                 />
                             }
                         >

@@ -1,5 +1,6 @@
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
-import { shortcutKeys, type ShortcutId } from '@/lib/shortcuts';
+import { shortcutKeys } from '@/lib/shortcuts';
+import type { ShortcutId } from '@/lib/shortcuts';
 import { cn } from '@/lib/utils';
 
 // Shows a shortcut as key caps, e.g. G, then U.

@@ -4,9 +4,8 @@ import { ShortcutHint } from '@/components/shortcut-hint';
 import {
     flattenSidebarLinks,
     visibleSidebarGroups,
-    type SidebarLink,
 } from '@/components/sidebar-items';
-import { Kbd, KbdGroup } from '@/components/ui/kbd';
+import type { SidebarLink } from '@/components/sidebar-items';
 import {
     CommandDialog,
     CommandEmpty,
@@ -16,6 +15,7 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
+import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { useTrans } from '@/hooks/use-trans';
 
 type Props = {

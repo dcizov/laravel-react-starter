@@ -38,7 +38,7 @@ export function DataTableColumnHeader<TData extends RowData, TValue>({
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="-ml-3 h-8 data-[popup-open]:bg-accent"
+                            className="-ml-3 data-[popup-open]:bg-accent"
                         />
                     }
                 >

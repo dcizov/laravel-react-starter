@@ -2,6 +2,8 @@
 
 @import 'tw-animate-css';
 
+@import './style-nova.css';
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
@@ -34,9 +36,11 @@ html[data-font='system'] {
 }
 
 @theme {
+    /* Headings inherit the body font, as in the base-nova style. */
+    --font-heading: var(--font-sans);
     --font-sans:
-        'Instrument Sans Variable', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Instrument Sans Variable', 'Instrument Sans', ui-sans-serif, system-ui,
+        sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
     --radius-lg: var(--radius);
@@ -165,5 +169,15 @@ html[data-font='system'] {
 
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+/* Hides scrollbars while keeping the element scrollable. Used by the base-nova style. */
+@utility no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
     }
 }

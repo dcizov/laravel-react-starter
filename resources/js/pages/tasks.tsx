@@ -3,6 +3,7 @@ import { ListChecks, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { destroy, update } from '@/actions/App/Http/Controllers/TaskController';
 import { DataTable } from '@/components/data-table/data-table';
+import PageHeader from '@/components/page-header';
 import { useTaskColumns } from '@/components/tasks/columns';
 import { priorities, statuses } from '@/components/tasks/data';
 import type { Task } from '@/components/tasks/data';
@@ -91,16 +92,14 @@ export default function Tasks({
         <>
             <Head title={t('Tasks')} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        {t('Tasks')}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {showOwner
+                <PageHeader
+                    title={t('Tasks')}
+                    description={
+                        showOwner
                             ? t('Here are the tasks of every user.')
-                            : t('Here are the tasks for this month.')}
-                    </p>
-                </div>
+                            : t('Here are the tasks for this month.')
+                    }
+                />
 
                 {tasks.length === 0 ? (
                     <Empty>
@@ -155,7 +154,6 @@ export default function Tasks({
                             actions: () => (
                                 <Button
                                     size="sm"
-                                    className="h-8"
                                     onClick={() => openDialog(null)}
                                 >
                                     <Plus />

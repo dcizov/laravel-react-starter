@@ -64,7 +64,7 @@ export function DataTableFacetedFilter<TData extends RowData, TValue>({
                     <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 border-dashed"
+                        className="border-dashed"
                     />
                 }
             >
