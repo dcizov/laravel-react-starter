@@ -1,5 +1,7 @@
 import { Moon, Sun } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { NotificationsDropdown } from '@/components/notifications-dropdown';
+import { ProfileDropdown } from '@/components/profile-dropdown';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -37,6 +39,8 @@ export function AppSidebarHeader({
                 >
                     {isDark ? <Sun /> : <Moon />}
                 </Button>
+                <NotificationsDropdown />
+                <ProfileDropdown />
             </div>
         </header>
     );

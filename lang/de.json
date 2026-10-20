@@ -201,5 +201,15 @@
     "Floating": "Schwebend",
     "The sidebar sits beside the page in one rounded panel.": "Die Seitenleiste liegt neben dem Inhalt in einem abgerundeten Bereich.",
     "The sidebar floats above the page with its own border.": "Die Seitenleiste schwebt mit eigenem Rahmen über der Seite.",
-    "Appearance settings updated.": "Darstellungseinstellungen aktualisiert."
+    "Appearance settings updated.": "Darstellungseinstellungen aktualisiert.",
+    "Mark all as read": "Alle als gelesen markieren",
+    "No notifications yet": "Noch keine Benachrichtigungen",
+    "Just now": "Gerade eben",
+    "1 hour ago": "vor 1 Stunde",
+    "Open profile menu": "Profilmenü öffnen",
+    "Open notifications": "Benachrichtigungen öffnen",
+    "Welcome to the starter kit": "Willkommen beim Starter-Kit",
+    "Explore the sidebar and display settings.": "Entdecke die Seitenleiste und die Anzeigeeinstellungen.",
+    "Complete your profile": "Vervollständige dein Profil",
+    "Add a job title and a bio to your profile.": "Füge deinem Profil eine Berufsbezeichnung und eine Biografie hinzu."
 }
