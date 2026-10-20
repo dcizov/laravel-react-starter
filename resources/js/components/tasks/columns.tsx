@@ -79,6 +79,7 @@ export function useTaskColumns({
             },
             {
                 accessorKey: 'title',
+                meta: { label: 'Title' },
                 header: ({ column }) => (
                     <DataTableColumnHeader column={column} title={t('Title')} />
                 ),
@@ -103,6 +104,7 @@ export function useTaskColumns({
             },
             {
                 accessorKey: 'status',
+                meta: { label: 'Status' },
                 header: ({ column }) => (
                     <DataTableColumnHeader
                         column={column}
@@ -132,6 +134,7 @@ export function useTaskColumns({
             },
             {
                 accessorKey: 'priority',
+                meta: { label: 'Priority' },
                 header: ({ column }) => (
                     <DataTableColumnHeader
                         column={column}

@@ -1,4 +1,4 @@
-import type { Table } from '@tanstack/react-table';
+import type { RowData, Table } from '@tanstack/react-table';
 import { Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +10,13 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTrans } from '@/hooks/use-trans';
+
+declare module '@tanstack/react-table' {
+    // The label shown in the View menu for a column.
+    interface ColumnMeta<TData extends RowData, TValue> {
+        label?: string;
+    }
+}
 
 // Shows or hides columns. Columns that cannot be hidden are left out.
 export function DataTableViewOptions<TData>({
@@ -51,9 +58,7 @@ export function DataTableViewOptions<TData>({
                                 column.toggleVisibility(!!value)
                             }
                         >
-                            {typeof column.columnDef.header === 'string'
-                                ? column.columnDef.header
-                                : column.id}
+                            {t(column.columnDef.meta?.label ?? column.id)}
                         </DropdownMenuCheckboxItem>
                     ))}
             </DropdownMenuContent>
