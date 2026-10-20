@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { useTrans } from '@/hooks/use-trans';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
@@ -18,6 +19,7 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
+    const t = useTrans();
 
     const handleLogout = () => {
         cleanup();
@@ -44,7 +46,7 @@ export function UserMenuContent({ user }: Props) {
                     }
                 >
                     <Settings className="mr-2" />
-                    Settings
+                    {t('Settings')}
                 </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -60,7 +62,7 @@ export function UserMenuContent({ user }: Props) {
                 }
             >
                 <LogOut className="mr-2" />
-                Log out
+                {t('Log out')}
             </DropdownMenuItem>
         </>
     );

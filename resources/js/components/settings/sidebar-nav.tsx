@@ -8,6 +8,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useTrans } from '@/hooks/use-trans';
 import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
@@ -21,6 +22,7 @@ export default function SettingsSidebarNav({
     className,
 }: SettingsSidebarNavProps) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const t = useTrans();
 
     const activeItem = items.find((item) => isCurrentOrParentUrl(item.href));
     const activeValue = activeItem ? toUrl(activeItem.href) : undefined;
@@ -37,11 +39,14 @@ export default function SettingsSidebarNav({
                     }}
                 >
                     <SelectTrigger className="h-10 w-full sm:w-48">
-                        <SelectValue placeholder="Settings section">
-                            {(value: string) =>
-                                items.find((item) => toUrl(item.href) === value)
-                                    ?.title ?? null
-                            }
+                        <SelectValue placeholder={t('Settings section')}>
+                            {(value: string) => {
+                                const item = items.find(
+                                    (entry) => toUrl(entry.href) === value,
+                                );
+
+                                return item ? t(item.title) : null;
+                            }}
                         </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
@@ -50,7 +55,7 @@ export default function SettingsSidebarNav({
                                 key={toUrl(item.href)}
                                 value={toUrl(item.href)}
                             >
-                                {item.title}
+                                {t(item.title)}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -58,7 +63,7 @@ export default function SettingsSidebarNav({
             </div>
 
             <nav
-                aria-label="Settings"
+                aria-label={t('Settings')}
                 className={cn('hidden flex-col space-y-1 md:flex', className)}
             >
                 {items.map((item) => {
@@ -77,7 +82,7 @@ export default function SettingsSidebarNav({
                             })}
                         >
                             {item.icon && <item.icon className="h-4 w-4" />}
-                            {item.title}
+                            {t(item.title)}
                         </Button>
                     );
                 })}

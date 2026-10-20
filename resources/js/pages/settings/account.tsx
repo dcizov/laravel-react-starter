@@ -15,55 +15,65 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/account';
 
-// Must match the locales accepted by AccountSettingsUpdateRequest.
-const languages = [
-    { value: 'en', label: 'English' },
-    { value: 'vi', label: 'Tiếng Việt' },
-];
+type Option = { value: string; label: string };
 
 type AccountSettings = {
     date_of_birth: string | null;
     language: string;
-    timezone: string | null;
+    timezone: string;
 };
 
 type Props = {
     settings: AccountSettings;
+    // Languages come from App\Support\Locales and timezones from App\Support\Timezones.
+    languages: Option[];
+    timezones: string[];
 } & SecuritySettingsProps;
 
-export default function Account({ settings, ...security }: Props) {
+export default function Account({
+    settings,
+    languages,
+    timezones,
+    ...security
+}: Props) {
+    const t = useTrans();
     const form = useForm({
         date_of_birth: settings.date_of_birth ?? '',
         locale: settings.language,
-        timezone: settings.timezone ?? '',
+        timezone: settings.timezone,
     });
 
     const submit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         form.transform((data) => ({
-            // Empty fields mean "not set", so send null.
+            // An empty date means "not set", so send null.
             date_of_birth: data.date_of_birth || null,
             locale: data.locale,
-            timezone: data.timezone || null,
+            timezone: data.timezone,
         }));
         form.patch(update().url, { preserveScroll: true });
     };
 
     return (
         <>
-            <Head title="Account settings" />
+            <Head title={t('Account settings')} />
 
-            <h1 className="sr-only">Account settings</h1>
+            <h1 className="sr-only">{t('Account settings')}</h1>
 
             <ContentSection
-                title="Account"
-                description="Update your date of birth, language, and timezone"
+                title={t('Account')}
+                description={t(
+                    'Update your date of birth, language, and timezone',
+                )}
             >
                 <form onSubmit={submit} className="space-y-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="date_of_birth">Date of birth</Label>
+                        <Label htmlFor="date_of_birth">
+                            {t('Date of birth')}
+                        </Label>
                         <Input
                             id="date_of_birth"
                             type="date"
@@ -77,14 +87,15 @@ export default function Account({ settings, ...security }: Props) {
                             }
                         />
                         <p className="text-sm text-muted-foreground">
-                            Used to personalise your account. Leave empty to
-                            keep it private.
+                            {t(
+                                'Used to personalise your account. Leave empty to keep it private.',
+                            )}
                         </p>
                         <InputError message={form.errors.date_of_birth} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="locale">Language</Label>
+                        <Label htmlFor="locale">{t('Language')}</Label>
                         <Select
                             value={form.data.locale}
                             onValueChange={(value) =>
@@ -116,21 +127,34 @@ export default function Account({ settings, ...security }: Props) {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="timezone">Timezone</Label>
-                        <Input
-                            id="timezone"
-                            className="mt-1 block w-full"
+                        <Label htmlFor="timezone">{t('Timezone')}</Label>
+                        <Select
                             value={form.data.timezone}
-                            onChange={(event) =>
-                                form.setData('timezone', event.target.value)
+                            onValueChange={(value) =>
+                                form.setData('timezone', value ?? 'UTC')
                             }
-                            placeholder="Europe/Berlin"
-                        />
+                        >
+                            <SelectTrigger id="timezone" className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {timezones.map((zone) => (
+                                    <SelectItem key={zone} value={zone}>
+                                        {zone}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-sm text-muted-foreground">
+                            {t(
+                                'Used to show times on your profile in your local time.',
+                            )}
+                        </p>
                         <InputError message={form.errors.timezone} />
                     </div>
 
                     <Button type="submit" disabled={form.processing}>
-                        Save
+                        {t('Save')}
                     </Button>
                 </form>
             </ContentSection>

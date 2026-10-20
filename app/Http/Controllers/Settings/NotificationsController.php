@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\NotificationsSettingsUpdateRequest;
+use App\Support\NotificationSettings;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -11,24 +12,10 @@ use Inertia\Response;
 
 class NotificationsController extends Controller
 {
-    /**
-     * Defaults used until the user saves their own choices.
-     *
-     * @var array<string, string|bool>
-     */
-    private const DEFAULTS = [
-        'type' => 'all',
-        'mobile' => false,
-        'communication_emails' => false,
-        'social_emails' => false,
-        'marketing_emails' => false,
-        'security_emails' => true,
-    ];
-
     public function edit(Request $request): Response
     {
         return Inertia::render('settings/notifications', [
-            'settings' => array_merge(self::DEFAULTS, $request->user()->notification_settings ?? []),
+            'settings' => NotificationSettings::forUser($request->user()),
         ]);
     }
 

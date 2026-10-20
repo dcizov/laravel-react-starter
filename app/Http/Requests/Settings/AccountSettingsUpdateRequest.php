@@ -4,6 +4,8 @@ namespace App\Http\Requests\Settings;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Support\Locales;
+use App\Support\Timezones;
 use Illuminate\Validation\Rule;
 
 class AccountSettingsUpdateRequest extends FormRequest
@@ -25,8 +27,8 @@ class AccountSettingsUpdateRequest extends FormRequest
     {
         return [
             'date_of_birth' => ['nullable', 'date', 'before:today'],
-            'locale' => ['required', 'string', Rule::in(['en', 'vi'])],
-            'timezone' => ['nullable', 'string', 'timezone'],
+            'locale' => ['required', 'string', Rule::in(Locales::codes())],
+            'timezone' => ['nullable', 'string', Rule::in(Timezones::ZONES)],
         ];
     }
 }

@@ -10,6 +10,7 @@ import ManageTwoFactor from '@/components/manage-two-factor';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useTrans } from '@/hooks/use-trans';
 
 // oxfmt-ignore
 export type SecuritySettingsProps = {
@@ -21,12 +22,15 @@ export type SecuritySettingsProps = {
 export default function SecuritySettings(props: SecuritySettingsProps) {
     const passwordInputRef = useRef<HTMLInputElement>(null);
     const currentPasswordInputRef = useRef<HTMLInputElement>(null);
+    const t = useTrans();
 
     return (
         <div className="space-y-12">
             <ContentSection
-                title="Update password"
-                description="Ensure your account is using a long, random password to stay secure"
+                title={t('Update password')}
+                description={t(
+                    'Ensure your account is using a long, random password to stay secure',
+                )}
             >
                 <Form
                     {...SecurityController.update.form()}
@@ -54,7 +58,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                         <>
                             <div className="grid gap-2">
                                 <Label htmlFor="current_password">
-                                    Current password
+                                    {t('Current password')}
                                 </Label>
 
                                 <PasswordInput
@@ -63,14 +67,16 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                     name="current_password"
                                     className="mt-1 block w-full"
                                     autoComplete="current-password"
-                                    placeholder="Current password"
+                                    placeholder={t('Current password')}
                                 />
 
                                 <InputError message={errors.current_password} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
+                                <Label htmlFor="password">
+                                    {t('New password')}
+                                </Label>
 
                                 <PasswordInput
                                     id="password"
@@ -78,7 +84,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                     name="password"
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
-                                    placeholder="New password"
+                                    placeholder={t('New password')}
                                     passwordrules={props.passwordRules}
                                 />
 
@@ -87,7 +93,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="password_confirmation">
-                                    Confirm password
+                                    {t('Confirm password')}
                                 </Label>
 
                                 <PasswordInput
@@ -95,7 +101,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                     name="password_confirmation"
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
-                                    placeholder="Confirm password"
+                                    placeholder={t('Confirm password')}
                                     passwordrules={props.passwordRules}
                                 />
 
@@ -110,7 +116,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                     disabled={processing}
                                     data-test="update-password-button"
                                 >
-                                    Save
+                                    {t('Save')}
                                 </Button>
                             </div>
                         </>

@@ -4,19 +4,18 @@ import ContentSection from '@/components/settings/content-section';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/display';
 
 // Must match App\Support\DisplaySettings::ITEMS on the server.
 const displayItems = [
-    { id: 'recents', label: 'Recents' },
-    { id: 'home', label: 'Home' },
-    { id: 'applications', label: 'Applications' },
-    { id: 'desktop', label: 'Desktop' },
-    { id: 'downloads', label: 'Downloads' },
-    { id: 'documents', label: 'Documents' },
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'repository', label: 'Repository' },
+    { id: 'documentation', label: 'Documentation' },
 ];
 
 export default function Display({ items }: { items: string[] }) {
+    const t = useTrans();
     const form = useForm({ items });
 
     const toggle = (id: string, checked: boolean) => {
@@ -37,13 +36,13 @@ export default function Display({ items }: { items: string[] }) {
 
     return (
         <>
-            <Head title="Display settings" />
+            <Head title={t('Display settings')} />
 
-            <h1 className="sr-only">Display settings</h1>
+            <h1 className="sr-only">{t('Display settings')}</h1>
 
             <ContentSection
-                title="Display"
-                description="Choose which items appear in your sidebar."
+                title={t('Display')}
+                description={t('Choose which items appear in your sidebar.')}
             >
                 <form onSubmit={submit} className="space-y-6">
                     <div className="grid gap-3">
@@ -60,7 +59,7 @@ export default function Display({ items }: { items: string[] }) {
                                     }
                                 />
                                 <Label htmlFor={`display-${item.id}`}>
-                                    {item.label}
+                                    {t(item.label)}
                                 </Label>
                             </div>
                         ))}
@@ -68,7 +67,7 @@ export default function Display({ items }: { items: string[] }) {
                     </div>
 
                     <Button type="submit" disabled={form.processing}>
-                        Save
+                        {t('Save')}
                     </Button>
                 </form>
             </ContentSection>

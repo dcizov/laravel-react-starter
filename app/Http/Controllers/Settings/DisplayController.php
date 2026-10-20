@@ -15,7 +15,7 @@ class DisplayController extends Controller
     public function edit(Request $request): Response
     {
         return Inertia::render('settings/display', [
-            'items' => $request->user()->display_items ?? DisplaySettings::DEFAULT_ITEMS,
+            'items' => DisplaySettings::forUser($request->user()),
         ]);
     }
 

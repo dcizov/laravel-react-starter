@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/notifications';
 
 type NotificationType = 'all' | 'mentions' | 'none';
@@ -39,6 +40,7 @@ export default function Notifications({
 }: {
     settings: NotificationSettings;
 }) {
+    const t = useTrans();
     const form = useForm<NotificationSettings>(settings);
 
     const submit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -48,17 +50,19 @@ export default function Notifications({
 
     return (
         <>
-            <Head title="Notification settings" />
+            <Head title={t('Notification settings')} />
 
-            <h1 className="sr-only">Notification settings</h1>
+            <h1 className="sr-only">{t('Notification settings')}</h1>
 
             <ContentSection
-                title="Notifications"
-                description="Choose how and when you are notified."
+                title={t('Notifications')}
+                description={t('Choose how and when you are notified.')}
             >
                 <form onSubmit={submit} className="space-y-8">
                     <div className="grid gap-3">
-                        <h4 className="text-sm font-medium">Notify me about</h4>
+                        <h4 className="text-sm font-medium">
+                            {t('Notify me about')}
+                        </h4>
                         <RadioGroup
                             value={form.data.type}
                             onValueChange={(value) =>
@@ -75,7 +79,7 @@ export default function Notifications({
                                         value={option.value}
                                     />
                                     <Label htmlFor={`notify-${option.value}`}>
-                                        {option.label}
+                                        {t(option.label)}
                                     </Label>
                                 </div>
                             ))}
@@ -84,7 +88,7 @@ export default function Notifications({
                     </div>
 
                     <div className="grid gap-3">
-                        <h4 className="text-sm font-medium">Email</h4>
+                        <h4 className="text-sm font-medium">{t('Email')}</h4>
                         {emailChannels.map((channel) => (
                             <div
                                 key={channel.key}
@@ -98,14 +102,14 @@ export default function Notifications({
                                     }
                                 />
                                 <Label htmlFor={`notify-${channel.key}`}>
-                                    {channel.label}
+                                    {t(channel.label)}
                                 </Label>
                             </div>
                         ))}
                     </div>
 
                     <div className="grid gap-3">
-                        <h4 className="text-sm font-medium">Mobile</h4>
+                        <h4 className="text-sm font-medium">{t('Mobile')}</h4>
                         <div className="flex items-center gap-2">
                             <Checkbox
                                 id="notify-mobile"
@@ -115,13 +119,13 @@ export default function Notifications({
                                 }
                             />
                             <Label htmlFor="notify-mobile">
-                                Push notifications on mobile
+                                {t('Push notifications on mobile')}
                             </Label>
                         </div>
                     </div>
 
                     <Button type="submit" disabled={form.processing}>
-                        Save
+                        {t('Save')}
                     </Button>
                 </form>
             </ContentSection>

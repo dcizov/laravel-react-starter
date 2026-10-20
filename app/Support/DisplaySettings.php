@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Models\User;
+
 final class DisplaySettings
 {
     /**
@@ -10,18 +12,21 @@ final class DisplaySettings
      * @var list<string>
      */
     public const ITEMS = [
-        'recents',
-        'home',
-        'applications',
-        'desktop',
-        'downloads',
-        'documents',
+        'dashboard',
+        'repository',
+        'documentation',
     ];
 
     /**
-     * Items shown when the user has not chosen their own.
+     * The items the user has chosen, or all items when they have not chosen.
+     * Saved values that are no longer valid are ignored.
      *
-     * @var list<string>
+     * @return list<string>
      */
-    public const DEFAULT_ITEMS = ['recents', 'home', 'applications', 'desktop', 'downloads', 'documents'];
+    public static function forUser(?User $user): array
+    {
+        $saved = array_values(array_intersect(self::ITEMS, $user?->display_items ?? []));
+
+        return $saved === [] ? self::ITEMS : $saved;
+    }
 }

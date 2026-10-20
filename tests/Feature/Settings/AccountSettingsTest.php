@@ -58,7 +58,7 @@ test('account date of birth and language can be updated', function () {
     $response = $this->actingAs($user)
         ->patch(route('account.update'), [
             'date_of_birth' => '1990-05-17',
-            'locale' => 'vi',
+            'locale' => 'de',
         ]);
 
     $response
@@ -68,7 +68,7 @@ test('account date of birth and language can be updated', function () {
     $user->refresh();
 
     expect($user->date_of_birth->format('Y-m-d'))->toBe('1990-05-17');
-    expect($user->locale)->toBe('vi');
+    expect($user->locale)->toBe('de');
 });
 
 test('date of birth can be cleared', function () {
@@ -105,3 +105,47 @@ test('language must be a supported option', function () {
         ])
         ->assertSessionHasErrors('locale');
 });
+
+test('timezone must be one of the offered timezones', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patch(route('account.update'), [
+            'locale' => 'en',
+            'timezone' => 'Europe/Vienna',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($user->fresh()->timezone)->toBe('Europe/Vienna');
+});
+
+test('account page offers english and german and the timezone list', function () {
+    $user = User::factory()->create(['locale' => 'de', 'timezone' => null]);
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('account.edit'))
+        ->assertInertia(fn ($page) => $page
+            ->component('settings/account')
+            ->where('settings.language', 'de')
+            ->where('settings.timezone', 'Europe/Berlin')
+            ->has('languages', 2)
+            ->where('languages.0.value', 'en')
+            ->where('languages.1.value', 'de')
+            ->where('timezones', App\Support\Timezones::ZONES),
+        );
+});
+
+test('language switch to german is saved and applies to the next request', function () {
+    $user = User::factory()->create(['locale' => 'en']);
+
+    $this->actingAs($user)
+        ->patch(route('account.update'), [
+            'locale' => 'de',
+            'timezone' => 'Europe/Berlin',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($user->fresh()->locale)->toBe('de');
+});
+

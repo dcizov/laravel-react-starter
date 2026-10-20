@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\AccountSettingsUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use App\Support\Locales;
+use App\Support\Timezones;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\App;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,12 +23,16 @@ class AccountController extends Controller
     {
         $user = $request->user();
 
+        $language = Locales::resolve($user->locale);
+
         $props = [
             'settings' => [
                 'date_of_birth' => $user->date_of_birth?->format('Y-m-d'),
-                'language' => $user->locale ?? 'en',
-                'timezone' => $user->timezone,
+                'language' => $language,
+                'timezone' => $user->timezone ?? Timezones::defaultFor($language),
             ],
+            'languages' => Locales::options(),
+            'timezones' => Timezones::ZONES,
             'canManageTwoFactor' => Features::canManageTwoFactorAuthentication(),
             'canManagePasskeys' => Features::canManagePasskeys(),
             'passkeys' => Features::canManagePasskeys()
@@ -64,6 +71,9 @@ class AccountController extends Controller
             'locale' => $request->validated('locale'),
             'timezone' => $request->validated('timezone'),
         ]);
+
+        // Switch to the new language first so the confirmation is shown in it.
+        App::setLocale($request->validated('locale'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Account settings updated.')]);
 

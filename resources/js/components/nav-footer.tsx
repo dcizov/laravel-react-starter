@@ -6,6 +6,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useTrans } from '@/hooks/use-trans';
 import { toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
@@ -16,6 +17,8 @@ export function NavFooter({
 }: ComponentPropsWithoutRef<typeof SidebarGroup> & {
     items: NavItem[];
 }) {
+    const t = useTrans();
+
     return (
         <SidebarGroup
             {...props}
@@ -36,7 +39,7 @@ export function NavFooter({
                                 className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
                             >
                                 {item.icon && <item.icon className="h-5 w-5" />}
-                                <span>{item.title}</span>
+                                <span>{t(item.title)}</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}

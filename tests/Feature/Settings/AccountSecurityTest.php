@@ -1,11 +1,13 @@
 <?php
 
 use App\Models\User;
+use App\Notifications\PasswordChangedNotification;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
-test('security page is displayed', function () {
+test('account page is displayed', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
     Features::twoFactorAuthentication([
@@ -30,7 +32,7 @@ test('security page is displayed', function () {
         );
 });
 
-test('security page requires password confirmation when enabled', function () {
+test('account page requires password confirmation when enabled', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
     $user = User::factory()->create();
@@ -46,7 +48,7 @@ test('security page requires password confirmation when enabled', function () {
     $response->assertRedirect(route('password.confirm'));
 });
 
-test('security page renders without two factor when feature is disabled', function () {
+test('account page renders without two factor when feature is disabled', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
     config(['fortify.features' => []]);
@@ -68,6 +70,8 @@ test('security page renders without two factor when feature is disabled', functi
 });
 
 test('password can be updated', function () {
+    Notification::fake();
+
     $user = User::factory()->create();
 
     $response = $this
@@ -84,6 +88,27 @@ test('password can be updated', function () {
         ->assertRedirect(route('account.edit'));
 
     expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
+
+    Notification::assertSentTo($user, PasswordChangedNotification::class);
+});
+
+test('password change email is skipped when security emails are turned off', function () {
+    Notification::fake();
+
+    $user = User::factory()->create([
+        'notification_settings' => ['security_emails' => false],
+    ]);
+
+    $this->actingAs($user)
+        ->from(route('account.edit'))
+        ->put(route('user-password.update'), [
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertSessionHasNoErrors();
+
+    Notification::assertNothingSent();
 });
 
 test('correct password must be provided to update password', function () {
