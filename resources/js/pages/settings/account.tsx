@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import ContentSection from '@/components/settings/content-section';
+import DeleteUser from '@/components/delete-user';
 import SecuritySettings, {
     type SecuritySettingsProps,
 } from '@/components/settings/security-settings';
@@ -162,6 +163,10 @@ export default function Account({
             <Separator className="my-12" />
 
             <SecuritySettings {...security} />
+
+            <Separator className="my-12" />
+
+            <DeleteUser />
         </>
     );
 }

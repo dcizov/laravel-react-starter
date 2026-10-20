@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
-import { displayOptions } from '@/components/sidebar-items';
+import { displayGroups } from '@/components/sidebar-items';
 import ContentSection from '@/components/settings/content-section';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,7 +14,8 @@ export default function Display({ items }: { items: string[] }) {
 
     const toggle = (id: string, checked: boolean) => {
         // Keep the saved list in display order so it stays predictable.
-        const next = displayOptions
+        const next = displayGroups
+            .flatMap((group) => group.items)
             .map((item) => item.id)
             .filter((itemId) =>
                 itemId === id ? checked : form.data.items.includes(itemId),
@@ -39,23 +40,32 @@ export default function Display({ items }: { items: string[] }) {
                 description={t('Choose which items appear in your sidebar.')}
             >
                 <form onSubmit={submit} className="space-y-6">
-                    <div className="grid gap-3">
-                        {displayOptions.map((item) => (
-                            <div
-                                key={item.id}
-                                className="flex items-center gap-2"
-                            >
-                                <Checkbox
-                                    id={`display-${item.id}`}
-                                    checked={form.data.items.includes(item.id)}
-                                    onCheckedChange={(checked) =>
-                                        toggle(item.id, checked)
-                                    }
-                                />
-                                <Label htmlFor={`display-${item.id}`}>
-                                    {t(item.title)}
-                                </Label>
-                            </div>
+                    <div className="grid gap-6">
+                        {displayGroups.map((group) => (
+                            <fieldset key={group.title} className="grid gap-3">
+                                <legend className="mb-1 text-sm font-medium text-muted-foreground">
+                                    {t(group.title)}
+                                </legend>
+                                {group.items.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Checkbox
+                                            id={`display-${item.id}`}
+                                            checked={form.data.items.includes(
+                                                item.id,
+                                            )}
+                                            onCheckedChange={(checked) =>
+                                                toggle(item.id, checked)
+                                            }
+                                        />
+                                        <Label htmlFor={`display-${item.id}`}>
+                                            {t(item.title)}
+                                        </Label>
+                                    </div>
+                                ))}
+                            </fieldset>
                         ))}
                         <InputError message={form.errors.items} />
                     </div>

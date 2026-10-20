@@ -1,11 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
+import { NavGroup } from '@/components/nav-group';
 import { NavUser } from '@/components/nav-user';
 import {
-    footerSidebarItems,
-    mainSidebarItems,
+    isCollapsible,
+    sidebarGroups,
+    type SidebarEntry,
+    type SidebarGroupDef,
 } from '@/components/sidebar-items';
 import {
     Sidebar,
@@ -22,12 +23,22 @@ export function AppSidebar() {
     // Users choose which items show here in Display settings.
     const { displayItems } = usePage().props;
 
-    const visibleMainItems = mainSidebarItems.filter((item) =>
-        displayItems.includes(item.id),
-    );
-    const visibleFooterItems = footerSidebarItems.filter((item) =>
-        displayItems.includes(item.id),
-    );
+    const visibleGroups = sidebarGroups
+        .map((group): SidebarGroupDef => ({
+            ...group,
+            items: group.items.flatMap((entry): SidebarEntry[] => {
+                if (isCollapsible(entry)) {
+                    const children = entry.children.filter((child) =>
+                        displayItems.includes(child.id),
+                    );
+
+                    return children.length > 0 ? [{ ...entry, children }] : [];
+                }
+
+                return displayItems.includes(entry.id) ? [entry] : [];
+            }),
+        }))
+        .filter((group) => group.items.length > 0);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -45,11 +56,16 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={visibleMainItems} />
+                {visibleGroups.map((group) => (
+                    <NavGroup
+                        key={group.title}
+                        title={group.title}
+                        items={group.items}
+                    />
+                ))}
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={visibleFooterItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

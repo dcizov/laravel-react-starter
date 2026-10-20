@@ -1,25 +1,17 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import DeleteUser from '@/components/delete-user';
 import InputError from '@/components/input-error';
 import ContentSection from '@/components/settings/content-section';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useInitials } from '@/hooks/use-initials';
 import { useTrans } from '@/hooks/use-trans';
 import { edit } from '@/routes/profile';
-import { edit as editAccount } from '@/routes/account';
 import { send } from '@/routes/verification';
-
-// Age in whole years from a 'YYYY-MM-DD' date of birth.
-function ageFrom(dateOfBirth: string, today = new Date()): number {
-    const [year, month, day] = dateOfBirth.slice(0, 10).split('-').map(Number);
-    const hadBirthday =
-        today.getMonth() + 1 > month ||
-        (today.getMonth() + 1 === month && today.getDate() >= day);
-
-    return today.getFullYear() - year - (hadBirthday ? 0 : 1);
-}
 
 export default function Profile({
     mustVerifyEmail,
@@ -29,18 +21,37 @@ export default function Profile({
     status?: string;
 }) {
     const t = useTrans();
-    const { auth, locale, timezone } = usePage().props;
-    const dateOfBirth = auth.user.date_of_birth ?? null;
+    const getInitials = useInitials();
+    const { auth } = usePage().props;
+    const user = auth.user;
 
-    // Show the saved language and timezone here, so the profile reflects them.
-    const languageName =
-        new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ??
-        locale;
-    const localTime = new Intl.DateTimeFormat(locale, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-        timeZone: timezone,
-    }).format(new Date());
+    const fileInput = useRef<HTMLInputElement>(null);
+    const [preview, setPreview] = useState<string | null>(null);
+    const [removeAvatar, setRemoveAvatar] = useState(false);
+
+    // What the avatar shows right now: a pending upload, the saved avatar, or nothing.
+    const shownAvatar = removeAvatar
+        ? null
+        : (preview ?? user.avatar_url ?? null);
+
+    const chooseFile = (file: File | undefined) => {
+        if (!file) {
+            return;
+        }
+
+        setPreview(URL.createObjectURL(file));
+        setRemoveAvatar(false);
+    };
+
+    const removePicture = () => {
+        // Clear the picked file too, so the upload does not win over the removal.
+        if (fileInput.current) {
+            fileInput.current.value = '';
+        }
+
+        setPreview(null);
+        setRemoveAvatar(true);
+    };
 
     return (
         <>
@@ -50,24 +61,86 @@ export default function Profile({
 
             <ContentSection
                 title={t('Profile')}
-                description={t('Update your name and email address')}
+                description={t(
+                    'Update your name, picture, and the details shown on your profile',
+                )}
             >
                 <Form
                     {...ProfileController.update.form()}
                     options={{
                         preserveScroll: true,
                     }}
+                    onSuccess={() => {
+                        setPreview(null);
+                        setRemoveAvatar(false);
+                    }}
                     className="space-y-6"
                 >
                     {({ processing, errors }) => (
                         <>
+                            <div className="grid gap-2">
+                                <Label>{t('Profile picture')}</Label>
+
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <Avatar className="size-16">
+                                        <AvatarImage
+                                            src={shownAvatar ?? undefined}
+                                            alt={user.name}
+                                        />
+                                        <AvatarFallback>
+                                            {getInitials(user.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+
+                                    <div className="flex flex-col gap-2">
+                                        <Input
+                                            ref={fileInput}
+                                            id="avatar"
+                                            name="avatar"
+                                            type="file"
+                                            accept="image/*"
+                                            className="max-w-xs"
+                                            onChange={(event) =>
+                                                chooseFile(
+                                                    event.target.files?.[0],
+                                                )
+                                            }
+                                        />
+
+                                        {shownAvatar && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="w-fit"
+                                                onClick={removePicture}
+                                            >
+                                                {t('Remove picture')}
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <input
+                                    type="hidden"
+                                    name="remove_avatar"
+                                    value={removeAvatar ? '1' : '0'}
+                                />
+
+                                <p className="text-sm text-muted-foreground">
+                                    {t('JPG, PNG, GIF or WebP, up to 2 MB.')}
+                                </p>
+
+                                <InputError message={errors.avatar} />
+                            </div>
+
                             <div className="grid gap-2">
                                 <Label htmlFor="name">{t('Name')}</Label>
 
                                 <Input
                                     id="name"
                                     className="mt-1 block w-full"
-                                    defaultValue={auth.user.name}
+                                    defaultValue={user.name}
                                     name="name"
                                     required
                                     autoComplete="name"
@@ -89,7 +162,7 @@ export default function Profile({
                                     id="email"
                                     type="email"
                                     className="mt-1 block w-full"
-                                    defaultValue={auth.user.email}
+                                    defaultValue={user.email}
                                     name="email"
                                     required
                                     autoComplete="username"
@@ -103,7 +176,7 @@ export default function Profile({
                             </div>
 
                             {mustVerifyEmail &&
-                                auth.user.email_verified_at === null && (
+                                user.email_verified_at === null && (
                                     <div>
                                         <p className="-mt-4 text-sm text-muted-foreground">
                                             {t(
@@ -131,6 +204,77 @@ export default function Profile({
                                     </div>
                                 )}
 
+                            <div className="grid gap-2">
+                                <Label htmlFor="job_title">
+                                    {t('Job title')}
+                                </Label>
+                                <Input
+                                    id="job_title"
+                                    name="job_title"
+                                    defaultValue={user.job_title ?? ''}
+                                    autoComplete="organization-title"
+                                    placeholder={t('Product designer')}
+                                />
+                                <InputError message={errors.job_title} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="company">{t('Company')}</Label>
+                                <Input
+                                    id="company"
+                                    name="company"
+                                    defaultValue={user.company ?? ''}
+                                    autoComplete="organization"
+                                    placeholder={t('Acme Inc.')}
+                                />
+                                <InputError message={errors.company} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="location">
+                                    {t('Location')}
+                                </Label>
+                                <Input
+                                    id="location"
+                                    name="location"
+                                    defaultValue={user.location ?? ''}
+                                    autoComplete="address-level2"
+                                    placeholder={t('Hannover, Germany')}
+                                />
+                                <InputError message={errors.location} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="website">{t('Website')}</Label>
+                                <Input
+                                    id="website"
+                                    name="website"
+                                    type="url"
+                                    defaultValue={user.website ?? ''}
+                                    autoComplete="url"
+                                    placeholder="https://example.com"
+                                />
+                                <InputError message={errors.website} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="bio">{t('Bio')}</Label>
+                                <Textarea
+                                    id="bio"
+                                    name="bio"
+                                    rows={4}
+                                    maxLength={500}
+                                    defaultValue={user.bio ?? ''}
+                                    placeholder={t(
+                                        'A few words about you and what you work on.',
+                                    )}
+                                />
+                                <p className="text-sm text-muted-foreground">
+                                    {t('Up to 500 characters.')}
+                                </p>
+                                <InputError message={errors.bio} />
+                            </div>
+
                             <div className="flex items-center gap-4">
                                 <Button
                                     type="submit"
@@ -144,52 +288,6 @@ export default function Profile({
                     )}
                 </Form>
             </ContentSection>
-
-            <ContentSection
-                title={t('Your preferences')}
-                description={t(
-                    'These come from your account settings. Change them there.',
-                )}
-            >
-                <dl className="grid gap-4 text-sm">
-                    <div>
-                        <dt className="text-muted-foreground">
-                            {t('Language')}
-                        </dt>
-                        <dd className="font-medium">{languageName}</dd>
-                    </div>
-                    <div>
-                        <dt className="text-muted-foreground">
-                            {t('Timezone')}
-                        </dt>
-                        <dd className="font-medium">{timezone}</dd>
-                    </div>
-                    <div>
-                        <dt className="text-muted-foreground">
-                            {t('Local time')}
-                        </dt>
-                        <dd className="font-medium">{localTime}</dd>
-                    </div>
-                    {dateOfBirth && (
-                        <div>
-                            <dt className="text-muted-foreground">
-                                {t('Age')}
-                            </dt>
-                            <dd className="font-medium">
-                                {ageFrom(dateOfBirth)}
-                            </dd>
-                        </div>
-                    )}
-                </dl>
-                <Link
-                    href={editAccount()}
-                    className="text-sm underline underline-offset-4"
-                >
-                    {t('Edit in account settings')}
-                </Link>
-            </ContentSection>
-
-            <DeleteUser />
         </>
     );
 }
