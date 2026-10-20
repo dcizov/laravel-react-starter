@@ -1,25 +1,107 @@
 {
     "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+        "source.fixAll.eslint": "explicit",
+        "source.organizeImports": "never"
     },
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+    "editor.guides.bracketPairs": true,
+    "editor.guides.indentation": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.linkedEditing": true,
+    "editor.trimAutoWhitespace": true,
+    "editor.quickSuggestions": {
+        "strings": "on"
+    },
+    "editor.suggestSelection": "first",
+
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "files.associations": {
+        "*.css": "tailwindcss",
+        ".env*": "dotenv",
+        ".prettierrc": "json"
+    },
+
+    "php.validate.enable": false,
+    "php.suggest.basic": false,
+
+    "intelephense.environment.phpVersion": "8.4",
+    "intelephense.files.exclude": [
+        "**/.git/**",
+        "**/.github/**",
+        "**/node_modules/**",
+        "**/vendor/**/{Tests,tests}/**",
+        "**/vendor/**/test/**",
+        "**/vendor/**/Tests/**",
+        "**/storage/framework/views/**",
+        "**/bootstrap/cache/**"
+    ],
+
+    "laravel-pint.enable": true,
     "[php]": {
-        "editor.defaultFormatter": "open-southeners.laravel-pint"
+        "editor.defaultFormatter": "open-southeners.laravel-pint",
+        "editor.formatOnSave": true
+    },
+
+    "eslint.useFlatConfig": true,
+    "eslint.format.enable": false,
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "eslint.workingDirectories": [
+        {
+            "mode": "auto"
+        }
+    ],
+
+    "prettier.requireConfig": true,
+    "prettier.useEditorConfig": true,
+
+    "js/ts.tsdk.path": "node_modules/typescript/lib",
+    "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+    "js/ts.preferences.importModuleSpecifier": "non-relative",
+    "js/ts.updateImportsOnFileMove.enabled": "always",
+    "js/ts.suggest.autoImports": true,
+    "js/ts.tsserver.maxMemory": 4096,
+
+    "tailwindCSS.classFunctions": ["cva", "cn", "clsx"],
+
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[typescriptreact]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "files.associations": {
-        "*.css": "tailwindcss"
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "tailwindCSS.experimental.classRegex": [
-        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-    ],
-    "files.eol": "\n",
-    "files.exclude": {
-        "**/vendor": true,
-        "**/node_modules": true,
-        "**/public/build": true
-    }
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": false
+        }
+    },
+
+    "path-intellisense.extensionOnImport": false,
+    "path-intellisense.autoSlashAfterDirectory": true,
+    "arena.codePrivacySettings": "Private"
 }

@@ -1,11 +1,22 @@
 {
     "recommendations": [
-        "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        "EditorConfig.EditorConfig",
-        "bradlc.vscode-tailwindcss",
-        "open-southeners.laravel-pint",
         "bmewburn.vscode-intelephense-client",
-        "amirmarmul.laravel-blade-vscode"
+        "laravel.vscode-laravel",
+        "open-southeners.laravel-pint",
+        "xdebug.php-debug",
+        "calebporzio.better-phpunit",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "yoavbls.pretty-ts-errors",
+        "christian-kohler.path-intellisense",
+        "wix.vscode-import-cost",
+        "nhedger.inertia",
+        "mikestead.dotenv",
+        "editorconfig.editorconfig",
+        "ms-ossdata.vscode-pgsql",
+        "ms-azuretools.vscode-containers",
+        "usernamehw.errorlens",
+        "gruntfuggly.todo-tree"
     ]
 }
