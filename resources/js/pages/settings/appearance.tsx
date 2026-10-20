@@ -3,6 +3,7 @@ import AppearanceTabs from '@/components/appearance-tabs';
 import InputError from '@/components/input-error';
 import ContentSection from '@/components/settings/content-section';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
@@ -226,6 +227,7 @@ export default function Appearance({
                         </section>
 
                         <Button type="submit" disabled={form.processing}>
+                            {form.processing && <Spinner />}
                             {t('Save')}
                         </Button>
                     </form>

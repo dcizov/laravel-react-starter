@@ -31,7 +31,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'timezone', 'locale', 'date_of_birth', 'display_items', 'notification_settings', 'avatar_path', 'bio', 'job_title', 'company', 'location', 'website', 'sidebar_variant', 'font'])]
+#[Fillable(['name', 'email', 'password', 'timezone', 'locale', 'date_of_birth', 'display_items', 'notification_settings', 'avatar_path', 'header_path', 'bio', 'job_title', 'company', 'location', 'website', 'sidebar_variant', 'font'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
@@ -43,7 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
      *
      * @var list<string>
      */
-    protected $appends = ['avatar_url'];
+    protected $appends = ['avatar_url', 'header_url'];
 
     /**
      * Public URL of the profile picture, or null when the user has none.
@@ -54,6 +54,18 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         return Attribute::get(fn (): ?string => $this->avatar_path
             ? Storage::disk('public')->url($this->avatar_path)
+            : null);
+    }
+
+    /**
+     * The public URL of the profile header image, or null when none is set.
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function headerUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->header_path
+            ? Storage::disk('public')->url($this->header_path)
             : null);
     }
 

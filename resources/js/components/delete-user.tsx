@@ -5,6 +5,7 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import {
     Dialog,
     DialogClose,
@@ -110,6 +111,7 @@ export default function DeleteUser() {
                                             disabled={processing}
                                             data-test="confirm-delete-user-button"
                                         >
+                                            {processing && <Spinner />}
                                             {t('Delete account')}
                                         </Button>
                                     </DialogFooter>

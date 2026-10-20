@@ -1,8 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { CalendarDays, Globe, Mail, MapPin, Pencil } from 'lucide-react';
+import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useInitials } from '@/hooks/use-initials';
 import { useTrans } from '@/hooks/use-trans';
 import { edit as editProfile } from '@/routes/profile';
@@ -44,6 +46,9 @@ export default function UserProfile() {
         ? user.website.replace(/^https?:\/\//, '').replace(/\/$/, '')
         : null;
 
+    // The header image shows a skeleton until the browser has loaded it.
+    const [headerLoaded, setHeaderLoaded] = useState(false);
+
     const subtitle = [user.job_title, user.company].filter(Boolean).join(' · ');
 
     return (
@@ -53,10 +58,21 @@ export default function UserProfile() {
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
                     <Card className="gap-0 overflow-hidden p-0">
-                        <div
-                            className="h-24 bg-muted md:h-32"
-                            aria-hidden="true"
-                        />
+                        <div className="relative h-24 bg-muted md:h-32">
+                            {user.header_url && (
+                                <>
+                                    {!headerLoaded && (
+                                        <Skeleton className="absolute inset-0 rounded-none" />
+                                    )}
+                                    <img
+                                        src={user.header_url}
+                                        alt=""
+                                        onLoad={() => setHeaderLoaded(true)}
+                                        className={`size-full object-cover ${headerLoaded ? '' : 'invisible'}`}
+                                    />
+                                </>
+                            )}
+                        </div>
 
                         <div className="px-4 pb-6 md:px-6">
                             <div className="-mt-12 flex flex-wrap items-end justify-between gap-4">

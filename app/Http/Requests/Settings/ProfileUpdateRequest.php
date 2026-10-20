@@ -27,6 +27,8 @@ class ProfileUpdateRequest extends FormRequest
             'website' => ['nullable', 'url:http,https', 'max:255'],
             'avatar' => ['nullable', File::image()->max(2 * 1024)],
             'remove_avatar' => ['nullable', 'boolean'],
+            'header' => ['nullable', File::image()->max(4 * 1024)],
+            'remove_header' => ['nullable', 'boolean'],
         ];
     }
 }

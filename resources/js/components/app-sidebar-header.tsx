@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { CommandSearch } from '@/components/command-search';
@@ -13,6 +13,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useTrans } from '@/hooks/use-trans';
+import { cn } from '@/lib/utils';
 import { isMac, modifierKeys } from '@/lib/shortcuts';
 import { edit as editAccount } from '@/routes/account';
 import { edit as editAppearance } from '@/routes/appearance';
@@ -31,6 +32,7 @@ export function AppSidebarHeader({
     const t = useTrans();
     const { resolvedAppearance, updateAppearance } = useAppearance();
     const [searchOpen, setSearchOpen] = useState(false);
+    const { sidebarVariant } = usePage().props;
 
     const toggleTheme = () =>
         updateAppearance(resolvedAppearance === 'dark' ? 'light' : 'dark');
@@ -70,7 +72,13 @@ export function AppSidebarHeader({
     }, []);
 
     return (
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
+        <header
+            className={cn(
+                'sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 bg-background px-4',
+                // A floating sidebar sits on its own card, so the top bar needs no divider line.
+                sidebarVariant !== 'floating' && 'border-b',
+            )}
+        >
             <SidebarTrigger className="-ml-1" />
             <Separator
                 orientation="vertical"

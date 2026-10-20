@@ -6,6 +6,7 @@ import ContentSection from '@/components/settings/content-section';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useInitials } from '@/hooks/use-initials';
@@ -29,6 +30,10 @@ export default function Profile({
     const [preview, setPreview] = useState<string | null>(null);
     const [removeAvatar, setRemoveAvatar] = useState(false);
 
+    const headerInput = useRef<HTMLInputElement>(null);
+    const [headerPreview, setHeaderPreview] = useState<string | null>(null);
+    const [removeHeader, setRemoveHeader] = useState(false);
+
     // What the avatar shows right now: a pending upload, the saved avatar, or nothing.
     const shownAvatar = removeAvatar
         ? null
@@ -41,6 +46,29 @@ export default function Profile({
 
         setPreview(URL.createObjectURL(file));
         setRemoveAvatar(false);
+    };
+
+    // The header image works the same way as the avatar: pending upload, saved image, or nothing.
+    const shownHeader = removeHeader
+        ? null
+        : (headerPreview ?? user.header_url ?? null);
+
+    const chooseHeader = (file: File | undefined) => {
+        if (!file) {
+            return;
+        }
+
+        setHeaderPreview(URL.createObjectURL(file));
+        setRemoveHeader(false);
+    };
+
+    const removeHeaderImage = () => {
+        if (headerInput.current) {
+            headerInput.current.value = '';
+        }
+
+        setHeaderPreview(null);
+        setRemoveHeader(true);
     };
 
     const removePicture = () => {
@@ -73,11 +101,68 @@ export default function Profile({
                     onSuccess={() => {
                         setPreview(null);
                         setRemoveAvatar(false);
+                        setHeaderPreview(null);
+                        setRemoveHeader(false);
                     }}
                     className="space-y-6"
                 >
                     {({ processing, errors }) => (
                         <>
+                            <div className="grid gap-2">
+                                <Label>{t('Header image')}</Label>
+
+                                <div className="flex flex-col gap-3">
+                                    <div className="relative h-24 w-full overflow-hidden rounded-lg border bg-muted md:h-32">
+                                        {shownHeader && (
+                                            <img
+                                                src={shownHeader}
+                                                alt=""
+                                                className="size-full object-cover"
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Input
+                                            ref={headerInput}
+                                            id="header"
+                                            name="header"
+                                            type="file"
+                                            accept="image/*"
+                                            className="max-w-xs"
+                                            onChange={(event) =>
+                                                chooseHeader(
+                                                    event.target.files?.[0],
+                                                )
+                                            }
+                                        />
+
+                                        {shownHeader && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={removeHeaderImage}
+                                            >
+                                                {t('Remove header image')}
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <input
+                                    type="hidden"
+                                    name="remove_header"
+                                    value={removeHeader ? '1' : '0'}
+                                />
+
+                                <p className="text-sm text-muted-foreground">
+                                    {t('JPG, PNG, GIF or WebP, up to 4 MB.')}
+                                </p>
+
+                                <InputError message={errors.header} />
+                            </div>
+
                             <div className="grid gap-2">
                                 <Label>{t('Profile picture')}</Label>
 
@@ -281,6 +366,7 @@ export default function Profile({
                                     disabled={processing}
                                     data-test="update-profile-button"
                                 >
+                                    {processing && <Spinner />}
                                     {t('Save')}
                                 </Button>
                             </div>

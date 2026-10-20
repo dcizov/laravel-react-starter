@@ -4,6 +4,7 @@ import ContentSection from '@/components/settings/content-section';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -141,6 +142,7 @@ export default function Notifications({
                     </div>
 
                     <Button type="submit" disabled={form.processing}>
+                        {form.processing && <Spinner />}
                         {t('Save')}
                     </Button>
                 </form>

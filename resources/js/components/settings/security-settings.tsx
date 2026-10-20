@@ -9,6 +9,7 @@ import type { Props as ManageTwoFactorProps } from '@/components/manage-two-fact
 import ManageTwoFactor from '@/components/manage-two-factor';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-trans';
 
@@ -116,6 +117,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                     disabled={processing}
                                     data-test="update-password-button"
                                 >
+                                    {processing && <Spinner />}
                                     {t('Save')}
                                 </Button>
                             </div>

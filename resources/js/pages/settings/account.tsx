@@ -6,6 +6,7 @@ import SecuritySettings, {
     type SecuritySettingsProps,
 } from '@/components/settings/security-settings';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -155,6 +156,7 @@ export default function Account({
                     </div>
 
                     <Button type="submit" disabled={form.processing}>
+                        {form.processing && <Spinner />}
                         {t('Save')}
                     </Button>
                 </form>

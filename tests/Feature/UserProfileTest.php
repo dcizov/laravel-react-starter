@@ -141,3 +141,64 @@ test('bio may be at most 500 characters', function () {
         ])
         ->assertSessionHasNoErrors();
 });
+
+test('header image can be uploaded', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'header' => UploadedFile::fake()->image('header.jpg', 1200, 300),
+        ])
+        ->assertSessionHasNoErrors();
+
+    $user->refresh();
+
+    expect($user->header_path)->toStartWith('headers/');
+    Storage::disk('public')->assertExists($user->header_path);
+    expect($user->header_url)->toBe(Storage::disk('public')->url($user->header_path));
+});
+
+test('header image must be an image of at most 4 MB', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'header' => UploadedFile::fake()->create('header.pdf', 100, 'application/pdf'),
+        ])
+        ->assertSessionHasErrors('header');
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'header' => UploadedFile::fake()->image('huge.jpg')->size(4097),
+        ])
+        ->assertSessionHasErrors('header');
+});
+
+test('header image can be removed', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $path = Storage::disk('public')->put('headers', UploadedFile::fake()->image('old.jpg'));
+    $user->update(['header_path' => $path]);
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'remove_header' => true,
+        ])
+        ->assertSessionHasNoErrors();
+
+    $user->refresh();
+
+    expect($user->header_path)->toBeNull();
+    expect($user->header_url)->toBeNull();
+    Storage::disk('public')->assertMissing($path);
+});

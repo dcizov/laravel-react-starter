@@ -33,7 +33,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $user->fill($request->safe()->except(['avatar', 'remove_avatar']));
+        $user->fill($request->safe()->except(['avatar', 'remove_avatar', 'header', 'remove_header']));
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -49,9 +49,27 @@ class ProfileController extends Controller
                 : null;
         }
 
+        if ($request->hasFile('header') || $request->boolean('remove_header')) {
+            if ($user->header_path) {
+                Storage::disk('public')->delete($user->header_path);
+            }
+
+            $user->header_path = $request->hasFile('header')
+                ? $request->file('header')->store('headers', 'public')
+                : null;
+        }
+
         $user->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => __('Profile updated.'),
+            'description' => __('Your changes are visible on your profile.'),
+            'action' => [
+                'label' => __('View profile'),
+                'url' => route('user-profile.show'),
+            ],
+        ]);
 
         return to_route('profile.edit');
     }
