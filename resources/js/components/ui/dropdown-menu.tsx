@@ -163,16 +163,20 @@ function DropdownMenuLabel({
 }: React.ComponentProps<typeof MenuPrimitive.GroupLabel> & {
   inset?: boolean
 }) {
+  // Base UI requires GroupLabel to sit inside a Group; wrap it so the label
+  // works standalone, as DropdownMenuLabel did with Radix.
   return (
-    <MenuPrimitive.GroupLabel
-      data-slot="dropdown-menu-label"
-      data-inset={inset}
-      className={cn(
-        "px-2 py-1.5 text-sm font-medium data-[inset]:pl-8",
-        className
-      )}
-      {...props}
-    />
+    <MenuPrimitive.Group>
+      <MenuPrimitive.GroupLabel
+        data-slot="dropdown-menu-label"
+        data-inset={inset}
+        className={cn(
+          "px-2 py-1.5 text-sm font-medium data-[inset]:pl-8",
+          className
+        )}
+        {...props}
+      />
+    </MenuPrimitive.Group>
   )
 }
 
