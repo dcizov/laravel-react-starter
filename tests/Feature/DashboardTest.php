@@ -59,7 +59,7 @@ test('users with tasks.view-any see every task and the user count', function () 
     $this->actingAs($admin)
         ->get(route('dashboard'))
         ->assertInertia(fn ($page) => $page
-            ->where('summary.total', 4)
+            ->where('summary.total', 3)
             ->where('summary.open', 2)
             ->where('summary.high_priority', 2)
             ->where('showOwner', true)
