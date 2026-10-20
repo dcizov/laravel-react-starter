@@ -1,6 +1,7 @@
 import {
     Bell,
     BookOpen,
+    ListChecks,
     FolderGit2,
     LayoutGrid,
     Monitor,
@@ -12,6 +13,7 @@ import {
     type LucideIcon,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
+import { index as indexTasks } from '@/routes/tasks';
 import { show as showUserProfile } from '@/routes/user-profile';
 import { edit as editAccount } from '@/routes/account';
 import { edit as editAppearance } from '@/routes/appearance';
@@ -59,6 +61,12 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'User profile',
                 href: showUserProfile(),
                 icon: UserRound,
+            },
+            {
+                id: 'tasks',
+                title: 'Tasks',
+                href: indexTasks(),
+                icon: ListChecks,
             },
         ],
     },

@@ -43,7 +43,7 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
         <ToastPrimitive.Root
             data-slot="toast"
             className={cn(
-                'cn-toast group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom border bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                'cn-toast group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom rounded-xl border bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
                 '[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)*-1+calc(var(--toast-index)*var(--gap)*-1)+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]',
                 'h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]',
                 "after:absolute after:top-full after:left-0 after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
@@ -140,40 +140,46 @@ function ToastClose({
     );
 }
 
-// The status icon for each toast type. Toasts without a type show no icon.
+// The status icon for each toast type, shown in a tile tinted to match. Toasts without a type show no icon.
+const toastIconTones: Record<string, { className: string; icon: React.ReactNode }> = {
+    success: {
+        className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+        icon: <CircleCheck aria-hidden="true" />,
+    },
+    info: {
+        className: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+        icon: <Info aria-hidden="true" />,
+    },
+    warning: {
+        className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+        icon: <TriangleAlert aria-hidden="true" />,
+    },
+    error: {
+        className: 'bg-destructive/10 text-destructive',
+        icon: <OctagonX aria-hidden="true" />,
+    },
+    loading: {
+        className: 'bg-muted text-muted-foreground',
+        icon: <LoaderCircle aria-hidden="true" className="animate-spin" />,
+    },
+};
+
 function ToastIcon({ type }: { type: string | undefined }) {
-    let icon: React.ReactNode = null;
+    const tone = type ? toastIconTones[type] : undefined;
 
-    if (type === 'success') {
-        icon = <CircleCheck aria-hidden="true" />;
-    }
-
-    if (type === 'info') {
-        icon = <Info aria-hidden="true" />;
-    }
-
-    if (type === 'warning') {
-        icon = <TriangleAlert aria-hidden="true" />;
-    }
-
-    if (type === 'error') {
-        icon = <OctagonX aria-hidden="true" className="text-destructive" />;
-    }
-
-    if (type === 'loading') {
-        icon = <LoaderCircle aria-hidden="true" className="animate-spin" />;
-    }
-
-    if (!icon) {
+    if (!tone) {
         return null;
     }
 
     return (
         <span
             data-slot="toast-icon"
-            className="shrink-0 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4"
+            className={cn(
+                'flex size-9 shrink-0 items-center justify-center rounded-lg [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4',
+                tone.className,
+            )}
         >
-            {icon}
+            {tone.icon}
         </span>
     );
 }
