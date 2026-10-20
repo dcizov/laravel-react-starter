@@ -51,14 +51,19 @@ final class Rbac
      */
     public static function sync(): void
     {
+        $registrar = app(PermissionRegistrar::class);
+
         foreach (self::PERMISSIONS as $name) {
             Permission::findOrCreate($name);
         }
+
+        // Spatie caches the permission list. Clear it so the roles below see the rows just created.
+        $registrar->forgetCachedPermissions();
 
         foreach (self::ROLES as $name => $permissions) {
             Role::findOrCreate($name)->syncPermissions($permissions);
         }
 
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $registrar->forgetCachedPermissions();
     }
 }
