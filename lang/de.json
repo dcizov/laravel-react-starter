@@ -217,5 +217,10 @@
     "Font": "Schriftart",
     "Light and dark apply right away on this device.": "Hell und Dunkel gelten sofort auf diesem Gerät.",
     "Choose the typeface used across the app.": "Wähle die Schriftart, die in der ganzen App verwendet wird.",
-    "System font": "Systemschrift"
+    "System font": "Systemschrift",
+    "Search": "Suchen",
+    "Search pages and actions...": "Seiten und Aktionen durchsuchen …",
+    "No results found.": "Keine Ergebnisse gefunden.",
+    "Actions": "Aktionen",
+    "Search for a page or action to run.": "Suche nach einer Seite oder Aktion, die du ausführen möchtest."
 }

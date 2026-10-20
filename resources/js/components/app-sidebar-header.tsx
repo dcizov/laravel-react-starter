@@ -1,24 +1,28 @@
 import { router } from '@inertiajs/react';
-import { Moon, Sun } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { CommandSearch } from '@/components/command-search';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { NotificationsDropdown } from '@/components/notifications-dropdown';
 import { ProfileDropdown } from '@/components/profile-dropdown';
+import { ThemeSwitch } from '@/components/theme-switch';
 import { Button } from '@/components/ui/button';
+import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useTrans } from '@/hooks/use-trans';
-import { formatShortcut } from '@/lib/shortcuts';
-import { logout } from '@/routes';
-import { edit as editAppearance } from '@/routes/appearance';
+import { isMac, modifierKeys } from '@/lib/shortcuts';
 import { edit as editAccount } from '@/routes/account';
+import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editProfile } from '@/routes/profile';
 import { show as showUserProfile } from '@/routes/user-profile';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import { useEffect, useState } from 'react';
+import { logout } from '@/routes';
 
-// Top bar above the page content: sidebar toggle, breadcrumbs, and quick actions.
+// Top bar above the page content: sidebar toggle, breadcrumbs, search, and quick actions.
 export function AppSidebarHeader({
     breadcrumbs = [],
 }: {
@@ -26,9 +30,10 @@ export function AppSidebarHeader({
 }) {
     const t = useTrans();
     const { resolvedAppearance, updateAppearance } = useAppearance();
-    const isDark = resolvedAppearance === 'dark';
+    const [searchOpen, setSearchOpen] = useState(false);
 
-    const toggleTheme = () => updateAppearance(isDark ? 'light' : 'dark');
+    const toggleTheme = () =>
+        updateAppearance(resolvedAppearance === 'dark' ? 'light' : 'dark');
 
     // The top bar is on every sidebar page, so the shortcuts work everywhere.
     useKeyboardShortcuts({
@@ -43,6 +48,27 @@ export function AppSidebarHeader({
         },
     });
 
+    // Cmd/Ctrl+K opens search, as in shadcn-lar.
+    useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            const modifier = isMac() ? event.metaKey : event.ctrlKey;
+
+            if (
+                modifier &&
+                !event.shiftKey &&
+                !event.altKey &&
+                event.key.toLowerCase() === 'k'
+            ) {
+                event.preventDefault();
+                setSearchOpen((open) => !open);
+            }
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, []);
+
     return (
         <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <SidebarTrigger className="-ml-1" />
@@ -53,20 +79,33 @@ export function AppSidebarHeader({
             <Breadcrumbs breadcrumbs={breadcrumbs} />
 
             <div className="ml-auto flex items-center gap-1">
-                <LanguageSwitcher />
                 <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    aria-label={t('Toggle theme')}
-                    title={`${t('Toggle theme')} (${formatShortcut('theme')})`}
-                    onClick={toggleTheme}
+                    variant="outline"
+                    size="sm"
+                    aria-label={t('Search')}
+                    onClick={() => setSearchOpen(true)}
+                    className="mr-1 h-8 justify-start bg-muted/25 font-normal text-muted-foreground shadow-none hover:bg-muted/50 md:w-48 lg:w-64"
                 >
-                    {isDark ? <Sun /> : <Moon />}
+                    <Search aria-hidden="true" className="size-4" />
+                    <span className="hidden md:inline">{t('Search')}</span>
+                    <KbdGroup className="ml-auto hidden md:inline-flex">
+                        {[...modifierKeys(false), 'K'].map((key) => (
+                            <Kbd key={key}>{key}</Kbd>
+                        ))}
+                    </KbdGroup>
                 </Button>
+                <LanguageSwitcher />
+                <ThemeSwitch />
                 <NotificationsDropdown />
                 <ProfileDropdown />
             </div>
+
+            <CommandSearch
+                open={searchOpen}
+                onOpenChange={setSearchOpen}
+                onToggleTheme={toggleTheme}
+            />
         </header>
     );
 }

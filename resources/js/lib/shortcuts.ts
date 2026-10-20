@@ -21,11 +21,17 @@ export function isMac(): boolean {
     );
 }
 
-// Text shown next to a menu item, e.g. "⇧⌘P" on macOS or "Ctrl+Shift+P" elsewhere.
-export function formatShortcut(id: ShortcutId): string {
-    const key = shortcuts[id].key.toUpperCase();
+// The modifier keys as shown on this platform, e.g. ["⇧", "⌘"] or ["Ctrl", "Shift"].
+export function modifierKeys(withShift: boolean): string[] {
+    const mac = isMac();
+    const keys = mac ? ['⌘'] : ['Ctrl'];
 
-    return isMac() ? `⇧⌘${key}` : `Ctrl+Shift+${key}`;
+    return withShift ? [mac ? '⇧' : 'Shift', ...keys] : keys;
+}
+
+// The full key sequence for a shortcut, one entry per key cap.
+export function shortcutKeys(id: ShortcutId): string[] {
+    return [...modifierKeys(true), shortcuts[id].key.toUpperCase()];
 }
 
 // True when the keyboard event is the shortcut for this id.

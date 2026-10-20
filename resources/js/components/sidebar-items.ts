@@ -131,3 +131,34 @@ export const displayGroups = sidebarGroups.map((group) => ({
         .flatMap((entry) => (isCollapsible(entry) ? entry.children : [entry]))
         .map(({ id, title }) => ({ id, title })),
 }));
+
+// The groups the user chose in Display settings. Empty groups and submenus are dropped.
+export function visibleSidebarGroups(
+    displayItems: string[],
+): SidebarGroupDef[] {
+    return sidebarGroups
+        .map((group): SidebarGroupDef => ({
+            ...group,
+            items: group.items.flatMap((entry): SidebarEntry[] => {
+                if (isCollapsible(entry)) {
+                    const children = entry.children.filter((child) =>
+                        displayItems.includes(child.id),
+                    );
+
+                    return children.length > 0 ? [{ ...entry, children }] : [];
+                }
+
+                return displayItems.includes(entry.id) ? [entry] : [];
+            }),
+        }))
+        .filter((group) => group.items.length > 0);
+}
+
+// Every visible link in order, with submenu items flattened into the list.
+export function flattenSidebarLinks(groups: SidebarGroupDef[]): SidebarLink[] {
+    return groups.flatMap((group) =>
+        group.items.flatMap((entry) =>
+            isCollapsible(entry) ? entry.children : [entry],
+        ),
+    );
+}

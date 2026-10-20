@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { BadgeCheck, LogOut, Palette, Settings, UserRound } from 'lucide-react';
+import { ShortcutHint } from '@/components/shortcut-hint';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -10,13 +11,17 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { useTrans } from '@/hooks/use-trans';
 import { logout } from '@/routes';
-import { edit } from '@/routes/profile';
+import { edit as editAccount } from '@/routes/account';
+import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editProfile } from '@/routes/profile';
+import { show as showUserProfile } from '@/routes/user-profile';
 import type { User } from '@/types';
 
 type Props = {
     user: User;
 };
 
+// The profile menu. The header and the sidebar both render this, so they always match.
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
     const t = useTrans();
@@ -33,36 +38,73 @@ export function UserMenuContent({ user }: Props) {
                     <UserInfo user={user} showEmail={true} />
                 </div>
             </DropdownMenuLabel>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuGroup>
                 <DropdownMenuItem
                     render={
                         <Link
-                            className="block w-full cursor-pointer"
-                            href={edit()}
+                            href={showUserProfile()}
                             prefetch
                             onClick={cleanup}
                         />
                     }
                 >
-                    <Settings className="mr-2" />
-                    {t('Settings')}
+                    <UserRound />
+                    {t('User profile')}
+                    <ShortcutHint id="userProfile" />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    render={
+                        <Link href={editProfile()} prefetch onClick={cleanup} />
+                    }
+                >
+                    <BadgeCheck />
+                    {t('Profile settings')}
+                    <ShortcutHint id="profileSettings" />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    render={
+                        <Link href={editAccount()} prefetch onClick={cleanup} />
+                    }
+                >
+                    <Settings />
+                    {t('Account')}
+                    <ShortcutHint id="account" />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    render={
+                        <Link
+                            href={editAppearance()}
+                            prefetch
+                            onClick={cleanup}
+                        />
+                    }
+                >
+                    <Palette />
+                    {t('Appearance')}
+                    <ShortcutHint id="appearance" />
                 </DropdownMenuItem>
             </DropdownMenuGroup>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
+                variant="destructive"
                 render={
                     <Link
-                        className="block w-full cursor-pointer"
                         href={logout()}
                         as="button"
+                        className="w-full"
                         onClick={handleLogout}
                         data-test="logout-button"
                     />
                 }
             >
-                <LogOut className="mr-2" />
+                <LogOut />
                 {t('Log out')}
+                <ShortcutHint id="logout" />
             </DropdownMenuItem>
         </>
     );
