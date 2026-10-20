@@ -7,6 +7,16 @@ import { useTaskColumns } from '@/components/tasks/columns';
 import type { Task } from '@/components/tasks/data';
 import { TaskFormDialog } from '@/components/tasks/task-form-dialog';
 import { TasksToolbar } from '@/components/tasks/tasks-toolbar';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Empty,
@@ -16,6 +26,7 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { index as tasksIndex } from '@/routes/tasks';
 
@@ -37,14 +48,34 @@ export default function Tasks({ tasks }: { tasks: Task[] }) {
         router.patch(update.url(id), { label }, { preserveScroll: true });
     }, []);
 
-    const deleteTask = useCallback((id: number) => {
-        router.delete(destroy.url(id), { preserveScroll: true });
-    }, []);
+    // Deleting asks first. The task is only removed when the user confirms below.
+    const [pendingDelete, setPendingDelete] = useState<Task | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
+    const askToDelete = useCallback(
+        (id: number) => {
+            setPendingDelete(tasks.find((task) => task.id === id) ?? null);
+        },
+        [tasks],
+    );
+
+    const confirmDelete = () => {
+        if (!pendingDelete) {
+            return;
+        }
+
+        router.delete(destroy.url(pendingDelete.id), {
+            preserveScroll: true,
+            onStart: () => setDeleting(true),
+            onFinish: () => setDeleting(false),
+            onSuccess: () => setPendingDelete(null),
+        });
+    };
 
     const columns = useTaskColumns({
         onEdit: (task) => openDialog(task),
         onLabelChange: changeLabel,
-        onDelete: deleteTask,
+        onDelete: askToDelete,
     });
 
     const pageSizes = useMemo(() => [10, 20, 30, 40, 50], []);
@@ -98,6 +129,43 @@ export default function Tasks({ tasks }: { tasks: Task[] }) {
                     />
                 )}
             </div>
+
+            <AlertDialog
+                open={pendingDelete !== null}
+                onOpenChange={(open) => {
+                    if (!open && !deleting) {
+                        setPendingDelete(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('Delete task?')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t(
+                                ':title will be permanently deleted. This cannot be undone.',
+                                { title: pendingDelete?.title ?? '' },
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleting}>
+                            {t('Cancel')}
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            variant="destructive"
+                            disabled={deleting}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                confirmDelete();
+                            }}
+                        >
+                            {deleting && <Spinner />}
+                            {t('Delete')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <TaskFormDialog
                 key={formKey}

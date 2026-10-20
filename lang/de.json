@@ -285,5 +285,7 @@
     "Create your first task to start your list.": "Erstelle deine erste Aufgabe, um deine Liste zu beginnen.",
     "Task created.": "Aufgabe erstellt.",
     "Task updated.": "Aufgabe aktualisiert.",
-    "Delete": "Löschen"
+    "Delete": "Löschen",
+    "Delete task?": "Aufgabe löschen?",
+    ":title will be permanently deleted. This cannot be undone.": ":title wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden."
 }
