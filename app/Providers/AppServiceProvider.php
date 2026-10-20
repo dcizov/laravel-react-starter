@@ -5,8 +5,10 @@ namespace App\Providers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // A permission granted by one of the user's roles passes any Gate check with that name.
+        // Anything else returns null, so policies still decide.
+        Gate::before(function (?User $user, string $ability): ?bool {
+            return $user?->hasPermission($ability) ? true : null;
+        });
     }
 
     /**

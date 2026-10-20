@@ -30,6 +30,8 @@ type TaskActions = {
     onEdit: (task: Task) => void;
     onLabelChange: (id: number, label: string) => void;
     onDelete: (id: number) => void;
+    // Admins see everyone's tasks, so the owner column is only added for them.
+    showOwner: boolean;
 };
 
 // The table columns for tasks. Titles and option labels are translated here.
@@ -37,6 +39,7 @@ export function useTaskColumns({
     onEdit,
     onLabelChange,
     onDelete,
+    showOwner,
 }: TaskActions): ColumnDef<DataTableFeatures, Task>[] {
     const t = useTrans();
 
@@ -106,6 +109,24 @@ export function useTaskColumns({
                     );
                 },
             },
+            ...(showOwner
+                ? ([
+                      {
+                          accessorKey: 'owner',
+                          meta: { label: 'Owner' },
+                          header: ({ column }) => (
+                              <DataTableColumnHeader
+                                  column={column}
+                                  title={t('Owner')}
+                              />
+                          ),
+                          cell: ({ row }) => (
+                              <span>{row.original.owner ?? '—'}</span>
+                          ),
+                          enableSorting: false,
+                      },
+                  ] satisfies ColumnDef<DataTableFeatures, Task>[])
+                : []),
             {
                 accessorKey: 'status',
                 meta: { label: 'Status' },
@@ -226,6 +247,6 @@ export function useTaskColumns({
                 ),
             },
         ],
-        [t, onEdit, onLabelChange, onDelete],
+        [t, onEdit, onLabelChange, onDelete, showOwner],
     );
 }

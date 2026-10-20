@@ -31,7 +31,13 @@ import { useTrans } from '@/hooks/use-trans';
 import { index as tasksIndex } from '@/routes/tasks';
 
 // The list comes from the server. Every change is sent to the Tasks controller, which flashes a toast.
-export default function Tasks({ tasks }: { tasks: Task[] }) {
+export default function Tasks({
+    tasks,
+    showOwner,
+}: {
+    tasks: Task[];
+    showOwner: boolean;
+}) {
     const t = useTrans();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<Task | null>(null);
@@ -76,6 +82,7 @@ export default function Tasks({ tasks }: { tasks: Task[] }) {
         onEdit: (task) => openDialog(task),
         onLabelChange: changeLabel,
         onDelete: askToDelete,
+        showOwner,
     });
 
     const pageSizes = useMemo(() => [10, 20, 30, 40, 50], []);
@@ -89,7 +96,9 @@ export default function Tasks({ tasks }: { tasks: Task[] }) {
                         {t('Tasks')}
                     </h1>
                     <p className="text-muted-foreground">
-                        {t('Here are the tasks for this month.')}
+                        {showOwner
+                            ? t('Here are the tasks of every user.')
+                            : t('Here are the tasks for this month.')}
                     </p>
                 </div>
 

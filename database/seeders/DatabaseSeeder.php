@@ -10,11 +10,12 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database with example users and tasks.
+     * Seed the application's database with roles, example users, and tasks.
      */
     public function run(): void
     {
         $this->call([
+            RbacSeeder::class,
             UserSeeder::class,
             TaskSeeder::class,
         ]);

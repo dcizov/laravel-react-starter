@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Tasks\StoreTaskRequest;
 use App\Http\Requests\Tasks\UpdateTaskRequest;
 use App\Models\Task;
+use App\Support\Rbac;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -14,17 +15,31 @@ use Inertia\Response;
 class TaskController extends Controller
 {
     /**
-     * The signed-in user's tasks. Only the columns the Tasks page shows are sent.
+     * The tasks the user can see: their own, or every task for users with tasks.view-any.
+     * Only the columns the Tasks page shows are sent.
      */
     public function index(Request $request): Response
     {
-        $tasks = $request->user()
-            ->tasks()
+        $user = $request->user();
+        $canViewAll = $user->hasPermission(Rbac::PERMISSION_TASKS_VIEW_ANY);
+
+        $tasks = ($canViewAll ? Task::query() : $user->tasks())
+            ->with('user:id,name')
             ->orderBy('id')
-            ->get(['id', 'code', 'title', 'status', 'label', 'priority']);
+            ->get()
+            ->map(fn (Task $task) => [
+                'id' => $task->id,
+                'code' => $task->code,
+                'title' => $task->title,
+                'status' => $task->status,
+                'label' => $task->label,
+                'priority' => $task->priority,
+                'owner' => $canViewAll ? $task->user?->name : null,
+            ]);
 
         return Inertia::render('tasks', [
             'tasks' => $tasks,
+            'showOwner' => $canViewAll,
         ]);
     }
 

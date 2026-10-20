@@ -10,10 +10,12 @@ import {
     User,
     UserCog,
     UserRound,
+    Users,
     type LucideIcon,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
 import { index as indexTasks } from '@/routes/tasks';
+import { index as indexUsers } from '@/routes/users';
 import { show as showUserProfile } from '@/routes/user-profile';
 import { edit as editAccount } from '@/routes/account';
 import { edit as editAppearance } from '@/routes/appearance';
@@ -22,7 +24,12 @@ import { edit as editNotifications } from '@/routes/notifications';
 import { edit as editProfile } from '@/routes/profile';
 import type { NavItem } from '@/types';
 
-export type SidebarLink = NavItem & { id: string; icon: LucideIcon };
+export type SidebarLink = NavItem & {
+    id: string;
+    icon: LucideIcon;
+    // The Gate ability the user needs to see the link. Links without one are open to everyone.
+    permission?: string;
+};
 
 export type SidebarCollapsible = {
     id: string;
@@ -67,6 +74,13 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'Tasks',
                 href: indexTasks(),
                 icon: ListChecks,
+            },
+            {
+                id: 'users',
+                title: 'Users',
+                href: indexUsers(),
+                icon: Users,
+                permission: 'users.view',
             },
         ],
     },
@@ -141,22 +155,26 @@ export const displayGroups = sidebarGroups.map((group) => ({
 }));
 
 // The groups the user chose in Display settings. Empty groups and submenus are dropped.
+// Links the user has no permission for are dropped, whatever Display settings say.
 export function visibleSidebarGroups(
     displayItems: string[],
+    permissions: string[],
 ): SidebarGroupDef[] {
+    const allowed = (link: SidebarLink) =>
+        displayItems.includes(link.id) &&
+        (!link.permission || permissions.includes(link.permission));
+
     return sidebarGroups
         .map((group): SidebarGroupDef => ({
             ...group,
             items: group.items.flatMap((entry): SidebarEntry[] => {
                 if (isCollapsible(entry)) {
-                    const children = entry.children.filter((child) =>
-                        displayItems.includes(child.id),
-                    );
+                    const children = entry.children.filter(allowed);
 
                     return children.length > 0 ? [{ ...entry, children }] : [];
                 }
 
-                return displayItems.includes(entry.id) ? [entry] : [];
+                return allowed(entry) ? [entry] : [];
             }),
         }))
         .filter((group) => group.items.length > 0);

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Support\Rbac;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -78,6 +80,60 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    /**
+     * Give every new account the default role.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (User $user): void {
+            $user->assignRole(Rbac::DEFAULT_ROLE);
+        });
+    }
+
+    /**
+     * The roles the user has.
+     *
+     * @return BelongsToMany<Role, $this>
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Add a role to the user, keeping any roles they already have.
+     */
+    public function assignRole(string $name): void
+    {
+        $role = Role::query()->firstOrCreate(['name' => $name]);
+
+        $this->roles()->syncWithoutDetaching([$role->id]);
+    }
+
+    public function hasRole(string $name): bool
+    {
+        return $this->roles()->where('name', $name)->exists();
+    }
+
+    /**
+     * The names of every permission the user gets from their roles.
+     *
+     * @return list<string>
+     */
+    public function permissionNames(): array
+    {
+        return Permission::query()
+            ->whereHas('roles.users', fn ($query) => $query->whereKey($this->getKey()))
+            ->pluck('name')
+            ->values()
+            ->all();
+    }
+
+    public function hasPermission(string $name): bool
+    {
+        return in_array($name, $this->permissionNames(), true);
     }
 
     /**

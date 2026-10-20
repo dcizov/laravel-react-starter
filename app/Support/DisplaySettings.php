@@ -14,6 +14,7 @@ final class DisplaySettings
     public const ITEMS = [
         'dashboard',
         'user-profile',
+        'users',
         'tasks',
         'settings-profile',
         'settings-account',

@@ -287,5 +287,18 @@
     "Task updated.": "Aufgabe aktualisiert.",
     "Delete": "Löschen",
     "Delete task?": "Aufgabe löschen?",
-    ":title will be permanently deleted. This cannot be undone.": ":title wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden."
+    ":title will be permanently deleted. This cannot be undone.": ":title wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+    "Users": "Benutzer",
+    "Manage the roles of everyone with an account.": "Verwalte die Rollen aller Konten.",
+    "Filter users...": "Benutzer filtern ...",
+    "No users found.": "Keine Benutzer gefunden.",
+    "Could not change the role.": "Die Rolle konnte nicht geändert werden.",
+    "Role": "Rolle",
+    "Owner": "Besitzer",
+    "Here are the tasks of every user.": "Hier sind die Aufgaben aller Benutzer.",
+    "Admin": "Administrator",
+    "User": "Benutzer",
+    "You cannot change your own role.": "Du kannst deine eigene Rolle nicht ändern.",
+    "At least one admin must remain.": "Mindestens ein Administrator muss bleiben.",
+    "User role updated.": "Die Rolle des Benutzers wurde aktualisiert."
 }

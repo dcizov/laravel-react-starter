@@ -37,4 +37,6 @@ export type Task = {
     status: string;
     label: string;
     priority: string;
+    // Only sent to users who can view every task.
+    owner?: string | null;
 };
