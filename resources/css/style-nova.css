@@ -395,7 +395,7 @@
     }
 
     .cn-command-item {
-        @apply relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:rounded-lg! data-selected:bg-muted data-selected:text-foreground [&_svg:not([class*='size-'])]:size-4 data-selected:*:[svg]:text-foreground;
+        @apply relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:rounded-lg! data-[selected=true]:bg-muted data-[selected=true]:text-foreground [&_svg:not([class*='size-'])]:size-4 data-[selected=true]:*:[svg]:text-foreground;
     }
 
     .cn-command-item-aria {
@@ -403,7 +403,7 @@
     }
 
     .cn-command-shortcut {
-        @apply ml-auto text-xs tracking-widest text-muted-foreground group-data-selected/command-item:text-foreground;
+        @apply ml-auto text-xs tracking-widest text-muted-foreground group-data-[selected=true]/command-item:text-foreground;
     }
 
     .cn-command-shortcut-aria {
@@ -1144,7 +1144,7 @@
     }
 
     .cn-sidebar-group {
-        @apply p-2;
+        @apply p-2 group-data-[collapsible=icon]:p-0;
     }
 
     .cn-sidebar-menu {

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import { isCollapsible } from '@/components/sidebar-items';
 import type {
     SidebarCollapsible,
@@ -101,9 +102,25 @@ function CollapsibleNavItem({
     const t = useTrans();
     // Open the submenu on load when one of its pages is the current page.
     const hasActiveChild = item.children.some((child) => isActive(child.href));
+    // Controlled open state: open once when a child page becomes current,
+    // without changing Base UI's defaultOpen after mount.
+    const [open, setOpen] = useState(hasActiveChild);
+    const [wasActive, setWasActive] = useState(hasActiveChild);
+
+    if (wasActive !== hasActiveChild) {
+        setWasActive(hasActiveChild);
+
+        if (hasActiveChild) {
+            setOpen(true);
+        }
+    }
 
     return (
-        <Collapsible defaultOpen={hasActiveChild} className="group/collapsible">
+        <Collapsible
+            open={open}
+            onOpenChange={setOpen}
+            className="group/collapsible"
+        >
             <SidebarMenuItem>
                 <CollapsibleTrigger
                     render={

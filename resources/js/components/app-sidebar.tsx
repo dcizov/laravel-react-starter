@@ -1,4 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
+import { Fragment } from 'react';
 import AppLogo from '@/components/app-logo';
 import { NavGroup } from '@/components/nav-group';
 import { NavUser } from '@/components/nav-user';
@@ -11,6 +12,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 
@@ -39,12 +41,14 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                {visibleGroups.map((group) => (
-                    <NavGroup
-                        key={group.title}
-                        title={group.title}
-                        items={group.items}
-                    />
+                {visibleGroups.map((group, index) => (
+                    <Fragment key={group.title}>
+                        {/* Groups have no labels in icon mode, so a divider separates them. */}
+                        {index > 0 && (
+                            <SidebarSeparator className="hidden group-data-[collapsible=icon]:block" />
+                        )}
+                        <NavGroup title={group.title} items={group.items} />
+                    </Fragment>
                 ))}
             </SidebarContent>
 

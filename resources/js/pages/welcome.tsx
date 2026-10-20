@@ -35,6 +35,7 @@ export default function Welcome() {
                             variant="outline"
                             size="sm"
                             render={<Link href={dashboard()} />}
+                            nativeButton={false}
                         >
                             {t('Dashboard')}
                         </Button>
@@ -44,12 +45,14 @@ export default function Welcome() {
                                 variant="ghost"
                                 size="sm"
                                 render={<Link href={login()} />}
+                                nativeButton={false}
                             >
                                 {t('Log in')}
                             </Button>
                             <Button
                                 size="sm"
                                 render={<Link href={register()} />}
+                                nativeButton={false}
                             >
                                 {t('Register')}
                             </Button>
@@ -108,6 +111,7 @@ export default function Welcome() {
                                             rel="noreferrer"
                                         />
                                     }
+                                    nativeButton={false}
                                 >
                                     {t('Deploy now')}
                                     <ArrowUpRightIcon aria-hidden="true" />

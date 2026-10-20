@@ -80,10 +80,7 @@ export function AppSidebarHeader({
             )}
         >
             <SidebarTrigger className="-ml-1" />
-            <Separator
-                orientation="vertical"
-                className="mr-1 data-[orientation=vertical]:h-4"
-            />
+            <Separator orientation="vertical" className="mx-1 h-4 w-px" />
             <Breadcrumbs breadcrumbs={breadcrumbs} />
 
             <div className="ml-auto flex items-center gap-1">

@@ -90,6 +90,7 @@ export default function UserProfile() {
                                     variant="outline"
                                     size="sm"
                                     render={<Link href={editProfile()} />}
+                                    nativeButton={false}
                                 >
                                     <Pencil data-icon="inline-start" />
                                     {t('Edit profile')}

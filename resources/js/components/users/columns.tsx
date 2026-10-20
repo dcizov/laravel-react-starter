@@ -24,6 +24,11 @@ export function useUserColumns({
     onRoleChange,
 }: UserActions): ColumnDef<DataTableFeatures, AccountUser>[] {
     const t = useTrans();
+    // Labels up front, so the server and client render the same role text.
+    const roleItems = roles.map((role) => ({
+        value: role,
+        label: t(roleLabels[role] ?? role),
+    }));
 
     return React.useMemo<ColumnDef<DataTableFeatures, AccountUser>[]>(
         () => [
@@ -62,6 +67,7 @@ export function useUserColumns({
                 ),
                 cell: ({ row }) => (
                     <Select
+                        items={roleItems}
                         value={row.original.role}
                         onValueChange={(value) => {
                             if (value && value !== row.original.role) {
@@ -88,6 +94,6 @@ export function useUserColumns({
                 enableSorting: false,
             },
         ],
-        [t, roles, onRoleChange],
+        [t, roles, roleItems, onRoleChange],
     );
 }
