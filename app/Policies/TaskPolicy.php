@@ -13,7 +13,7 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        return $user->is($task->user) || $user->hasPermission(Rbac::PERMISSION_TASKS_UPDATE_ANY);
+        return $user->is($task->user) || $user->can(Rbac::PERMISSION_TASKS_UPDATE_ANY);
     }
 
     /**
@@ -21,6 +21,6 @@ class TaskPolicy
      */
     public function delete(User $user, Task $task): bool
     {
-        return $user->is($task->user) || $user->hasPermission(Rbac::PERMISSION_TASKS_DELETE_ANY);
+        return $user->is($task->user) || $user->can(Rbac::PERMISSION_TASKS_DELETE_ANY);
     }
 }

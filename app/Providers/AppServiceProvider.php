@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         // A permission granted by one of the user's roles passes any Gate check with that name.
         // Anything else returns null, so policies still decide.
         Gate::before(function (?User $user, string $ability): ?bool {
-            return $user?->hasPermission($ability) ? true : null;
+            return $user?->getAllPermissions()->contains('name', $ability) ? true : null;
         });
     }
 

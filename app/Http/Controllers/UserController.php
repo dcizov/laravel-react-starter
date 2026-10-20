@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
 use App\Models\User;
 use App\Support\Rbac;
 use Illuminate\Http\RedirectResponse;
@@ -12,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -58,7 +58,7 @@ class UserController extends Controller
 
         $isLastAdmin = $user->hasRole('admin')
             && $role !== 'admin'
-            && User::query()->whereHas('roles', fn ($query) => $query->where('name', 'admin'))->count() === 1;
+            && User::role('admin')->count() === 1;
 
         if ($isLastAdmin) {
             throw ValidationException::withMessages([
@@ -66,7 +66,7 @@ class UserController extends Controller
             ]);
         }
 
-        $user->roles()->sync([Role::query()->where('name', $role)->firstOrFail()->id]);
+        $user->syncRoles($role);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User role updated.')]);
 

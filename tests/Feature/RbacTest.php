@@ -1,10 +1,9 @@
 <?php
 
-use App\Models\Permission;
-use App\Models\Role;
 use App\Models\Task;
 use App\Models\User;
 use App\Support\Rbac;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     Rbac::sync();
@@ -22,11 +21,11 @@ test('new accounts get the default role and no extra permissions', function () {
     $user = User::factory()->create();
 
     expect($user->hasRole(Rbac::DEFAULT_ROLE))->toBeTrue()
-        ->and($user->permissionNames())->toBe([]);
+        ->and($user->getAllPermissions())->toBeEmpty();
 });
 
 test('the admin role has every permission', function () {
-    expect(admin()->permissionNames())->toEqualCanonicalizing(Rbac::PERMISSIONS);
+    expect(admin()->getAllPermissions()->pluck('name')->all())->toEqualCanonicalizing(Rbac::PERMISSIONS);
 });
 
 test('a regular user only sees their own tasks', function () {
@@ -123,11 +122,9 @@ test('the last admin cannot be demoted', function () {
     // Only the admin role can manage roles by default, so a manager role with the same
     // permissions is used. It is not an admin, which lets it reach the guard.
     $manager = User::factory()->create();
-    $role = Role::create(['name' => 'manager']);
-    $role->permissions()->sync(
-        Permission::whereIn('name', [Rbac::PERMISSION_USERS_VIEW, Rbac::PERMISSION_USERS_MANAGE_ROLES])->pluck('id'),
-    );
-    $manager->roles()->sync([$role->id]);
+    $role = Role::findOrCreate('manager');
+    $role->syncPermissions([Rbac::PERMISSION_USERS_VIEW, Rbac::PERMISSION_USERS_MANAGE_ROLES]);
+    $manager->syncRoles($role);
 
     $this->actingAs($manager)
         ->patch(route('users.role.update', $lastAdmin), ['role' => 'user'])

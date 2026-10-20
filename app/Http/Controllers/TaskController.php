@@ -21,7 +21,7 @@ class TaskController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $canViewAll = $user->hasPermission(Rbac::PERMISSION_TASKS_VIEW_ANY);
+        $canViewAll = $user->can(Rbac::PERMISSION_TASKS_VIEW_ANY);
 
         $tasks = ($canViewAll ? Task::query() : $user->tasks())
             ->with('user:id,name')

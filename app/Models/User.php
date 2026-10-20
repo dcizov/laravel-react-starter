@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,6 +17,8 @@ use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property int $id
@@ -39,7 +40,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory, HasRoles, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     /**
      * Attributes added to the array and JSON form of the model.
@@ -83,57 +84,14 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     }
 
     /**
-     * Give every new account the default role.
+     * Give every new account the default role. Roles are found or created so this also works
+     * before Rbac::sync() has run, for example in tests.
      */
     protected static function booted(): void
     {
         static::created(function (User $user): void {
-            $user->assignRole(Rbac::DEFAULT_ROLE);
+            $user->assignRole(Role::findOrCreate(Rbac::DEFAULT_ROLE));
         });
-    }
-
-    /**
-     * The roles the user has.
-     *
-     * @return BelongsToMany<Role, $this>
-     */
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class);
-    }
-
-    /**
-     * Add a role to the user, keeping any roles they already have.
-     */
-    public function assignRole(string $name): void
-    {
-        $role = Role::query()->firstOrCreate(['name' => $name]);
-
-        $this->roles()->syncWithoutDetaching([$role->id]);
-    }
-
-    public function hasRole(string $name): bool
-    {
-        return $this->roles()->where('name', $name)->exists();
-    }
-
-    /**
-     * The names of every permission the user gets from their roles.
-     *
-     * @return list<string>
-     */
-    public function permissionNames(): array
-    {
-        return Permission::query()
-            ->whereHas('roles.users', fn ($query) => $query->whereKey($this->getKey()))
-            ->pluck('name')
-            ->values()
-            ->all();
-    }
-
-    public function hasPermission(string $name): bool
-    {
-        return in_array($name, $this->permissionNames(), true);
     }
 
     /**

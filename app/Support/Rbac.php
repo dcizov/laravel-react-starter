@@ -2,8 +2,9 @@
 
 namespace App\Support;
 
-use App\Models\Permission;
-use App\Models\Role;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 final class Rbac
 {
@@ -46,20 +47,18 @@ final class Rbac
     public const DEFAULT_ROLE = 'user';
 
     /**
-     * Create the roles and permissions above, and set each role's permissions to the list here.
+     * Create the permissions and roles above, and give each role exactly the permissions listed here.
      */
     public static function sync(): void
     {
         foreach (self::PERMISSIONS as $name) {
-            Permission::query()->firstOrCreate(['name' => $name]);
+            Permission::findOrCreate($name);
         }
 
         foreach (self::ROLES as $name => $permissions) {
-            $role = Role::query()->firstOrCreate(['name' => $name]);
-
-            $role->permissions()->sync(
-                Permission::query()->whereIn('name', $permissions)->pluck('id'),
-            );
+            Role::findOrCreate($name)->syncPermissions($permissions);
         }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
