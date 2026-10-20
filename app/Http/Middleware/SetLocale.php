@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Support\Locales;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -17,7 +19,13 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        App::setLocale(Locales::resolve($request->user()?->locale));
+        $locale = Locales::resolve($request->user()?->locale);
+
+        App::setLocale($locale);
+
+        // Relative dates such as "2 days ago" follow the same language.
+        Carbon::setLocale($locale);
+        CarbonImmutable::setLocale($locale);
 
         return $next($request);
     }

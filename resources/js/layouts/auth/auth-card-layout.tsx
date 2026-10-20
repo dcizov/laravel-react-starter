@@ -9,6 +9,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { home } from '@/routes';
+import { useTrans } from '@/hooks/use-trans';
 
 export default function AuthCardLayout({
     children,
@@ -19,6 +20,7 @@ export default function AuthCardLayout({
     title?: string;
     description?: string;
 }>) {
+    const t = useTrans();
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
             <div className="flex w-full max-w-md flex-col gap-6">
@@ -34,8 +36,12 @@ export default function AuthCardLayout({
                 <div className="flex flex-col gap-6">
                     <Card className="rounded-xl">
                         <CardHeader className="px-10 pt-8 pb-0 text-center">
-                            <CardTitle className="text-xl">{title}</CardTitle>
-                            <CardDescription>{description}</CardDescription>
+                            <CardTitle className="text-xl">
+                                {title && t(title)}
+                            </CardTitle>
+                            <CardDescription>
+                                {description && t(description)}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="px-10 py-8">
                             {children}

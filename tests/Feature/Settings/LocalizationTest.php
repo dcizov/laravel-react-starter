@@ -48,3 +48,11 @@ test('the language list and timezone list are the ones the app supports', functi
     expect(Locales::codes())->toBe(['en', 'de'])
         ->and(Timezones::ZONES)->toContain('Europe/Berlin', 'UTC');
 });
+
+test('relative dates follow the user language', function () {
+    $user = User::factory()->create(['locale' => 'de']);
+
+    $this->actingAs($user)->get(route('profile.edit'));
+
+    expect(now()->subDay()->diffForHumans())->toContain('vor');
+});

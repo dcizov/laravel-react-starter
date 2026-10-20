@@ -5,16 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
+import { useTrans } from '@/hooks/use-trans';
 
 export default function VerifyEmail({ status }: { status?: string }) {
+    const t = useTrans();
     return (
         <>
-            <Head title="Email verification" />
+            <Head title={t('Email verification')} />
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                    {t(
+                        'A new verification link has been sent to the email address you provided during registration.',
+                    )}
                 </div>
             )}
 
@@ -27,14 +30,14 @@ export default function VerifyEmail({ status }: { status?: string }) {
                             variant="secondary"
                         >
                             {processing && <Spinner />}
-                            Resend verification email
+                            {t('Resend verification email')}
                         </Button>
 
                         <TextLink
                             href={logout()}
                             className="mx-auto block text-sm"
                         >
-                            Log out
+                            {t('Log out')}
                         </TextLink>
                     </>
                 )}

@@ -13,6 +13,10 @@ final class DisplaySettings
      */
     public const ITEMS = [
         'dashboard',
+        'profile',
+        'account',
+        'appearance',
+        'notifications',
         'repository',
         'documentation',
     ];

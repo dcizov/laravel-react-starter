@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
+import { displayOptions } from '@/components/sidebar-items';
 import ContentSection from '@/components/settings/content-section';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,20 +8,13 @@ import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/display';
 
-// Must match App\Support\DisplaySettings::ITEMS on the server.
-const displayItems = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'repository', label: 'Repository' },
-    { id: 'documentation', label: 'Documentation' },
-];
-
 export default function Display({ items }: { items: string[] }) {
     const t = useTrans();
     const form = useForm({ items });
 
     const toggle = (id: string, checked: boolean) => {
         // Keep the saved list in display order so it stays predictable.
-        const next = displayItems
+        const next = displayOptions
             .map((item) => item.id)
             .filter((itemId) =>
                 itemId === id ? checked : form.data.items.includes(itemId),
@@ -46,7 +40,7 @@ export default function Display({ items }: { items: string[] }) {
             >
                 <form onSubmit={submit} className="space-y-6">
                     <div className="grid gap-3">
-                        {displayItems.map((item) => (
+                        {displayOptions.map((item) => (
                             <div
                                 key={item.id}
                                 className="flex items-center gap-2"
@@ -59,7 +53,7 @@ export default function Display({ items }: { items: string[] }) {
                                     }
                                 />
                                 <Label htmlFor={`display-${item.id}`}>
-                                    {t(item.label)}
+                                    {t(item.title)}
                                 </Label>
                             </div>
                         ))}

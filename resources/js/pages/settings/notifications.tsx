@@ -1,6 +1,8 @@
 import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import ContentSection from '@/components/settings/content-section';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -58,6 +60,20 @@ export default function Notifications({
                 title={t('Notifications')}
                 description={t('Choose how and when you are notified.')}
             >
+                <Alert>
+                    <AlertTitle className="flex items-center gap-2">
+                        {t('Under construction')}
+                        <Badge variant="secondary">
+                            {t('Work in progress')}
+                        </Badge>
+                    </AlertTitle>
+                    <AlertDescription>
+                        {t(
+                            'Only security emails are sent for now. The other choices are saved, but they do not change anything yet.',
+                        )}
+                    </AlertDescription>
+                </Alert>
+
                 <form onSubmit={submit} className="space-y-8">
                     <div className="grid gap-3">
                         <h4 className="text-sm font-medium">
