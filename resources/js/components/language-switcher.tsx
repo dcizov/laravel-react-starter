@@ -1,0 +1,62 @@
+import { router, usePage } from '@inertiajs/react';
+import { Languages } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useTrans } from '@/hooks/use-trans';
+import { update } from '@/routes/language';
+
+// Changes the language for the signed-in user. The choice is saved to the account,
+// so it follows them to every device.
+export function LanguageSwitcher() {
+    const t = useTrans();
+    const { locale, locales } = usePage().props;
+
+    const change = (value: string) => {
+        if (value === locale) {
+            return;
+        }
+
+        router.patch(update().url, { locale: value }, { preserveScroll: true });
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                render={
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t('Change language')}
+                        title={t('Change language')}
+                        data-test="language-switcher-trigger"
+                    />
+                }
+            >
+                <Languages />
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" className="min-w-40">
+                <DropdownMenuLabel>{t('Language')}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={locale} onValueChange={change}>
+                    {locales.map((option) => (
+                        <DropdownMenuRadioItem
+                            key={option.value}
+                            value={option.value}
+                        >
+                            {option.label}
+                        </DropdownMenuRadioItem>
+                    ))}
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}

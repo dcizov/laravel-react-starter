@@ -51,6 +51,7 @@ class HandleInertiaRequests extends Middleware
             'timezone' => $request->user()?->timezone ?? Timezones::defaultFor(app()->getLocale()),
             'displayItems' => DisplaySettings::forUser($request->user()),
             'sidebarVariant' => SidebarVariant::forUser($request->user()),
+            'locales' => Locales::options(),
         ];
     }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Settings\AccountController;
 use App\Http\Controllers\Settings\AppearanceController;
 use App\Http\Controllers\Settings\DisplayController;
+use App\Http\Controllers\Settings\LanguageController;
 use App\Http\Controllers\Settings\NotificationsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
@@ -24,6 +25,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/display', [DisplayController::class, 'edit'])->name('display.edit');
     Route::patch('settings/display', [DisplayController::class, 'update'])->name('display.update');
+
+    Route::patch('settings/language', [LanguageController::class, 'update'])->name('language.update');
 
     Route::get('settings/notifications', [NotificationsController::class, 'edit'])->name('notifications.edit');
     Route::patch('settings/notifications', [NotificationsController::class, 'update'])->name('notifications.update');

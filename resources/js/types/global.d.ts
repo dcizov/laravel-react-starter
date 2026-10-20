@@ -18,6 +18,7 @@ declare module '@inertiajs/core' {
             timezone: string;
             displayItems: string[];
             sidebarVariant: 'inset' | 'floating';
+            locales: { value: string; label: string }[];
             [key: string]: unknown;
         };
     }
