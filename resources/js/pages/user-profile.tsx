@@ -29,7 +29,7 @@ export default function UserProfile() {
         <>
             <Head title={t('User profile')} />
 
-            <div className="space-y-6">
+            <div className="mx-auto w-full max-w-4xl space-y-6">
                 <section className="overflow-hidden rounded-xl border">
                     <div
                         className="h-32 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-300 dark:from-neutral-800 dark:via-neutral-700 dark:to-neutral-900"
