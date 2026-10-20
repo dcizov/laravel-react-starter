@@ -55,7 +55,8 @@ test('an admin sees every task with its owner', function () {
 });
 
 test('a user cannot update or delete someone else\'s task', function () {
-    $task = Task::factory()->create();
+    // Pin the label: the factory picks one at random, and it could already be 'bug'.
+    $task = Task::factory()->create(['label' => 'feature']);
     $other = User::factory()->create();
 
     $this->actingAs($other)
