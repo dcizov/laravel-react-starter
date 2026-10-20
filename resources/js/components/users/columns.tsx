@@ -2,6 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import * as React from 'react';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Select,
     SelectContent,
@@ -32,6 +33,33 @@ export function useUserColumns({
 
     return React.useMemo<ColumnDef<DataTableFeatures, AccountUser>[]>(
         () => [
+            {
+                id: 'select',
+                header: ({ table }) => (
+                    <Checkbox
+                        checked={table.getIsAllPageRowsSelected()}
+                        indeterminate={
+                            !table.getIsAllPageRowsSelected() &&
+                            table.getIsSomePageRowsSelected()
+                        }
+                        onCheckedChange={(value) =>
+                            table.toggleAllPageRowsSelected(!!value)
+                        }
+                        aria-label={t('Select all')}
+                        className="translate-y-[2px]"
+                    />
+                ),
+                cell: ({ row }) => (
+                    <Checkbox
+                        checked={row.getIsSelected()}
+                        onCheckedChange={(value) => row.toggleSelected(!!value)}
+                        aria-label={t('Select row')}
+                        className="translate-y-[2px]"
+                    />
+                ),
+                enableSorting: false,
+                enableHiding: false,
+            },
             {
                 accessorKey: 'name',
                 filterFn: 'includesString',

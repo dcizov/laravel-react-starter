@@ -87,6 +87,19 @@ export function initializeTheme(): void {
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
+// The OS dark-mode preference as a store value. Reading matchMedia during render
+// would differ between the server (no window, so light) and the first client
+// render, which is a hydration mismatch. The server snapshot is false for that reason.
+const subscribeSystemDark = (callback: () => void) => {
+    const query = mediaQuery();
+
+    query?.addEventListener('change', callback);
+
+    return () => query?.removeEventListener('change', callback);
+};
+
+const systemPrefersDark = (): boolean => mediaQuery()?.matches ?? false;
+
 export function useAppearance(): UseAppearanceReturn {
     const appearance: Appearance = useSyncExternalStore(
         subscribe,
@@ -94,9 +107,16 @@ export function useAppearance(): UseAppearanceReturn {
         () => 'system',
     );
 
-    const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
-        ? 'dark'
-        : 'light';
+    const systemDark = useSyncExternalStore(
+        subscribeSystemDark,
+        systemPrefersDark,
+        () => false,
+    );
+
+    const resolvedAppearance: ResolvedAppearance =
+        appearance === 'dark' || (appearance === 'system' && systemDark)
+            ? 'dark'
+            : 'light';
 
     const updateAppearance = (mode: Appearance): void => {
         currentAppearance = mode;
