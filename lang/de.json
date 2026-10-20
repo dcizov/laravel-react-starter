@@ -256,9 +256,7 @@
     "Go to next page": "Zur nächsten Seite",
     "Go to previous page": "Zur vorherigen Seite",
     "Here are the tasks for this month.": "Hier sind die Aufgaben für diesen Monat.",
-    "Label updated.": "Label aktualisiert.",
     "Labels": "Labels",
-    "No tasks found.": "Keine Aufgaben gefunden.",
     "No results.": "Keine Ergebnisse.",
     "Open menu": "Menü öffnen",
     "Page :page of :pages": "Seite :page von :pages",
@@ -276,5 +274,16 @@
     "View": "Ansicht",
     "Clear filters": "Filter zurücksetzen",
     "No tasks yet": "Noch keine Aufgaben",
-    "Tasks assigned to your account will appear here.": "Dir zugewiesene Aufgaben erscheinen hier."
+    "Tasks assigned to your account will appear here.": "Dir zugewiesene Aufgaben erscheinen hier.",
+    "Create task": "Aufgabe erstellen",
+    "Edit task": "Aufgabe bearbeiten",
+    "Edit": "Bearbeiten",
+    "Change the title or the options of this task.": "Ändere den Titel oder die Optionen dieser Aufgabe.",
+    "Add a task to your list.": "Füge deiner Liste eine Aufgabe hinzu.",
+    "Label": "Label",
+    "Save changes": "Änderungen speichern",
+    "Create your first task to start your list.": "Erstelle deine erste Aufgabe, um deine Liste zu beginnen.",
+    "Task created.": "Aufgabe erstellt.",
+    "Task updated.": "Aufgabe aktualisiert.",
+    "Delete": "Löschen"
 }

@@ -27,12 +27,14 @@ import {
 import { useTrans } from '@/hooks/use-trans';
 
 type TaskActions = {
+    onEdit: (task: Task) => void;
     onLabelChange: (id: number, label: string) => void;
     onDelete: (id: number) => void;
 };
 
 // The table columns for tasks. Titles and option labels are translated here.
 export function useTaskColumns({
+    onEdit,
     onLabelChange,
     onDelete,
 }: TaskActions): ColumnDef<DataTableFeatures, Task>[] {
@@ -181,6 +183,12 @@ export function useTaskColumns({
                             <span className="sr-only">{t('Open menu')}</span>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-[160px]">
+                            <DropdownMenuItem
+                                onClick={() => onEdit(row.original)}
+                            >
+                                {t('Edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuSub>
                                 <DropdownMenuSubTrigger>
                                     {t('Labels')}
@@ -218,6 +226,6 @@ export function useTaskColumns({
                 ),
             },
         ],
-        [t, onLabelChange, onDelete],
+        [t, onEdit, onLabelChange, onDelete],
     );
 }

@@ -1,58 +1,48 @@
-import { Head } from '@inertiajs/react';
-import { ListChecks } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { ListChecks, Plus } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { destroy, update } from '@/actions/App/Http/Controllers/TaskController';
 import { DataTable } from '@/components/data-table/data-table';
 import { useTaskColumns } from '@/components/tasks/columns';
 import type { Task } from '@/components/tasks/data';
+import { TaskFormDialog } from '@/components/tasks/task-form-dialog';
 import { TasksToolbar } from '@/components/tasks/tasks-toolbar';
+import { Button } from '@/components/ui/button';
 import {
     Empty,
+    EmptyContent,
     EmptyDescription,
     EmptyHeader,
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import { toast } from '@/components/ui/toast';
 import { useTrans } from '@/hooks/use-trans';
 import { index as tasksIndex } from '@/routes/tasks';
 
-// Label changes and deletes only change this page's state. They are not saved to the database yet.
-export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
+// The list comes from the server. Every change is sent to the Tasks controller, which flashes a toast.
+export default function Tasks({ tasks }: { tasks: Task[] }) {
     const t = useTrans();
-    const [tasks, setTasks] = useState(initialTasks);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editing, setEditing] = useState<Task | null>(null);
+    // Changing this key gives the dialog a fresh form each time it opens.
+    const [formKey, setFormKey] = useState(0);
 
-    // A new list from the server (for example after a reload) replaces the local changes.
-    useEffect(() => {
-        setTasks(initialTasks);
-    }, [initialTasks]);
+    const openDialog = useCallback((task: Task | null) => {
+        setEditing(task);
+        setFormKey((key) => key + 1);
+        setDialogOpen(true);
+    }, []);
 
-    const changeLabel = useCallback(
-        (id: number, label: string) => {
-            setTasks((current) =>
-                current.map((task) =>
-                    task.id === id ? { ...task, label } : task,
-                ),
-            );
-            toast.add({ type: 'success', title: t('Label updated.') });
-        },
-        [t],
-    );
+    const changeLabel = useCallback((id: number, label: string) => {
+        router.patch(update.url(id), { label }, { preserveScroll: true });
+    }, []);
 
-    const deleteTask = useCallback(
-        (id: number) => {
-            const code = tasks.find((task) => task.id === id)?.code;
-
-            setTasks((current) => current.filter((task) => task.id !== id));
-            toast.add({
-                type: 'success',
-                title: t('Task deleted.'),
-                description: code,
-            });
-        },
-        [t, tasks],
-    );
+    const deleteTask = useCallback((id: number) => {
+        router.delete(destroy.url(id), { preserveScroll: true });
+    }, []);
 
     const columns = useTaskColumns({
+        onEdit: (task) => openDialog(task),
         onLabelChange: changeLabel,
         onDelete: deleteTask,
     });
@@ -71,6 +61,7 @@ export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
                         {t('Here are the tasks for this month.')}
                     </p>
                 </div>
+
                 {tasks.length === 0 ? (
                     <Empty>
                         <EmptyHeader>
@@ -80,10 +71,16 @@ export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
                             <EmptyTitle>{t('No tasks yet')}</EmptyTitle>
                             <EmptyDescription>
                                 {t(
-                                    'Tasks assigned to your account will appear here.',
+                                    'Create your first task to start your list.',
                                 )}
                             </EmptyDescription>
                         </EmptyHeader>
+                        <EmptyContent>
+                            <Button onClick={() => openDialog(null)}>
+                                <Plus />
+                                {t('Create task')}
+                            </Button>
+                        </EmptyContent>
                     </Empty>
                 ) : (
                     <DataTable
@@ -92,10 +89,22 @@ export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
                         getRowId={(row) => String(row.id)}
                         pageSizes={pageSizes}
                         enableRowSelection
-                        toolbar={(table) => <TasksToolbar table={table} />}
+                        toolbar={(table) => (
+                            <TasksToolbar
+                                table={table}
+                                onCreate={() => openDialog(null)}
+                            />
+                        )}
                     />
                 )}
             </div>
+
+            <TaskFormDialog
+                key={formKey}
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                task={editing}
+            />
         </>
     );
 }
