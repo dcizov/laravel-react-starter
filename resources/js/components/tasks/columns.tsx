@@ -72,7 +72,7 @@ export function useTaskColumns({
                     <DataTableColumnHeader column={column} title={t('Task')} />
                 ),
                 cell: ({ row }) => (
-                    <div className="w-[80px]">{row.getValue('id')}</div>
+                    <span className="font-medium">{row.getValue('id')}</span>
                 ),
                 enableSorting: false,
                 enableHiding: false,
