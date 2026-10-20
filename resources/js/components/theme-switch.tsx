@@ -20,8 +20,7 @@ const themes: { value: Appearance; label: string }[] = [
 // Header theme menu: light, dark, or system, applied on this device.
 export function ThemeSwitch() {
     const t = useTrans();
-    const { appearance, resolvedAppearance, updateAppearance } =
-        useAppearance();
+    const { appearance, updateAppearance } = useAppearance();
 
     return (
         <DropdownMenu>
@@ -35,7 +34,9 @@ export function ThemeSwitch() {
                     />
                 }
             >
-                {resolvedAppearance === 'dark' ? <Moon /> : <Sun />}
+                {/* Both icons render, so server and client HTML match; the .dark class picks one. */}
+                <Sun className="dark:hidden" />
+                <Moon className="hidden dark:block" />
                 <span className="sr-only">{t('Toggle theme')}</span>
             </DropdownMenuTrigger>
 

@@ -82,7 +82,7 @@ export function AppSidebarHeader({
             <SidebarTrigger className="-ml-1" />
             <Separator
                 orientation="vertical"
-                className="mx-1 h-4 w-px self-center bg-foreground/20"
+                className="mx-1 h-4 w-px bg-foreground/20"
             />
             <Breadcrumbs breadcrumbs={breadcrumbs} />
 

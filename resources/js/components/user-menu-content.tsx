@@ -92,6 +92,7 @@ export function UserMenuContent({ user }: Props) {
 
             <DropdownMenuItem
                 variant="destructive"
+                nativeButton
                 render={
                     <Link
                         href={logout()}
