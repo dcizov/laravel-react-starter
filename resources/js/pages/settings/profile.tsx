@@ -2,7 +2,7 @@ import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
-import Heading from '@/components/heading';
+import ContentSection from '@/components/settings/content-section';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,13 +30,10 @@ export default function Profile({
 
             <h1 className="sr-only">Profile settings</h1>
 
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Profile"
-                    description="Update your name and email address"
-                />
-
+            <ContentSection
+                title="Profile"
+                description="Update your name and email address"
+            >
                 <Form
                     {...ProfileController.update.form()}
                     options={{
@@ -122,7 +119,7 @@ export default function Profile({
                         </>
                     )}
                 </Form>
-            </div>
+            </ContentSection>
 
             <DeleteUser />
         </>

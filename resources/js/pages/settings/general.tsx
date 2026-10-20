@@ -1,6 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import GeneralController from '@/actions/App/Http/Controllers/Settings/GeneralController';
-import Heading from '@/components/heading';
+import ContentSection from '@/components/settings/content-section';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,13 +19,10 @@ export default function General({ timezone, locale }: Props) {
 
             <h1 className="sr-only">General settings</h1>
 
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="General"
-                    description="Update your timezone and language preferences"
-                />
-
+            <ContentSection
+                title="General"
+                description="Update your timezone and language preferences"
+            >
                 <Form
                     {...GeneralController.update.form()}
                     options={{
@@ -77,7 +74,7 @@ export default function General({ timezone, locale }: Props) {
                         </>
                     )}
                 </Form>
-            </div>
+            </ContentSection>
         </>
     );
 }
