@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Support\DisplaySettings;
+use App\Support\SidebarVariant;
 use App\Support\Locales;
 use App\Support\Timezones;
 use Illuminate\Http\Request;
@@ -49,6 +50,7 @@ class HandleInertiaRequests extends Middleware
             'translations' => Locales::translations(app()->getLocale()),
             'timezone' => $request->user()?->timezone ?? Timezones::defaultFor(app()->getLocale()),
             'displayItems' => DisplaySettings::forUser($request->user()),
+            'sidebarVariant' => SidebarVariant::forUser($request->user()),
         ];
     }
 }

@@ -21,7 +21,7 @@ import { dashboard } from '@/routes';
 
 export function AppSidebar() {
     // Users choose which items show here in Display settings.
-    const { displayItems } = usePage().props;
+    const { displayItems, sidebarVariant } = usePage().props;
 
     const visibleGroups = sidebarGroups
         .map((group): SidebarGroupDef => ({
@@ -41,7 +41,7 @@ export function AppSidebar() {
         .filter((group) => group.items.length > 0);
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant={sidebarVariant}>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

@@ -193,5 +193,13 @@
     "Member since": "Mitglied seit",
     "General": "Allgemein",
     "Others": "Weitere",
-    "Resources": "Ressourcen"
+    "Resources": "Ressourcen",
+    "Toggle theme": "Design wechseln",
+    "Sidebar style": "Seitenleistenstil",
+    "Choose how the sidebar is placed on the page. Your choice applies everywhere you sign in.": "Wähle, wie die Seitenleiste auf der Seite platziert wird. Deine Auswahl gilt überall, wo du angemeldet bist.",
+    "Inset": "Eingebettet",
+    "Floating": "Schwebend",
+    "The sidebar sits beside the page in one rounded panel.": "Die Seitenleiste liegt neben dem Inhalt in einem abgerundeten Bereich.",
+    "The sidebar floats above the page with its own border.": "Die Seitenleiste schwebt mit eigenem Rahmen über der Seite.",
+    "Appearance settings updated.": "Darstellungseinstellungen aktualisiert."
 }

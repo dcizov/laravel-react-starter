@@ -17,6 +17,7 @@ declare module '@inertiajs/core' {
             translations: Record<string, string>;
             timezone: string;
             displayItems: string[];
+            sidebarVariant: 'inset' | 'floating';
             [key: string]: unknown;
         };
     }
