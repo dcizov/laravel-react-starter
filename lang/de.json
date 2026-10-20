@@ -274,5 +274,7 @@
     "Title": "Titel",
     "Toggle columns": "Spalten ein-/ausblenden",
     "View": "Ansicht",
-    "Clear filters": "Filter zurücksetzen"
+    "Clear filters": "Filter zurücksetzen",
+    "No tasks yet": "Noch keine Aufgaben",
+    "Tasks assigned to your account will appear here.": "Dir zugewiesene Aufgaben erscheinen hier."
 }

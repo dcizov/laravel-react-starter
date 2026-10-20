@@ -1,9 +1,17 @@
 import { Head } from '@inertiajs/react';
-import { useCallback, useMemo, useState } from 'react';
+import { ListChecks } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataTable } from '@/components/data-table/data-table';
 import { useTaskColumns } from '@/components/tasks/columns';
 import type { Task } from '@/components/tasks/data';
 import { TasksToolbar } from '@/components/tasks/tasks-toolbar';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { toast } from '@/components/ui/toast';
 import { useTrans } from '@/hooks/use-trans';
 import { index as tasksIndex } from '@/routes/tasks';
@@ -12,6 +20,11 @@ import { index as tasksIndex } from '@/routes/tasks';
 export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
     const t = useTrans();
     const [tasks, setTasks] = useState(initialTasks);
+
+    // A new list from the server (for example after a reload) replaces the local changes.
+    useEffect(() => {
+        setTasks(initialTasks);
+    }, [initialTasks]);
 
     const changeLabel = useCallback(
         (id: number, label: string) => {
@@ -58,15 +71,30 @@ export default function Tasks({ tasks: initialTasks }: { tasks: Task[] }) {
                         {t('Here are the tasks for this month.')}
                     </p>
                 </div>
-                <DataTable
-                    columns={columns}
-                    data={tasks}
-                    getRowId={(row) => String(row.id)}
-                    pageSizes={pageSizes}
-                    enableRowSelection
-                    emptyMessage={t('No tasks found.')}
-                    toolbar={(table) => <TasksToolbar table={table} />}
-                />
+                {tasks.length === 0 ? (
+                    <Empty>
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                                <ListChecks />
+                            </EmptyMedia>
+                            <EmptyTitle>{t('No tasks yet')}</EmptyTitle>
+                            <EmptyDescription>
+                                {t(
+                                    'Tasks assigned to your account will appear here.',
+                                )}
+                            </EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
+                ) : (
+                    <DataTable
+                        columns={columns}
+                        data={tasks}
+                        getRowId={(row) => String(row.id)}
+                        pageSizes={pageSizes}
+                        enableRowSelection
+                        toolbar={(table) => <TasksToolbar table={table} />}
+                    />
+                )}
             </div>
         </>
     );
