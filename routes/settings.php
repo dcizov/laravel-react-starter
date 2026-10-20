@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\AccountController;
 use App\Http\Controllers\Settings\DisplayController;
 use App\Http\Controllers\Settings\GeneralController;
 use App\Http\Controllers\Settings\NotificationsController;
@@ -17,6 +18,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('settings/account', [AccountController::class, 'edit'])->name('account.edit');
+    Route::patch('settings/account', [AccountController::class, 'update'])->name('account.update');
 
     Route::get('settings/display', [DisplayController::class, 'edit'])->name('display.edit');
     Route::patch('settings/display', [DisplayController::class, 'update'])->name('display.update');

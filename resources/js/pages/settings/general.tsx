@@ -9,10 +9,9 @@ import { edit } from '@/routes/general';
 
 type Props = {
     timezone: string | null;
-    locale: string | null;
 };
 
-export default function General({ timezone, locale }: Props) {
+export default function General({ timezone }: Props) {
     return (
         <>
             <Head title="General settings" />
@@ -46,23 +45,6 @@ export default function General({ timezone, locale }: Props) {
                                 <InputError
                                     className="mt-2"
                                     message={errors.timezone}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="locale">Locale</Label>
-
-                                <Input
-                                    id="locale"
-                                    className="mt-1 block w-full"
-                                    defaultValue={locale ?? ''}
-                                    name="locale"
-                                    placeholder="en"
-                                />
-
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.locale}
                                 />
                             </div>
 

@@ -24,7 +24,6 @@ class GeneralSettingsUpdateRequest extends FormRequest
     {
         return [
             'timezone' => ['nullable', 'string', 'timezone'],
-            'locale' => ['nullable', 'string', 'max:10'],
         ];
     }
 }

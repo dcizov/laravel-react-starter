@@ -15,7 +15,6 @@ class GeneralController extends Controller
     {
         return Inertia::render('settings/general', [
             'timezone' => $request->user()->timezone,
-            'locale' => $request->user()->locale,
         ]);
     }
 
