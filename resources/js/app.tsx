@@ -2,7 +2,7 @@ import '@fontsource-variable/instrument-sans';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/manrope';
 import { createInertiaApp } from '@inertiajs/react';
-import { Toaster } from '@/components/ui/sonner';
+import { AppToaster } from '@/components/app-toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
@@ -30,7 +30,7 @@ void createInertiaApp({
         return (
             <TooltipProvider delay={0}>
                 {app}
-                <Toaster />
+                <AppToaster />
             </TooltipProvider>
         );
     },
