@@ -92,6 +92,11 @@ export function DataTableToolbar<TData extends RowData>({
                                     column={column}
                                     title={filter.title}
                                     options={filter.options}
+                                    selectedValues={
+                                        table.state.columnFilters.find(
+                                            (item) => item.id === filter.column,
+                                        )?.value as string[] | undefined
+                                    }
                                 />
                             ) : null;
                         })}

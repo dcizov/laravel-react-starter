@@ -34,17 +34,17 @@ export function DataTableFacetedFilter<TData extends RowData, TValue>({
     column,
     title,
     options,
+    selectedValues,
 }: {
     column?: Column<DataTableFeatures, TData, TValue>;
     title: string;
     options: FacetOption[];
+    // The filter values from the table state. Passed in so the list always matches the table.
+    selectedValues?: string[];
 }) {
     const t = useTrans();
     const facets = column?.getFacetedUniqueValues();
-    const filterValue = column?.getFilterValue();
-    const selected = new Set<string>(
-        Array.isArray(filterValue) ? (filterValue as string[]) : [],
-    );
+    const selected = new Set<string>(selectedValues ?? []);
 
     const toggle = (value: string) => {
         const next = new Set(selected);
