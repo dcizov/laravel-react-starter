@@ -70,7 +70,7 @@ export function AppSidebarHeader({
     }, []);
 
     return (
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
                 orientation="vertical"
@@ -90,7 +90,7 @@ export function AppSidebarHeader({
                     <Search aria-hidden="true" className="size-4" />
                     <span className="hidden md:inline">{t('Search')}</span>
                     <KbdGroup className="ml-auto hidden md:inline-flex">
-                        {[...modifierKeys(false), 'K'].map((key) => (
+                        {[...modifierKeys(), 'K'].map((key) => (
                             <Kbd key={key}>{key}</Kbd>
                         ))}
                     </KbdGroup>

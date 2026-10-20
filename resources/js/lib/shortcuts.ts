@@ -1,12 +1,14 @@
-// App keyboard shortcuts. Each one is Cmd+Shift+<key> on macOS and Ctrl+Shift+<key> elsewhere.
+// App keyboard shortcuts, in the style of GitHub: press the keys one after another
+// (for example "g" then "p"). They use no Ctrl, Cmd, or Alt, so they never clash with
+// browser-reserved combinations such as Ctrl+Shift+P (private window) or Ctrl+Shift+T.
 // Keep the keys here so the menus, hints, and handlers never drift apart.
 export const shortcuts = {
-    userProfile: { key: 'p', label: 'User profile' },
-    profileSettings: { key: 's', label: 'Profile settings' },
-    account: { key: 'a', label: 'Account' },
-    appearance: { key: 'e', label: 'Appearance' },
-    theme: { key: 't', label: 'Toggle theme' },
-    logout: { key: 'q', label: 'Log out' },
+    userProfile: { keys: ['g', 'u'], label: 'User profile' },
+    profileSettings: { keys: ['g', 's'], label: 'Profile settings' },
+    account: { keys: ['g', 'a'], label: 'Account' },
+    appearance: { keys: ['g', 'e'], label: 'Appearance' },
+    theme: { keys: ['t'], label: 'Toggle theme' },
+    logout: { keys: ['g', 'o'], label: 'Log out' },
 } as const;
 
 export type ShortcutId = keyof typeof shortcuts;
@@ -21,30 +23,44 @@ export function isMac(): boolean {
     );
 }
 
-// The modifier keys as shown on this platform, e.g. ["⇧", "⌘"] or ["Ctrl", "Shift"].
-export function modifierKeys(withShift: boolean): string[] {
-    const mac = isMac();
-    const keys = mac ? ['⌘'] : ['Ctrl'];
-
-    return withShift ? [mac ? '⇧' : 'Shift', ...keys] : keys;
+// The modifier keys as shown on this platform, e.g. ["⌘"] or ["Ctrl"].
+export function modifierKeys(): string[] {
+    return isMac() ? ['⌘'] : ['Ctrl'];
 }
 
-// The full key sequence for a shortcut, one entry per key cap.
+// The keys to press for a shortcut, in order, as key caps (e.g. ["G", "U"]).
 export function shortcutKeys(id: ShortcutId): string[] {
-    return [...modifierKeys(true), shortcuts[id].key.toUpperCase()];
+    return shortcuts[id].keys.map((key) => key.toUpperCase());
 }
 
-// True when the keyboard event is the shortcut for this id.
-export function matchesShortcut(event: KeyboardEvent, id: ShortcutId): boolean {
-    const mac = isMac();
-    const modifier = mac ? event.metaKey : event.ctrlKey;
-    const otherModifier = mac ? event.ctrlKey : event.metaKey;
+// True when the typed keys so far are exactly this shortcut.
+export function isShortcutComplete(typed: string[], id: ShortcutId): boolean {
+    const keys = shortcuts[id].keys;
 
     return (
-        modifier &&
-        !otherModifier &&
-        event.shiftKey &&
-        !event.altKey &&
-        event.key.toLowerCase() === shortcuts[id].key
+        keys.length === typed.length && keys.every((key, i) => key === typed[i])
+    );
+}
+
+// True when the typed keys are the start of this shortcut and it still needs more keys.
+export function isShortcutPrefix(typed: string[], id: ShortcutId): boolean {
+    const keys = shortcuts[id].keys;
+
+    return (
+        typed.length < keys.length && typed.every((key, i) => key === keys[i])
+    );
+}
+
+// Keys typed into fields, editors, and selects must reach the field, not a shortcut.
+export function isEditableTarget(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement)) {
+        return false;
+    }
+
+    return (
+        target.isContentEditable ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT'
     );
 }

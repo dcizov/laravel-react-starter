@@ -7,6 +7,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Keep the scrollbar space reserved so opening a dialog does not shift the page. */
+html {
+    scrollbar-gutter: stable;
+}
+
 /* Font choice from Appearance settings. The default stack is set in @theme below. */
 html[data-font='inter'] {
     --font-sans:
