@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "EditorConfig.EditorConfig",
+        "bradlc.vscode-tailwindcss",
+        "open-southeners.laravel-pint",
+        "bmewburn.vscode-intelephense-client",
+        "amirmarmul.laravel-blade-vscode"
+    ]
+}
