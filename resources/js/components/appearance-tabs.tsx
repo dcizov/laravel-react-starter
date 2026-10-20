@@ -83,7 +83,7 @@ export default function AppearanceTabs() {
                             key={theme.value}
                             htmlFor={`theme-${theme.value}`}
                             className={cn(
-                                'flex cursor-pointer flex-col gap-3 rounded-xl border p-3 font-normal transition-colors hover:bg-muted/50',
+                                'flex cursor-pointer flex-col items-stretch gap-3 rounded-xl border p-3 font-normal transition-colors hover:bg-muted/50',
                                 selected && 'border-primary bg-muted/40',
                             )}
                         >

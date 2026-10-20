@@ -2,6 +2,7 @@ import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import ContentSection from '@/components/settings/content-section';
+import { StatusAlert } from '@/components/status-alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
@@ -285,11 +286,11 @@ export default function Profile({
 
                                             {status ===
                                                 'verification-link-sent' && (
-                                                <div className="mt-2 text-sm font-medium text-green-600">
+                                                <StatusAlert className="mt-2">
                                                     {t(
                                                         'A new verification link has been sent to your email address.',
                                                     )}
-                                                </div>
+                                                </StatusAlert>
                                             )}
                                         </div>
                                     )}

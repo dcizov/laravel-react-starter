@@ -131,7 +131,7 @@ export default function Appearance({
                                             key={option.value}
                                             htmlFor={`font-${option.value}`}
                                             className={cn(
-                                                'flex cursor-pointer flex-col gap-3 rounded-xl border p-4 font-normal transition-colors hover:bg-muted/50',
+                                                'flex cursor-pointer flex-col items-stretch gap-3 rounded-xl border p-4 font-normal transition-colors hover:bg-muted/50',
                                                 selected &&
                                                     'border-primary bg-muted/40',
                                             )}
@@ -195,7 +195,7 @@ export default function Appearance({
                                             key={style.value}
                                             htmlFor={`sidebar-${style.value}`}
                                             className={cn(
-                                                'flex cursor-pointer flex-col gap-3 rounded-xl border p-4 font-normal transition-colors hover:bg-muted/50',
+                                                'flex cursor-pointer flex-col items-stretch gap-3 rounded-xl border p-4 font-normal transition-colors hover:bg-muted/50',
                                                 selected &&
                                                     'border-primary bg-muted/40',
                                             )}

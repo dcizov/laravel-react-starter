@@ -1,5 +1,6 @@
 // Components
 import { Form, Head } from '@inertiajs/react';
+import { StatusAlert } from '@/components/status-alert';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
@@ -15,11 +16,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
         <>
             <Head title={t('Forgot password')} />
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            {status && <StatusAlert className="mb-4">{status}</StatusAlert>}
 
             <div className="space-y-6">
                 <Form {...email.form()}>

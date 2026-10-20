@@ -2,12 +2,17 @@
 
 @import 'tw-animate-css';
 
-@import './style-nova.css';
+@import './style-nova.css' layer(base);
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
 @custom-variant dark (&:is(.dark *));
+
+/* Base UI sets data-orientation, not data-horizontal/data-vertical. Map the
+   shadcn orientation variants onto it so the nova styles apply. */
+@custom-variant data-horizontal (&[data-orientation='horizontal']);
+@custom-variant data-vertical (&[data-orientation='vertical']);
 
 /* Keep the scrollbar space reserved so opening a dialog does not shift the page. */
 html {
