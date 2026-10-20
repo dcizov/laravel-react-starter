@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Settings\AppSettings;
 use App\Support\Rbac;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,6 +64,12 @@ class RoleController extends Controller
     {
         $validated = $request->validate($this->rules($role));
 
+        if ($role->name === app(AppSettings::class)->default_role && $validated['name'] !== $role->name) {
+            return back()->withErrors([
+                'name' => __('This role is the default for new accounts. Choose another default first.'),
+            ]);
+        }
+
         // System roles keep their name. The admin role always has every permission.
         if (! $this->isSystem($role)) {
             $role->update(['name' => $validated['name']]);
@@ -82,6 +89,12 @@ class RoleController extends Controller
     public function destroy(Role $role): RedirectResponse
     {
         abort_if($this->isSystem($role), 403);
+
+        if ($role->name === app(AppSettings::class)->default_role) {
+            return back()->withErrors([
+                'role' => __('This role is the default for new accounts. Choose another default first.'),
+            ]);
+        }
 
         if ($role->users()->exists()) {
             return back()->withErrors([

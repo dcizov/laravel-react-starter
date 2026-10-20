@@ -22,6 +22,8 @@ final class Rbac
 
     public const PERMISSION_PERMISSIONS_MANAGE = 'permissions.manage';
 
+    public const PERMISSION_SETTINGS_MANAGE = 'settings.manage';
+
     /**
      * Every permission the application checks.
      *
@@ -35,6 +37,7 @@ final class Rbac
         self::PERMISSION_USERS_MANAGE_ROLES,
         self::PERMISSION_ROLES_MANAGE,
         self::PERMISSION_PERMISSIONS_MANAGE,
+        self::PERMISSION_SETTINGS_MANAGE,
     ];
 
     /**

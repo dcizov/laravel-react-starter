@@ -1,12 +1,18 @@
+import { usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
-import SettingsSidebarNav from '@/components/settings/sidebar-nav';
-import { settingsNavItems } from '@/components/settings/nav-items';
 import Heading from '@/components/heading';
-import { useTrans } from '@/hooks/use-trans';
+import { settingsNavItems } from '@/components/settings/nav-items';
+import SettingsSidebarNav from '@/components/settings/sidebar-nav';
 import { Separator } from '@/components/ui/separator';
+import { useTrans } from '@/hooks/use-trans';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const t = useTrans();
+    const { auth } = usePage().props;
+    const items = settingsNavItems.filter(
+        (item) =>
+            !item.permission || auth.permissions.includes(item.permission),
+    );
 
     return (
         <div className="px-4 py-6">
@@ -17,7 +23,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
             <div className="flex flex-col md:flex-row md:space-x-12">
                 <aside className="w-full md:w-48 md:shrink-0">
-                    <SettingsSidebarNav items={settingsNavItems} />
+                    <SettingsSidebarNav items={items} />
                 </aside>
 
                 <Separator className="my-6 md:hidden" />

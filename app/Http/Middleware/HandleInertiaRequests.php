@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Settings\AppSettings;
 use App\Support\DisplaySettings;
 use App\Support\Fonts;
 use App\Support\SidebarVariant;
@@ -42,7 +43,7 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => app(AppSettings::class)->app_name,
             'auth' => [
                 'user' => $request->user(),
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->values()->all() ?? [],

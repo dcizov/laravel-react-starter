@@ -318,5 +318,11 @@
     "Role created.": "Rolle erstellt.",
     "Role updated.": "Rolle aktualisiert.",
     "Role deleted.": "Rolle gelöscht.",
-    "The app defines these permissions in its code. Give them to roles on the Roles page.": "Die App legt diese Berechtigungen in ihrem Code fest. Vergib sie auf der Rollenseite an Rollen."
+    "The app defines these permissions in its code. Give them to roles on the Roles page.": "Die App legt diese Berechtigungen in ihrem Code fest. Vergib sie auf der Rollenseite an Rollen.",
+    "Admin settings": "Administratoreinstellungen",
+    "Settings that apply to the whole app.": "Einstellungen, die für die ganze App gelten.",
+    "Application name": "Name der Anwendung",
+    "Default role for new accounts": "Standardrolle für neue Konten",
+    "Settings saved.": "Einstellungen gespeichert.",
+    "This role is the default for new accounts. Choose another default first.": "Diese Rolle ist die Standardrolle für neue Konten. Wähle zuerst eine andere Standardrolle."
 }

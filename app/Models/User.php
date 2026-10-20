@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Settings\AppSettings;
 use App\Support\Rbac;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -90,7 +91,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     protected static function booted(): void
     {
         static::created(function (User $user): void {
-            $user->assignRole(Role::findOrCreate(Rbac::DEFAULT_ROLE));
+            $user->assignRole(Role::findOrCreate(app(AppSettings::class)->default_role));
         });
     }
 
