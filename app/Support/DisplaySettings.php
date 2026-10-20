@@ -15,6 +15,8 @@ final class DisplaySettings
         'dashboard',
         'user-profile',
         'users',
+        'admin-roles',
+        'admin-permissions',
         'tasks',
         'settings-profile',
         'settings-account',

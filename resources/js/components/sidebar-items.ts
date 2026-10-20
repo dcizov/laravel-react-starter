@@ -1,28 +1,32 @@
 import {
     Bell,
     BookOpen,
+    KeyRound,
     ListChecks,
     FolderGit2,
     LayoutGrid,
     Monitor,
     Palette,
     Settings,
+    ShieldCheck,
     User,
     UserCog,
     UserRound,
     Users,
-    type LucideIcon,
 } from 'lucide-react';
-import { dashboard } from '@/routes';
-import { index as indexTasks } from '@/routes/tasks';
-import { index as indexUsers } from '@/routes/users';
-import { show as showUserProfile } from '@/routes/user-profile';
+import type { LucideIcon } from 'lucide-react';
 import { edit as editAccount } from '@/routes/account';
+import { index as indexAdminPermissions } from '@/routes/admin/permissions';
+import { index as indexAdminRoles } from '@/routes/admin/roles';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editDisplay } from '@/routes/display';
 import { edit as editNotifications } from '@/routes/notifications';
 import { edit as editProfile } from '@/routes/profile';
+import { index as indexTasks } from '@/routes/tasks';
+import { show as showUserProfile } from '@/routes/user-profile';
+import { index as indexUsers } from '@/routes/users';
 import type { NavItem } from '@/types';
+import { dashboard } from '@/routes';
 
 export type SidebarLink = NavItem & {
     id: string;
@@ -123,6 +127,26 @@ export const sidebarGroups: SidebarGroupDef[] = [
                         icon: Monitor,
                     },
                 ],
+            },
+        ],
+    },
+    {
+        // Only shown to users with the matching permission. Each link checks its own permission.
+        title: 'Admin',
+        items: [
+            {
+                id: 'admin-roles',
+                title: 'Roles',
+                href: indexAdminRoles(),
+                icon: ShieldCheck,
+                permission: 'roles.manage',
+            },
+            {
+                id: 'admin-permissions',
+                title: 'Permissions',
+                href: indexAdminPermissions(),
+                icon: KeyRound,
+                permission: 'permissions.manage',
             },
         ],
     },

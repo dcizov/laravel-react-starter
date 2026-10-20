@@ -18,6 +18,10 @@ final class Rbac
 
     public const PERMISSION_USERS_MANAGE_ROLES = 'users.manage-roles';
 
+    public const PERMISSION_ROLES_MANAGE = 'roles.manage';
+
+    public const PERMISSION_PERMISSIONS_MANAGE = 'permissions.manage';
+
     /**
      * Every permission the application checks.
      *
@@ -29,6 +33,8 @@ final class Rbac
         self::PERMISSION_TASKS_DELETE_ANY,
         self::PERMISSION_USERS_VIEW,
         self::PERMISSION_USERS_MANAGE_ROLES,
+        self::PERMISSION_ROLES_MANAGE,
+        self::PERMISSION_PERMISSIONS_MANAGE,
     ];
 
     /**
@@ -40,6 +46,13 @@ final class Rbac
         'admin' => self::PERMISSIONS,
         'user' => [],
     ];
+
+    /**
+     * Roles the app depends on. They cannot be renamed or deleted, and the admin role always has every permission.
+     *
+     * @var list<string>
+     */
+    public const SYSTEM_ROLES = ['admin', 'user'];
 
     /**
      * The role every new account gets.

@@ -3,6 +3,7 @@
 use App\Models\Task;
 use App\Models\User;
 use App\Support\Rbac;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -142,4 +143,89 @@ test('a user cannot change roles', function () {
         ->assertForbidden();
 
     expect($target->fresh()->hasRole('admin'))->toBeFalse();
+});
+
+test('an admin can create a role with the permissions they pick', function () {
+    $this->actingAs(admin())
+        ->post(route('admin.roles.store'), [
+            'name' => 'editor',
+            'permissions' => [Rbac::PERMISSION_TASKS_VIEW_ANY],
+        ])
+        ->assertRedirect(route('admin.roles.index'));
+
+    expect(Role::findByName('editor')->permissions->pluck('name')->all())
+        ->toBe([Rbac::PERMISSION_TASKS_VIEW_ANY]);
+});
+
+test('a user cannot manage roles or permissions', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get(route('admin.roles.index'))->assertForbidden();
+    $this->actingAs($user)->post(route('admin.roles.store'), ['name' => 'editor'])->assertForbidden();
+    $this->actingAs($user)->get(route('admin.permissions.index'))->assertForbidden();
+    $this->actingAs($user)->post(route('admin.permissions.store'), ['name' => 'reports.export'])->assertForbidden();
+});
+
+test('the admin and user roles cannot be deleted', function () {
+    $this->actingAs(admin())
+        ->delete(route('admin.roles.destroy', Role::findByName('user')))
+        ->assertForbidden();
+
+    $this->actingAs(admin())
+        ->delete(route('admin.roles.destroy', Role::findByName('admin')))
+        ->assertForbidden();
+});
+
+test('a role that still has users cannot be deleted', function () {
+    $role = Role::findOrCreate('editor');
+    User::factory()->create()->assignRole($role);
+
+    $this->actingAs(admin())
+        ->delete(route('admin.roles.destroy', $role))
+        ->assertSessionHasErrors('role');
+
+    expect(Role::where('name', 'editor')->exists())->toBeTrue();
+});
+
+test('the admin role keeps every permission when it is saved', function () {
+    $this->actingAs(admin())
+        ->patch(route('admin.roles.update', Role::findByName('admin')), [
+            'name' => 'admin',
+            'permissions' => [],
+        ])
+        ->assertRedirect(route('admin.roles.index'));
+
+    expect(Role::findByName('admin')->permissions->pluck('name')->sort()->values()->all())
+        ->toEqual(collect(Rbac::PERMISSIONS)->sort()->values()->all());
+});
+
+test('a custom permission is created and the admin role gets it', function () {
+    $this->actingAs(admin())
+        ->post(route('admin.permissions.store'), ['name' => 'reports.export'])
+        ->assertRedirect(route('admin.permissions.index'));
+
+    expect(Role::findByName('admin')->permissions->pluck('name'))->toContain('reports.export');
+});
+
+test('built-in permissions cannot be renamed or deleted', function () {
+    $permission = Permission::findByName(Rbac::PERMISSION_TASKS_VIEW_ANY);
+
+    $this->actingAs(admin())
+        ->patch(route('admin.permissions.update', $permission), ['name' => 'tasks.all'])
+        ->assertForbidden();
+
+    $this->actingAs(admin())
+        ->delete(route('admin.permissions.destroy', $permission))
+        ->assertForbidden();
+});
+
+test('a custom permission that is still on a role cannot be deleted', function () {
+    $permission = Permission::findOrCreate('reports.export');
+    Role::findByName('user')->givePermissionTo($permission);
+
+    $this->actingAs(admin())
+        ->delete(route('admin.permissions.destroy', $permission))
+        ->assertSessionHasErrors('name');
+
+    expect(Permission::where('name', 'reports.export')->exists())->toBeTrue();
 });
