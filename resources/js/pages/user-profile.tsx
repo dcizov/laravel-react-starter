@@ -8,6 +8,27 @@ import { useTrans } from '@/hooks/use-trans';
 import { edit as editProfile } from '@/routes/profile';
 import { show } from '@/routes/user-profile';
 
+type DetailProps = {
+    icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+    label: string;
+    children: React.ReactNode;
+};
+
+function Detail({ icon: Icon, label, children }: DetailProps) {
+    return (
+        <div className="flex items-start gap-3">
+            <Icon
+                aria-hidden
+                className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+            />
+            <div className="min-w-0 space-y-1">
+                <dt className="text-muted-foreground">{label}</dt>
+                <dd className="font-medium break-words">{children}</dd>
+            </div>
+        </div>
+    );
+}
+
 export default function UserProfile() {
     const t = useTrans();
     const getInitials = useInitials();
@@ -29,126 +50,108 @@ export default function UserProfile() {
         <>
             <Head title={t('User profile')} />
 
-            <div className="mx-auto w-full max-w-4xl space-y-6">
-                <section className="overflow-hidden rounded-xl border">
-                    <div
-                        className="h-32 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-300 dark:from-neutral-800 dark:via-neutral-700 dark:to-neutral-900"
-                        aria-hidden="true"
-                    />
+            <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+                <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+                    <Card className="gap-0 overflow-hidden p-0">
+                        <div
+                            className="h-24 bg-muted md:h-32"
+                            aria-hidden="true"
+                        />
 
-                    <div className="px-6 pb-6">
-                        <div className="-mt-12 flex flex-wrap items-end justify-between gap-4">
-                            <Avatar className="size-24 border-4 border-background text-2xl">
-                                <AvatarImage
-                                    src={user.avatar_url ?? undefined}
-                                    alt={user.name}
-                                />
-                                <AvatarFallback>
-                                    {getInitials(user.name)}
-                                </AvatarFallback>
-                            </Avatar>
+                        <div className="px-4 pb-6 md:px-6">
+                            <div className="-mt-12 flex flex-wrap items-end justify-between gap-4">
+                                <Avatar className="size-24 text-2xl ring-4 ring-card">
+                                    <AvatarImage
+                                        src={user.avatar_url ?? undefined}
+                                        alt={user.name}
+                                    />
+                                    <AvatarFallback>
+                                        {getInitials(user.name)}
+                                    </AvatarFallback>
+                                </Avatar>
 
-                            <Button
-                                variant="outline"
-                                render={<Link href={editProfile()} />}
-                            >
-                                <Pencil />
-                                {t('Edit profile')}
-                            </Button>
-                        </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    render={<Link href={editProfile()} />}
+                                >
+                                    <Pencil data-icon="inline-start" />
+                                    {t('Edit profile')}
+                                </Button>
+                            </div>
 
-                        <div className="mt-4 space-y-1">
-                            <h1 className="text-2xl font-semibold">
-                                {user.name}
-                            </h1>
-                            {subtitle && (
-                                <p className="text-muted-foreground">
-                                    {subtitle}
+                            <div className="mt-4 space-y-1">
+                                <h1 className="text-2xl font-semibold break-words">
+                                    {user.name}
+                                </h1>
+                                {subtitle && (
+                                    <p className="text-muted-foreground">
+                                        {subtitle}
+                                    </p>
+                                )}
+                            </div>
+
+                            {user.bio ? (
+                                <p className="mt-4 max-w-prose whitespace-pre-line">
+                                    {user.bio}
+                                </p>
+                            ) : (
+                                <p className="mt-4 text-muted-foreground">
+                                    {t(
+                                        'No bio yet. Add one in your profile settings.',
+                                    )}
                                 </p>
                             )}
                         </div>
+                    </Card>
 
-                        {user.bio ? (
-                            <p className="mt-4 max-w-2xl whitespace-pre-line">
-                                {user.bio}
-                            </p>
-                        ) : (
-                            <p className="mt-4 text-muted-foreground">
-                                {t(
-                                    'No bio yet. Add one in your profile settings.',
-                                )}
-                            </p>
-                        )}
-                    </div>
-                </section>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{t('Details')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <dl className="grid gap-4 text-sm sm:grid-cols-2">
-                            <div className="flex items-start gap-3">
-                                <Mail className="mt-0.5 size-4 text-muted-foreground" />
-                                <div>
-                                    <dt className="text-muted-foreground">
-                                        {t('Email address')}
-                                    </dt>
-                                    <dd className="font-medium break-all">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{t('Details')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <dl className="grid gap-6 text-sm sm:grid-cols-2">
+                                <Detail icon={Mail} label={t('Email address')}>
+                                    <span className="break-all">
                                         {user.email}
-                                    </dd>
-                                </div>
-                            </div>
+                                    </span>
+                                </Detail>
 
-                            <div className="flex items-start gap-3">
-                                <MapPin className="mt-0.5 size-4 text-muted-foreground" />
-                                <div>
-                                    <dt className="text-muted-foreground">
-                                        {t('Location')}
-                                    </dt>
-                                    <dd className="font-medium">
-                                        {user.location || t('Not set')}
-                                    </dd>
-                                </div>
-                            </div>
+                                <Detail icon={MapPin} label={t('Location')}>
+                                    {user.location || (
+                                        <span className="text-muted-foreground">
+                                            {t('Not set')}
+                                        </span>
+                                    )}
+                                </Detail>
 
-                            <div className="flex items-start gap-3">
-                                <Globe className="mt-0.5 size-4 text-muted-foreground" />
-                                <div>
-                                    <dt className="text-muted-foreground">
-                                        {t('Website')}
-                                    </dt>
-                                    <dd className="font-medium break-all">
-                                        {user.website && websiteLabel ? (
-                                            <a
-                                                href={user.website}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="underline underline-offset-4"
-                                            >
-                                                {websiteLabel}
-                                            </a>
-                                        ) : (
-                                            t('Not set')
-                                        )}
-                                    </dd>
-                                </div>
-                            </div>
+                                <Detail icon={Globe} label={t('Website')}>
+                                    {user.website && websiteLabel ? (
+                                        <a
+                                            href={user.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="break-all underline underline-offset-4"
+                                        >
+                                            {websiteLabel}
+                                        </a>
+                                    ) : (
+                                        <span className="text-muted-foreground">
+                                            {t('Not set')}
+                                        </span>
+                                    )}
+                                </Detail>
 
-                            <div className="flex items-start gap-3">
-                                <CalendarDays className="mt-0.5 size-4 text-muted-foreground" />
-                                <div>
-                                    <dt className="text-muted-foreground">
-                                        {t('Member since')}
-                                    </dt>
-                                    <dd className="font-medium">
-                                        {memberSince}
-                                    </dd>
-                                </div>
-                            </div>
-                        </dl>
-                    </CardContent>
-                </Card>
+                                <Detail
+                                    icon={CalendarDays}
+                                    label={t('Member since')}
+                                >
+                                    {memberSince}
+                                </Detail>
+                            </dl>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </>
     );
