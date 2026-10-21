@@ -19,6 +19,7 @@ final class DisplaySettings
         'admin-permissions',
         'admin-users',
         'audit-log',
+        'admin-landing',
         'tasks',
         'settings',
         'repository',

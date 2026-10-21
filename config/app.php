@@ -42,6 +42,12 @@ return [
     'debug' => (bool) env('APP_DEBUG', false),
 
     /*
+    | Fallback for the "custom error pages" admin setting, used when the settings
+    | table cannot be read (for example while the database is down).
+    */
+    'custom_error_pages' => (bool) env('CUSTOM_ERROR_PAGES', true),
+
+    /*
     |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------

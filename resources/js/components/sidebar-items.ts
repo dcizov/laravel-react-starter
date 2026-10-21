@@ -1,6 +1,7 @@
 import {
     BookOpen,
     KeyRound,
+    LayoutTemplate,
     ListChecks,
     FolderGit2,
     LayoutGrid,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { index as indexAuditLog } from '@/routes/admin/audit-log';
+import { index as indexAdminLanding } from '@/routes/admin/landing';
 import { index as indexAdminPermissions } from '@/routes/admin/permissions';
 import { index as indexAdminRoles } from '@/routes/admin/roles';
 import { index as indexAdminUsers } from '@/routes/admin/users';
@@ -111,6 +113,13 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 href: indexAuditLog(),
                 icon: ScrollText,
                 permission: 'audit.view',
+            },
+            {
+                id: 'admin-landing',
+                title: 'Landing page',
+                href: indexAdminLanding(),
+                icon: LayoutTemplate,
+                permission: 'landing.manage',
             },
         ],
     },

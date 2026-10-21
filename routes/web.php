@@ -4,14 +4,16 @@ use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\LandingController as AdminLandingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::inertia('/', 'welcome')->name('home');
+Route::get('/', [HomeController::class, 'show'])->name('home');
 
 // Local only: preview the error pages at /errors/404 and so on. Production uses them through bootstrap/app.php.
 if (app()->environment('local')) {
@@ -68,6 +70,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('users/{user}/impersonate', [ImpersonationController::class, 'start'])
             ->middleware('can:users.impersonate')
             ->name('users.impersonate');
+
+        // Landing page editor. Changes are drafts until published.
+        Route::middleware('can:landing.manage')->group(function () {
+            Route::get('landing', [AdminLandingController::class, 'index'])->name('landing.index');
+            Route::put('landing/draft', [AdminLandingController::class, 'saveDraft'])->name('landing.draft.update');
+            Route::post('landing/publish', [AdminLandingController::class, 'publish'])->name('landing.publish');
+            Route::post('landing/discard', [AdminLandingController::class, 'discard'])->name('landing.discard');
+            Route::get('landing/preview', [AdminLandingController::class, 'preview'])->name('landing.preview');
+            Route::post('landing/images', [AdminLandingController::class, 'storeImage'])->name('landing.images.store');
+        });
 
         Route::get('audit-log', [AuditLogController::class, 'index'])
             ->middleware('can:audit.view')

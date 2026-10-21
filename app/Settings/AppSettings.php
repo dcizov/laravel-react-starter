@@ -21,6 +21,31 @@ class AppSettings extends Settings
      */
     public ?string $app_logo_path;
 
+    /**
+     * Show the app's own error pages (401, 403, 404, 500, 503). When off, Laravel's pages are used.
+     */
+    public bool $custom_error_pages;
+
+    /**
+     * Show the landing page at the home URL. When off, guests go to login and users to the dashboard.
+     */
+    public bool $landing_enabled;
+
+    /**
+     * The landing page blocks being edited. Null means never saved, so the published page is used.
+     *
+     * @var list<array{id: string, type: string, data: array<string, mixed>}>|null
+     */
+    public ?array $landing_draft;
+
+    /**
+     * The landing page blocks visitors see. Null means never published, so the built-in default page is used.
+     * An empty list is a deliberately empty page.
+     *
+     * @var list<array{id: string, type: string, data: array<string, mixed>}>|null
+     */
+    public ?array $landing_published;
+
     public static function group(): string
     {
         return 'app';

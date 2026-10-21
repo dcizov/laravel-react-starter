@@ -20,6 +20,8 @@ class AdminSettingsController extends Controller
             'settings' => [
                 'app_name' => $settings->app_name,
                 'default_role' => $settings->default_role,
+                'custom_error_pages' => $settings->custom_error_pages,
+                'landing_enabled' => $settings->landing_enabled,
                 'logo_url' => $settings->app_logo_path
                     ? Storage::disk('public')->url($settings->app_logo_path)
                     : null,
@@ -36,10 +38,16 @@ class AdminSettingsController extends Controller
             // PNG, JPEG, and WebP only. SVG is left out: an uploaded SVG can carry scripts when served from this site.
             'logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
             'remove_logo' => ['boolean'],
+            // Switches come from a multipart form, where false arrives as an empty or "0" value. Read them with
+            // $request->boolean() below, so an empty value counts as off.
+            'custom_error_pages' => ['nullable', 'boolean'],
+            'landing_enabled' => ['nullable', 'boolean'],
         ]);
 
         $settings->app_name = $validated['app_name'];
         $settings->default_role = $validated['default_role'];
+        $settings->custom_error_pages = $request->boolean('custom_error_pages');
+        $settings->landing_enabled = $request->boolean('landing_enabled');
 
         if ($request->hasFile('logo') || $request->boolean('remove_logo')) {
             if ($settings->app_logo_path) {

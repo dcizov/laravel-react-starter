@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
+use App\Support\ErrorPages;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -46,9 +47,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
             $wantsJson = $request->expectsJson() || $request->is('api/*');
 
-            // Tests keep Laravel's responses. Local shows the app's pages too, so they can be checked.
-            // The debug page stays for a real server error while debug is on.
-            $keepLaravelPage = app()->environment('testing') || ($status === 500 && config('app.debug'));
+            // Tests keep Laravel's responses. The admin setting decides for everything else (see App\Support\ErrorPages).
+            // The debug page stays for a real server error while APP_DEBUG is on; debug is never set from the admin UI.
+            $keepLaravelPage = app()->environment('testing')
+                || ($status === 500 && config('app.debug'))
+                || ! ErrorPages::enabled();
 
             if ($keepLaravelPage || $wantsJson || ! isset($errorPages[$status])) {
                 return $response;

@@ -6,6 +6,7 @@ import ContentSection from '@/components/settings/content-section';
 import { Button } from '@/components/ui/button';
 import {
     Field,
+    FieldContent,
     FieldDescription,
     FieldError,
     FieldGroup,
@@ -20,6 +21,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import { roleLabels } from '@/components/users/data';
 import { useTrans } from '@/hooks/use-trans';
 import { edit, update } from '@/routes/admin-settings';
@@ -28,6 +30,8 @@ type AdminSettings = {
     app_name: string;
     default_role: string;
     logo_url: string | null;
+    custom_error_pages: boolean;
+    landing_enabled: boolean;
 };
 
 type AdminForm = {
@@ -35,6 +39,8 @@ type AdminForm = {
     default_role: string;
     logo: File | null;
     remove_logo: boolean;
+    custom_error_pages: boolean;
+    landing_enabled: boolean;
 };
 
 // App-wide settings. Only admins can open this page.
@@ -52,6 +58,8 @@ export default function AdminSettingsPage({
         default_role: settings.default_role,
         logo: null,
         remove_logo: false,
+        custom_error_pages: settings.custom_error_pages,
+        landing_enabled: settings.landing_enabled,
     });
 
     // A preview of the file the admin picked. Revoked when it changes, so the browser does not keep it.
@@ -216,6 +224,46 @@ export default function AdminSettingsPage({
                                 </SelectContent>
                             </Select>
                             <FieldError>{form.errors.default_role}</FieldError>
+                        </Field>
+
+                        <Field orientation="horizontal">
+                            <FieldContent>
+                                <FieldLabel htmlFor="custom_error_pages">
+                                    {t("Use the app's error pages")}
+                                </FieldLabel>
+                                <FieldDescription>
+                                    {t(
+                                        "Off shows Laravel's own error pages instead. Debug mode is set in the server configuration, not here.",
+                                    )}
+                                </FieldDescription>
+                            </FieldContent>
+                            <Switch
+                                id="custom_error_pages"
+                                checked={form.data.custom_error_pages}
+                                onCheckedChange={(checked) =>
+                                    form.setData('custom_error_pages', checked)
+                                }
+                            />
+                        </Field>
+
+                        <Field orientation="horizontal">
+                            <FieldContent>
+                                <FieldLabel htmlFor="landing_enabled">
+                                    {t('Show the landing page')}
+                                </FieldLabel>
+                                <FieldDescription>
+                                    {t(
+                                        'Off sends visitors to sign in, or to the dashboard when signed in. Edit the page at Landing page.',
+                                    )}
+                                </FieldDescription>
+                            </FieldContent>
+                            <Switch
+                                id="landing_enabled"
+                                checked={form.data.landing_enabled}
+                                onCheckedChange={(checked) =>
+                                    form.setData('landing_enabled', checked)
+                                }
+                            />
                         </Field>
 
                         <Field orientation="horizontal">

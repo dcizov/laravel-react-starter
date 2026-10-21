@@ -32,6 +32,8 @@ final class Rbac
 
     public const PERMISSION_SETTINGS_MANAGE = 'settings.manage';
 
+    public const PERMISSION_LANDING_MANAGE = 'landing.manage';
+
     /**
      * Every permission the application checks.
      *
@@ -49,6 +51,7 @@ final class Rbac
         self::PERMISSION_ROLES_MANAGE,
         self::PERMISSION_PERMISSIONS_MANAGE,
         self::PERMISSION_SETTINGS_MANAGE,
+        self::PERMISSION_LANDING_MANAGE,
     ];
 
     /**
