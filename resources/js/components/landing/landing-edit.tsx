@@ -10,7 +10,7 @@ import type { Animation, TextEffect } from '@/components/landing/block-types';
 import { cn } from '@/lib/utils';
 
 // Only the visual editor provides this. On the public page it is null, so text is plain and nothing is editable.
-export type EditBinding = {
+type EditBinding = {
     blockId: string;
     setText: (path: string, value: string) => void;
 };

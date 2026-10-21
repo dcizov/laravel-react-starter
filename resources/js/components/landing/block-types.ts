@@ -27,8 +27,8 @@ import type { LucideIcon } from 'lucide-react';
 
 // The shape of every block. Must match App\\Support\\LandingBlocks on the server, which keeps only these fields.
 // Optional fields are left out of the saved data when empty, so the editor and renderers treat them as possibly missing.
-export type FeatureItem = { title: string; text?: string; icon?: string };
-export type LogoItem = { name: string };
+type FeatureItem = { title: string; text?: string; icon?: string };
+type LogoItem = { name: string };
 export type StatItem = { value: string; label: string };
 export type TestimonialItem = { quote: string; name: string; role?: string };
 export type PricingItem = {
@@ -43,7 +43,7 @@ export type PricingItem = {
 };
 export type FaqItem = { question: string; answer?: string };
 export type NavLinkItem = { label: string; url: string };
-export type FooterColumn = { title: string; links: NavLinkItem[] };
+type FooterColumn = { title: string; links: NavLinkItem[] };
 
 export type BlockData = {
     hero: {
@@ -110,7 +110,7 @@ export type BlockStyle = Partial<{
 
 export type ResolvedStyle = Required<BlockStyle>;
 
-export const DEFAULT_STYLE: ResolvedStyle = {
+const DEFAULT_STYLE: ResolvedStyle = {
     variant: 0,
     bg_color: '',
     bg_image: '',

@@ -745,7 +745,7 @@ function ItemList({
     );
 }
 
-export function TextField({
+function TextField({
     id,
     label,
     hint,

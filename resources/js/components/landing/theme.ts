@@ -20,7 +20,7 @@ const DEFAULT_THEME: LandingTheme = {
     text_size: 'md',
 };
 
-export type ThemePreset = { key: string; label: string; theme: LandingTheme };
+type ThemePreset = { key: string; label: string; theme: LandingTheme };
 
 // Colour presets, the same idea as a tweakcn theme library. Each one can be tweaked afterwards.
 export const THEME_PRESETS: ThemePreset[] = [
