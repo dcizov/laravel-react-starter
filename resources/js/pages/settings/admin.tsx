@@ -265,7 +265,7 @@ export default function AdminSettingsPage({
                                 </FieldLabel>
                                 <FieldDescription>
                                     {t(
-                                        'Off sends visitors to sign in, or to the dashboard when signed in. Edit the page in the Visual Editor.',
+                                        'Off sends visitors to sign in, or to the dashboard when signed in. Edit the page in the Visual editor.',
                                     )}
                                 </FieldDescription>
                             </FieldContent>

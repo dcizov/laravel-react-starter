@@ -114,7 +114,7 @@ final class LandingPresets
             self::block('default-faq', 'faq', [
                 'title' => 'Questions',
                 'items' => [
-                    ['question' => 'How do I change what visitors see?', 'answer' => 'Open the Visual Editor, change the blocks, and save a draft. Preview shows the draft, and Publish makes it live.'],
+                    ['question' => 'How do I change what visitors see?', 'answer' => 'Open the Visual editor, change the blocks, and save a draft. Preview shows the draft, and Publish makes it live.'],
                     ['question' => 'Can I turn this page off?', 'answer' => 'Yes. With the landing page switched off, visitors go straight to sign in, or to the dashboard when they are signed in.'],
                     ['question' => 'Can I add more sections?', 'answer' => 'Yes, up to the limit for each block type. Add a block from the palette and drag it into place.'],
                 ],

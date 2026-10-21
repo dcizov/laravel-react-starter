@@ -462,10 +462,10 @@ export default function LandingEditor({
 
     return (
         <>
-            <Head title={t('Visual Editor')} />
+            <Head title={t('Visual editor')} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <PageHeader
-                    title={t('Visual Editor')}
+                    title={t('Visual editor')}
                     description={t(
                         'Drag blocks onto the page, click any text to edit it, then style each block. Save a draft, then publish it when it is ready.',
                     )}
@@ -1019,7 +1019,7 @@ function SortableBlock({
 LandingEditor.layout = {
     breadcrumbs: [
         {
-            title: 'Visual Editor',
+            title: 'Visual editor',
             href: indexAdminLanding(),
         },
     ],

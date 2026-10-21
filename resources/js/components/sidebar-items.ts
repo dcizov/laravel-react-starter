@@ -118,7 +118,7 @@ export const sidebarGroups: SidebarGroupDef[] = [
             },
             {
                 id: 'admin-landing',
-                title: 'Visual Editor',
+                title: 'Visual editor',
                 href: indexAdminLanding(),
                 icon: LayoutTemplate,
                 permission: 'landing.manage',

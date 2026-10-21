@@ -66,13 +66,13 @@ function Brand({ className }: { className?: string }) {
     const { name } = usePage().props;
 
     return (
-        <div className="flex shrink-0 items-center gap-2.5">
+        <div className="flex min-w-0 shrink items-center gap-2.5">
             <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary text-primary-foreground">
                 <AppLogoMark className="size-5 fill-current" />
             </span>
             <span
                 className={cn(
-                    'font-semibold tracking-tight whitespace-nowrap',
+                    'min-w-0 truncate font-semibold tracking-tight',
                     className,
                 )}
             >
@@ -171,8 +171,21 @@ export function NavbarBlock({
                                     aria-hidden="true"
                                 />
                             </summary>
-                            <div className="absolute inset-x-0 top-full z-50 flex flex-col gap-4 border-b bg-background/95 p-4 shadow-lg backdrop-blur-md">
-                                <nav className="flex flex-col gap-3">
+                            <div className="absolute inset-x-0 top-full z-50 flex flex-col gap-4 border-b bg-background p-4 shadow-lg">
+                                <nav
+                                    className="flex flex-col gap-3"
+                                    onClick={(event) => {
+                                        // Close the menu once a link is chosen, so the page is visible again.
+                                        if (
+                                            event.target instanceof
+                                            HTMLAnchorElement
+                                        ) {
+                                            event.currentTarget
+                                                .closest('details')
+                                                ?.removeAttribute('open');
+                                        }
+                                    }}
+                                >
                                     {links}
                                     <AccountLinks />
                                 </nav>

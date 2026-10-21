@@ -179,7 +179,7 @@ export function StatsBlock({
             <StatValue
                 path={`items.${index}.value`}
                 value={item.value}
-                className="bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-5xl font-semibold tracking-tight text-transparent"
+                className="bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-4xl font-semibold tracking-tight text-transparent sm:text-5xl"
             />
             <EditableText
                 as="p"
@@ -432,7 +432,7 @@ function PlanCard({
                     max={20}
                     className={cn(
                         'font-semibold tracking-tight',
-                        large ? 'text-6xl' : 'text-5xl',
+                        large ? 'text-5xl sm:text-6xl' : 'text-4xl sm:text-5xl',
                     )}
                 />
                 {plan.period && (
