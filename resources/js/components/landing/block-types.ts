@@ -346,12 +346,12 @@ const defaults: { [K in BlockType]: BlockData[K] } = {
     },
 };
 
-export function createBlock(type: BlockType): LandingBlock {
+export function createBlock(type: BlockType, variant = 0): LandingBlock {
     return {
         id: crypto.randomUUID(),
         type,
         data: structuredClone(defaults[type]),
-        style: { ...DEFAULT_STYLE },
+        style: { ...DEFAULT_STYLE, variant },
     } as LandingBlock;
 }
 

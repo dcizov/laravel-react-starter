@@ -346,7 +346,7 @@ export default function LandingEditor({
         [commit, history.present],
     );
 
-    const addBlock = (type: BlockType, index?: number) => {
+    const addBlock = (type: BlockType, index?: number, variant = 0) => {
         if (blocks.length >= MAX_BLOCKS) {
             showError(
                 t('A page can have up to :count blocks.', {
@@ -357,7 +357,7 @@ export default function LandingEditor({
             return;
         }
 
-        const block = createBlock(type);
+        const block = createBlock(type, variant);
         const at = index ?? blocks.length;
 
         commit({
@@ -592,7 +592,10 @@ export default function LandingEditor({
                                     type={item.type}
                                     label={t(item.label)}
                                     icon={item.icon}
-                                    onAdd={() => addBlock(item.type)}
+                                    variants={VARIANT_NAMES[item.type]}
+                                    onAdd={(variant) =>
+                                        addBlock(item.type, undefined, variant)
+                                    }
                                 />
                             ))}
 
@@ -812,32 +815,72 @@ function PaletteItem({
     type,
     label,
     icon: Icon,
+    variants,
     onAdd,
 }: {
     type: BlockType;
     label: string;
     icon: (typeof blockTypes)[number]['icon'];
-    onAdd: () => void;
+    variants: string[];
+    onAdd: (variant: number) => void;
 }) {
+    const t = useTrans();
+    const [open, setOpen] = useState(false);
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: `palette:${type}`,
     });
 
     return (
-        <button
-            ref={setNodeRef}
-            type="button"
-            onClick={onAdd}
-            {...attributes}
-            {...listeners}
-            className={cn(
-                'flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-left text-sm hover:bg-muted',
-                isDragging && 'opacity-50',
+        <div className="flex flex-col gap-1">
+            <div className="flex items-stretch gap-1">
+                <button
+                    ref={setNodeRef}
+                    type="button"
+                    onClick={() => onAdd(0)}
+                    {...attributes}
+                    {...listeners}
+                    className={cn(
+                        'flex min-w-0 flex-1 items-center gap-2 rounded-md border bg-background px-3 py-2 text-left text-sm hover:bg-muted',
+                        isDragging && 'opacity-50',
+                    )}
+                >
+                    <Icon
+                        aria-hidden="true"
+                        className="size-4 text-muted-foreground"
+                    />
+                    {label}
+                </button>
+                <button
+                    type="button"
+                    aria-expanded={open}
+                    aria-label={open ? t('Hide layouts') : t('Show layouts')}
+                    title={open ? t('Hide layouts') : t('Show layouts')}
+                    onClick={() => setOpen((value) => !value)}
+                    className="flex items-center rounded-md border bg-background px-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                    {open ? (
+                        <ChevronDown className="size-4" aria-hidden="true" />
+                    ) : (
+                        <ChevronRight className="size-4" aria-hidden="true" />
+                    )}
+                </button>
+            </div>
+            {open && (
+                <ul className="ml-4 flex flex-col gap-0.5 border-l pl-3">
+                    {variants.map((name, index) => (
+                        <li key={name}>
+                            <button
+                                type="button"
+                                onClick={() => onAdd(index)}
+                                className="w-full rounded-md px-2 py-1 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                            >
+                                {t(name)}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
             )}
-        >
-            <Icon aria-hidden="true" className="size-4 text-muted-foreground" />
-            {label}
-        </button>
+        </div>
     );
 }
 
