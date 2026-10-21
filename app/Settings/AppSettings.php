@@ -31,19 +31,13 @@ class AppSettings extends Settings
      */
     public bool $landing_enabled;
 
-    /**
-     * The landing page blocks being edited. Null means never saved, so the published page is used.
-     *
-     * @var list<array{id: string, type: string, data: array<string, mixed>}>|null
-     */
+    // The landing page blocks being edited. Null means never saved, so the published page is used.
+    // Plain comments, not a docblock: Spatie reads @var tags to pick the cast, and it cannot parse
+    // array shapes such as array{id: string}.
     public ?array $landing_draft;
 
-    /**
-     * The landing page blocks visitors see. Null means never published, so the built-in default page is used.
-     * An empty list is a deliberately empty page.
-     *
-     * @var list<array{id: string, type: string, data: array<string, mixed>}>|null
-     */
+    // The landing page blocks visitors see. Null means never published, so the built-in default page is used.
+    // An empty list is a deliberately empty page.
     public ?array $landing_published;
 
     public static function group(): string
