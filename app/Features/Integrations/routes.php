@@ -1,5 +1,6 @@
 <?php
 
+use App\Features\Integrations\Http\Controllers\Admin\GoogleOAuthController;
 use App\Features\Integrations\Http\Controllers\Admin\IntegrationController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,5 +13,8 @@ Route::middleware(['web', 'auth', 'verified'])
             Route::get('integrations', [IntegrationController::class, 'index'])->name('integrations.index');
             Route::put('integrations/{integration}', [IntegrationController::class, 'update'])->name('integrations.update');
             Route::delete('integrations/{integration}', [IntegrationController::class, 'destroy'])->name('integrations.destroy');
+
+            Route::get('integrations/oauth/callback', [GoogleOAuthController::class, 'callback'])->name('integrations.oauth.callback');
+            Route::get('integrations/{integration}/oauth', [GoogleOAuthController::class, 'redirect'])->name('integrations.oauth.redirect');
         });
     });

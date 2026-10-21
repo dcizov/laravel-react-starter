@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Check } from 'lucide-react';
+import { ArrowUpRight, Check } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import PageHeader from '@/components/page-header';
@@ -33,8 +33,14 @@ type Integration = {
     key: string;
     name: string;
     description: string;
+    favicon: string;
+    // 'token': the admin pastes values. 'oauth': the admin signs in with the provider.
+    auth: 'token' | 'oauth';
     connected: boolean;
     connectedAt: string | null;
+    // False when a sign-in tool is not set up on the server (missing Google client ID or secret).
+    available: boolean;
+    connectUrl: string | null;
     fields: IntegrationField[];
 };
 
@@ -42,7 +48,8 @@ type Props = {
     integrations: Integration[];
 };
 
-// The admin catalogue of third-party tools. Connecting a tool saves its keys, encrypted on the server.
+// The admin catalogue of third-party tools, laid out like the Integrations 02 block from shadcn-ui-blocks (MIT).
+// Token tools open a form. Sign-in tools go to the provider and come back here.
 export default function IntegrationsIndex({ integrations }: Props) {
     const t = useTrans();
     const [active, setActive] = useState<Integration | null>(null);
@@ -55,47 +62,33 @@ export default function IntegrationsIndex({ integrations }: Props) {
                 <PageHeader
                     title={t('Integrations')}
                     description={t(
-                        'Connect the third-party tools this app uses. Secret keys are encrypted and never shown again.',
+                        'Connect the third-party tools this app uses. Saved keys are encrypted and never shown again.',
                     )}
                 />
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="flex flex-col gap-3 rounded-xl border bg-card p-3">
                     {integrations.map((item) => (
                         <div
                             key={item.key}
-                            className="flex flex-col gap-4 rounded-xl border p-4"
+                            className="flex flex-wrap items-center gap-3 rounded-lg border px-3 py-3"
                         >
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex size-10 items-center justify-center rounded-lg bg-muted text-sm font-semibold">
-                                    {item.name.charAt(0)}
-                                </div>
-                                {item.connected && (
-                                    <Badge variant="secondary">
-                                        <Check />
-                                        {t('Connected')}
-                                    </Badge>
-                                )}
-                            </div>
-
-                            <div className="space-y-1">
+                            <img
+                                alt=""
+                                aria-hidden="true"
+                                className="size-8 rounded"
+                                src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.favicon)}&sz=64`}
+                            />
+                            <div className="min-w-0 flex-1">
                                 <h2 className="font-medium">{item.name}</h2>
                                 <p className="text-sm text-muted-foreground">
                                     {item.description}
                                 </p>
                             </div>
 
-                            <div className="mt-auto">
-                                <Button
-                                    variant={
-                                        item.connected ? 'outline' : 'default'
-                                    }
-                                    onClick={() => setActive(item)}
-                                >
-                                    {item.connected
-                                        ? t('Manage')
-                                        : t('Connect')}
-                                </Button>
-                            </div>
+                            <IntegrationAction
+                                item={item}
+                                onOpen={() => setActive(item)}
+                            />
                         </div>
                     ))}
                 </div>
@@ -114,6 +107,96 @@ export default function IntegrationsIndex({ integrations }: Props) {
                 )}
             </Dialog>
         </>
+    );
+}
+
+// The right-hand action of a row. Its label and state depend on how the tool connects.
+function IntegrationAction({
+    item,
+    onOpen,
+}: {
+    item: Integration;
+    onOpen: () => void;
+}) {
+    const t = useTrans();
+    const [disconnecting, setDisconnecting] = useState(false);
+
+    if (item.auth === 'oauth') {
+        if (item.connected) {
+            return (
+                <div className="ms-auto flex items-center gap-2">
+                    <Badge className="h-7 rounded-lg bg-emerald-600/10 px-3 text-sm text-emerald-600">
+                        <Check />
+                        {t('Connected')}
+                    </Badge>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={disconnecting}
+                        onClick={() => {
+                            setDisconnecting(true);
+                            router.delete(destroy.url(item.key), {
+                                preserveScroll: true,
+                                onFinish: () => setDisconnecting(false),
+                            });
+                        }}
+                    >
+                        {disconnecting && <Spinner />}
+                        {t('Disconnect')}
+                    </Button>
+                </div>
+            );
+        }
+
+        if (!item.available) {
+            return (
+                <Badge
+                    variant="outline"
+                    className="ms-auto h-7 px-3 text-sm text-muted-foreground"
+                >
+                    {t('Not set up')}
+                </Badge>
+            );
+        }
+
+        return (
+            <Button
+                size="sm"
+                variant="outline"
+                className="ms-auto min-w-26"
+                nativeButton={false}
+                render={<a href={item.connectUrl ?? undefined} />}
+            >
+                {t('Connect')}
+                <ArrowUpRight />
+            </Button>
+        );
+    }
+
+    if (item.connected) {
+        return (
+            <div className="ms-auto flex items-center gap-2">
+                <Badge className="h-7 rounded-lg bg-emerald-600/10 px-3 text-sm text-emerald-600">
+                    <Check />
+                    {t('Connected')}
+                </Badge>
+                <Button variant="outline" size="sm" onClick={onOpen}>
+                    {t('Manage')}
+                </Button>
+            </div>
+        );
+    }
+
+    return (
+        <Button
+            size="sm"
+            variant="outline"
+            className="ms-auto min-w-26"
+            onClick={onOpen}
+        >
+            {t('Connect')}
+            <ArrowUpRight />
+        </Button>
     );
 }
 

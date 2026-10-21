@@ -3,6 +3,7 @@
 namespace App\Features\Integrations\Http\Controllers\Admin;
 
 use App\Features\Integrations\Catalogue;
+use App\Features\Integrations\GoogleOAuth;
 use App\Features\Integrations\Models\IntegrationConnection;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +16,8 @@ use Inertia\Response;
  */
 class IntegrationController extends Controller
 {
+    public function __construct(private readonly GoogleOAuth $google) {}
+
     public function index(): Response
     {
         $connections = IntegrationConnection::query()->get()->keyBy('integration_key');
@@ -23,13 +26,19 @@ class IntegrationController extends Controller
             /** @var IntegrationConnection|null $connection */
             $connection = $connections->get($integration['key']);
             $credentials = $connection?->credentials ?? [];
+            $isOAuth = $integration['auth'] === 'oauth';
 
             return [
                 'key' => $integration['key'],
                 'name' => $integration['name'],
                 'description' => $integration['description'],
+                'favicon' => $integration['favicon'],
+                'auth' => $integration['auth'],
                 'connected' => $connection !== null,
                 'connectedAt' => $connection?->connected_at?->toIso8601String(),
+                // Sign-in tools need the Google client to be configured before anyone can connect.
+                'available' => $isOAuth ? $this->google->configured() : true,
+                'connectUrl' => $isOAuth ? route('admin.integrations.oauth.redirect', $integration['key']) : null,
                 'fields' => array_map(fn (array $field) => [
                     'key' => $field['key'],
                     'label' => $field['label'],
@@ -50,6 +59,9 @@ class IntegrationController extends Controller
     public function update(Request $request, string $integration): RedirectResponse
     {
         $definition = Catalogue::find($integration) ?? abort(404);
+
+        // Sign-in tools take no typed values. They connect through the redirect, not this form.
+        abort_unless($definition['auth'] === 'token', 404);
 
         $connection = IntegrationConnection::query()->firstWhere('integration_key', $integration);
         $saved = $connection?->credentials ?? [];
@@ -91,6 +103,13 @@ class IntegrationController extends Controller
     public function destroy(string $integration): RedirectResponse
     {
         $definition = Catalogue::find($integration) ?? abort(404);
+
+        $connection = IntegrationConnection::query()->firstWhere('integration_key', $integration);
+
+        // Ask Google to revoke the access as well. The local connection is removed even if that fails.
+        if ($definition['auth'] === 'oauth' && filled($connection?->credentials['refresh_token'] ?? null)) {
+            $this->google->revoke($connection->credentials['refresh_token']);
+        }
 
         IntegrationConnection::query()->where('integration_key', $integration)->delete();
 

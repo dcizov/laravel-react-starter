@@ -6,8 +6,8 @@ use App\Features\Feature;
 use App\Support\Rbac;
 
 /**
- * An admin catalogue of third-party tools. Admins connect a tool by saving its keys, which are stored
- * encrypted. Nothing calls the third-party services yet.
+ * An admin catalogue of third-party tools. GitHub connects with a saved access token. Gmail and Google Calendar
+ * connect through Google sign-in. Tokens are stored encrypted. Nothing calls these services yet.
  */
 final class IntegrationsFeature extends Feature
 {
