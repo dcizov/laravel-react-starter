@@ -875,8 +875,8 @@ function Canvas({
     const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
     return (
-        <div className="flex min-w-0 flex-col items-center gap-2 lg:max-h-[calc(100svh-11rem)] lg:overflow-y-auto lg:pr-1">
-            <div className="sticky top-0 z-10 flex w-full items-center justify-between gap-2 bg-background/95 pb-1 backdrop-blur-sm">
+        <div className="flex min-w-0 flex-col items-center gap-2">
+            <div className="flex w-full items-center justify-between gap-2">
                 <div className="text-xs text-muted-foreground">
                     {device === 'desktop'
                         ? t('Desktop')
