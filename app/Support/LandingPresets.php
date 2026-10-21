@@ -27,6 +27,7 @@ final class LandingPresets
                 'label' => __('SaaS'),
                 'description' => __('The default. A product page with a sticky bar, a hero, feature bento, proof, pricing, questions, and a closing call to action.'),
                 'blocks' => self::starter(),
+                'theme' => self::defaultTheme(),
             ],
             [
                 'key' => 'launch',
@@ -227,6 +228,18 @@ final class LandingPresets
                 'button_label' => __('Book a call'),
                 'button_url' => '/register',
             ], ['variant' => 2]),
+        ];
+    }
+
+    private static function defaultTheme(): array
+    {
+        return [
+            'primary' => '#171717',
+            'background' => '#ffffff',
+            'foreground' => '#0a0a0a',
+            'radius' => 0.625,
+            'font' => 'sans',
+            'text_size' => 'md',
         ];
     }
 

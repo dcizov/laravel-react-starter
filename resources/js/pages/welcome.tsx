@@ -4,6 +4,7 @@ import { RenderBlock } from '@/components/landing/render-block';
 import type { LandingTheme } from '@/components/landing/theme';
 import { themeStyle } from '@/components/landing/theme';
 import { Button } from '@/components/ui/button';
+import { useAppearance } from '@/hooks/use-appearance';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
@@ -22,6 +23,8 @@ export default function Welcome({
 }) {
     const t = useTrans();
     const { auth } = usePage().props;
+    // The page follows the visitor's light or dark appearance.
+    const { resolvedAppearance } = useAppearance();
     // A navigation bar block has its own place for sign-in links, so the default header is left out.
     const hasNavbar = blocks.some((block) => block.type === 'navbar');
 
@@ -30,7 +33,7 @@ export default function Welcome({
             <Head title={t('Welcome')} />
             <div
                 className="flex min-h-svh flex-col bg-background text-foreground"
-                style={themeStyle(theme)}
+                style={themeStyle(theme, resolvedAppearance === 'dark')}
             >
                 {preview && (
                     <div

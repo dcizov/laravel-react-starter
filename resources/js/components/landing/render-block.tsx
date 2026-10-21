@@ -55,7 +55,7 @@ export function BlockFrame({
             <section
                 id={id}
                 className={cn(
-                    'relative w-full scroll-mt-16',
+                    '@container relative w-full scroll-mt-16',
                     // A sticky bar lets its mobile panel hang below it, so it is not clipped.
                     sticky
                         ? 'overflow-visible border-b bg-background/75 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-background/60'
@@ -66,7 +66,7 @@ export function BlockFrame({
                 <TextEffectContext value={style.text_effect}>
                     <div
                         className={cn(
-                            'mx-auto flex w-full flex-col gap-8 px-4 md:px-8',
+                            'mx-auto flex w-full flex-col gap-8 px-4 @2xl:px-8',
                             WIDTH_CLASSES[style.width],
                             PADDING_CLASSES[style.padding],
                             alignClass(style.align),
@@ -187,7 +187,7 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
                 <figure
                     className={cn(
                         'w-full',
-                        style.variant === 1 && '-mx-4 md:-mx-8',
+                        style.variant === 1 && '-mx-4 @2xl:-mx-8',
                     )}
                 >
                     <img
@@ -265,7 +265,7 @@ function HeroBlock({
             value={data.text}
             multiline
             max={300}
-            className="max-w-2xl text-lg text-pretty text-muted-foreground sm:text-xl"
+            className="max-w-2xl text-lg text-pretty text-muted-foreground @xl:text-xl"
         />
     );
     const title = (
@@ -289,12 +289,12 @@ function HeroBlock({
     if (variant === 1) {
         // Split: copy on one side, the picture (or a frame where the picture will go) on the other.
         return (
-            <div className="relative grid w-full items-center gap-10 md:grid-cols-2">
+            <div className="relative grid w-full items-center gap-10 @2xl:grid-cols-2">
                 <div
                     className={cn(
                         'flex flex-col gap-6',
                         centered
-                            ? 'items-center text-center md:items-start md:text-left'
+                            ? 'items-center text-center @2xl:items-start @2xl:text-left'
                             : 'items-start text-left',
                     )}
                 >
@@ -327,9 +327,9 @@ function HeroBlock({
     if (variant === 2) {
         // Editorial: a ruled top edge, the headline on the left, the lead and action on the right.
         return (
-            <div className="relative grid w-full gap-8 border-t pt-10 md:grid-cols-5">
-                <div className="md:col-span-3">{title}</div>
-                <div className="flex flex-col items-start gap-6 md:col-span-2 md:pt-3">
+            <div className="relative grid w-full gap-8 border-t pt-10 @2xl:grid-cols-5">
+                <div className="@2xl:col-span-3">{title}</div>
+                <div className="flex flex-col items-start gap-6 @2xl:col-span-2 @2xl:pt-3">
                     {lead}
                     {actions}
                 </div>
@@ -437,7 +437,7 @@ function FeaturesBlock({
         return (
             <div className="flex w-full flex-col gap-10">
                 {heading}
-                <ul className="grid w-full gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                <ul className="grid w-full gap-x-8 gap-y-10 @xl:grid-cols-2 @4xl:grid-cols-3">
                     {data.items.map((item, index) => (
                         <li
                             // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -474,7 +474,7 @@ function FeaturesBlock({
     return (
         <div className="flex w-full flex-col gap-10">
             {heading}
-            <ul className="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid w-full gap-4 @xl:grid-cols-2 @4xl:grid-cols-3">
                 {data.items.map((item, index) => (
                     <li
                         // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -516,7 +516,7 @@ function FeaturesBlock({
 // stretches to fill its row, so no card is left alone on a row.
 function bentoSpan(index: number, count: number): string {
     if (index === 0) {
-        return 'sm:col-span-2 lg:col-span-2';
+        return '@xl:col-span-2 @4xl:col-span-2';
     }
 
     if (index !== count - 1 || count < 3) {
@@ -525,9 +525,13 @@ function bentoSpan(index: number, count: number): string {
 
     const smLeft = (count - 1) % 2; // cards after the first, on the 2-column grid
     const lgLeft = (count - 2) % 3; // cards after the first row, on the 3-column grid
-    const sm = smLeft === 1 ? 'sm:col-span-2' : '';
+    const sm = smLeft === 1 ? '@xl:col-span-2' : '';
     const lg =
-        lgLeft === 1 ? 'lg:col-span-3' : lgLeft === 2 ? 'lg:col-span-2' : '';
+        lgLeft === 1
+            ? '@4xl:col-span-3'
+            : lgLeft === 2
+              ? '@4xl:col-span-2'
+              : '';
 
     return cn(sm, lg);
 }
@@ -545,7 +549,7 @@ function TextBlock({
     if (variant === 1) {
         // Accent rule: a primary bar beside the copy, left aligned.
         return (
-            <div className="grid w-full gap-6 border-l-4 border-primary pl-6 md:pl-10">
+            <div className="grid w-full gap-6 border-l-4 border-primary pl-6 @2xl:pl-10">
                 <EditableText
                     as="h2"
                     path="heading"
@@ -569,7 +573,7 @@ function TextBlock({
     if (variant === 2) {
         // Two columns: the heading on the left, the body on the right.
         return (
-            <div className="grid w-full gap-6 md:grid-cols-2 md:gap-12">
+            <div className="grid w-full gap-6 @2xl:grid-cols-2 @2xl:gap-12">
                 <EditableText
                     as="h2"
                     path="heading"
@@ -630,7 +634,7 @@ function CtaBlock({
 }) {
     if (variant === 2) {
         return (
-            <div className="flex w-full flex-col items-start justify-between gap-6 rounded-3xl border bg-card p-8 sm:p-12 md:flex-row md:items-center">
+            <div className="flex w-full flex-col items-start justify-between gap-6 rounded-3xl border bg-card p-8 @xl:p-12 @2xl:flex-row @2xl:items-center">
                 <div className="flex max-w-xl flex-col gap-3">
                     <EditableText
                         as="h2"
@@ -638,7 +642,7 @@ function CtaBlock({
                         value={data.title}
                         required
                         max={120}
-                        className="text-3xl font-medium tracking-tight text-balance sm:text-4xl"
+                        className="text-3xl font-medium tracking-tight text-balance @xl:text-4xl"
                     />
                     <EditableText
                         as="p"
@@ -660,14 +664,14 @@ function CtaBlock({
 
     if (variant === 1) {
         return (
-            <div className="relative flex w-full flex-col items-center gap-6 rounded-3xl border bg-background px-6 py-16 text-center sm:px-12">
+            <div className="relative flex w-full flex-col items-center gap-6 rounded-3xl border bg-background px-6 py-16 text-center @xl:px-12">
                 <EditableText
                     as="h2"
                     path="title"
                     value={data.title}
                     required
                     max={120}
-                    className="max-w-2xl text-3xl font-medium tracking-tight text-balance sm:text-4xl"
+                    className="max-w-2xl text-3xl font-medium tracking-tight text-balance @xl:text-4xl"
                 />
                 <EditableText
                     as="p"
@@ -688,7 +692,7 @@ function CtaBlock({
 
     // Banner: a filled panel with a soft highlight, the default closing block.
     return (
-        <div className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground sm:px-12">
+        <div className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground @xl:px-12">
             <div
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-24 left-1/2 -z-10 size-96 -translate-x-1/2 rounded-full bg-primary-foreground/10 blur-3xl"
@@ -699,7 +703,7 @@ function CtaBlock({
                 value={data.title}
                 required
                 max={120}
-                className="max-w-2xl text-3xl font-medium tracking-tight text-balance sm:text-4xl"
+                className="max-w-2xl text-3xl font-medium tracking-tight text-balance @xl:text-4xl"
             />
             <EditableText
                 as="p"

@@ -137,9 +137,27 @@ function themeVariables(theme: LandingTheme): Record<string, string> {
 }
 
 // The style for the page wrapper: the variables, plus the font and text size.
-export function themeStyle(theme: LandingTheme): CSSProperties {
+// In dark mode the page takes a dark background and light text. The primary colour stays, but a dark
+// primary is lightened so buttons still show on the dark background.
+function darkVariant(theme: LandingTheme): LandingTheme {
+    const primaryIsDark = readableOn(theme.primary) === '#ffffff';
+
     return {
-        ...themeVariables(theme),
+        ...theme,
+        background: '#0a0a0a',
+        foreground: '#fafafa',
+        primary: primaryIsDark ? '#fafafa' : theme.primary,
+    };
+}
+
+export function themeStyle(
+    theme: LandingTheme,
+    dark: boolean = false,
+): CSSProperties {
+    const colours = dark ? darkVariant(theme) : theme;
+
+    return {
+        ...themeVariables(colours),
         fontFamily: FONT_STACKS[theme.font],
         fontSize: TEXT_SIZES[theme.text_size],
     } as CSSProperties;

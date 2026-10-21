@@ -133,7 +133,7 @@ export function NavbarBlock({
                     'items-center gap-6 py-3',
                     floating &&
                         'mx-auto my-3 max-w-5xl rounded-full border bg-background/80 py-2 pr-3 pl-5 shadow-sm backdrop-blur-md',
-                    edit ? 'flex' : 'hidden md:flex',
+                    edit ? 'flex' : 'hidden @2xl:flex',
                 )}
             >
                 <Brand />
@@ -148,7 +148,7 @@ export function NavbarBlock({
             {!edit && (
                 <div
                     className={cn(
-                        'flex items-center justify-between gap-2 py-3 md:hidden',
+                        'flex items-center justify-between gap-2 py-3 @2xl:hidden',
                         floating &&
                             'mx-auto my-3 max-w-5xl rounded-full border bg-background/80 pl-5 backdrop-blur-md',
                     )}
@@ -257,7 +257,7 @@ export function FooterBlock({
 
     if (bar) {
         return (
-            <div className="flex w-full flex-col gap-6 border-t pt-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex w-full flex-col gap-6 border-t pt-6 @2xl:flex-row @2xl:items-center @2xl:justify-between">
                 <div className="flex flex-col gap-2">
                     <Brand />
                     {copyright}

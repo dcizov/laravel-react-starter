@@ -38,7 +38,7 @@ function SectionTitle({
             value={value}
             max={120}
             className={cn(
-                'text-center text-3xl font-medium tracking-tight text-balance sm:text-4xl',
+                'text-center text-3xl font-medium tracking-tight text-balance @xl:text-4xl',
                 className,
             )}
         />
@@ -77,7 +77,7 @@ export function LogosBlock({
         return (
             <div className="flex w-full flex-col items-center gap-6">
                 {title}
-                <ul className="flex w-full [scrollbar-width:none] items-center gap-x-12 overflow-x-auto pb-2 text-lg font-semibold text-muted-foreground/80 md:justify-center [&::-webkit-scrollbar]:hidden">
+                <ul className="flex w-full [scrollbar-width:none] items-center gap-x-12 overflow-x-auto pb-2 text-lg font-semibold text-muted-foreground/80 @2xl:justify-center [&::-webkit-scrollbar]:hidden">
                     {data.items.map((item, index) => (
                         <li
                             // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -103,7 +103,7 @@ export function LogosBlock({
         return (
             <div className="flex w-full flex-col items-center gap-6">
                 {title}
-                <ul className="grid w-full grid-cols-2 gap-px overflow-hidden rounded-2xl border bg-border sm:grid-cols-3 lg:grid-cols-6">
+                <ul className="grid w-full grid-cols-2 gap-px overflow-hidden rounded-2xl border bg-border @xl:grid-cols-3 @4xl:grid-cols-6">
                     {data.items.map((item, index) => (
                         <li
                             // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -185,8 +185,8 @@ export function StatsBlock({
 }) {
     const columns =
         data.items.length >= 4
-            ? 'sm:grid-cols-2 lg:grid-cols-4'
-            : 'sm:grid-cols-3';
+            ? '@xl:grid-cols-2 @4xl:grid-cols-4'
+            : '@xl:grid-cols-3';
 
     if (variant === 1) {
         // Plain: big figures separated by hairlines, no boxes.
@@ -195,7 +195,7 @@ export function StatsBlock({
                 <SectionTitle path="title" value={data.title} />
                 <dl
                     className={cn(
-                        'grid w-full divide-y sm:divide-x sm:divide-y-0',
+                        'grid w-full divide-y @xl:divide-x @xl:divide-y-0',
                         columns,
                     )}
                 >
@@ -219,7 +219,7 @@ export function StatsBlock({
                                 <StatValue
                                     path={`items.${index}.value`}
                                     value={item.value}
-                                    className="text-5xl font-semibold tracking-tight tabular-nums sm:text-6xl"
+                                    className="text-5xl font-semibold tracking-tight tabular-nums @xl:text-6xl"
                                 />
                             </dd>
                         </div>
@@ -245,7 +245,7 @@ export function StatsBlock({
                                 <StatValue
                                     path={`items.${index}.value`}
                                     value={item.value}
-                                    className="text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl"
+                                    className="text-4xl font-semibold tracking-tight tabular-nums @xl:text-5xl"
                                 />
                             </dd>
                             <dt>
@@ -295,7 +295,7 @@ export function StatsBlock({
                             <StatValue
                                 path={`items.${index}.value`}
                                 value={item.value}
-                                className="text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl"
+                                className="text-4xl font-semibold tracking-tight tabular-nums @xl:text-5xl"
                             />
                         </dd>
                     </div>
@@ -335,7 +335,7 @@ function Quote({
                     className={cn(
                         'text-pretty',
                         large
-                            ? 'text-2xl font-medium tracking-tight sm:text-3xl'
+                            ? 'text-2xl font-medium tracking-tight @xl:text-3xl'
                             : 'text-base text-muted-foreground',
                     )}
                 />
@@ -382,12 +382,12 @@ export function TestimonialsBlock({
         return (
             <div className="flex w-full flex-col gap-10">
                 {title}
-                <div className="grid w-full gap-4 lg:grid-cols-3">
+                <div className="grid w-full gap-4 @4xl:grid-cols-3">
                     <Quote
                         item={first}
                         index={0}
                         large
-                        className="lg:col-span-2"
+                        className="@4xl:col-span-2"
                     />
                     <div className="flex flex-col gap-4">
                         {rest.map((item, offset) => (
@@ -409,7 +409,7 @@ export function TestimonialsBlock({
         return (
             <div className="flex w-full flex-col gap-10">
                 {title}
-                <div className="columns-1 gap-4 md:columns-2 lg:columns-3">
+                <div className="columns-1 gap-4 @2xl:columns-2 @4xl:columns-3">
                     {data.items.map((item, index) => (
                         <Quote
                             // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -428,7 +428,7 @@ export function TestimonialsBlock({
     return (
         <div className="flex w-full flex-col gap-10">
             {title}
-            <div className="grid w-full gap-4 md:grid-cols-2">
+            <div className="grid w-full gap-4 @2xl:grid-cols-2">
                 {data.items.map((item, index) => (
                     <Quote
                         // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -564,10 +564,10 @@ export function PricingBlock({
     const count = data.items.length;
     const grid =
         count >= 4
-            ? 'md:grid-cols-2 xl:grid-cols-4'
+            ? '@2xl:grid-cols-2 @5xl:grid-cols-4'
             : count === 2
-              ? 'md:grid-cols-2'
-              : 'md:grid-cols-3';
+              ? '@2xl:grid-cols-2'
+              : '@2xl:grid-cols-3';
 
     if (variant === 1) {
         // Rows: each plan is a wide row with its price and button at the right.
@@ -579,7 +579,7 @@ export function PricingBlock({
                         <div
                             // eslint-disable-next-line @eslint-react/no-array-index-key
                             key={index}
-                            className="flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between"
+                            className="flex flex-col gap-6 p-6 @2xl:flex-row @2xl:items-center @2xl:justify-between"
                         >
                             <div className="flex max-w-md flex-col gap-1">
                                 <div className="flex items-center gap-2">
@@ -606,7 +606,7 @@ export function PricingBlock({
                                     className="text-sm text-muted-foreground"
                                 />
                             </div>
-                            <div className="flex items-center justify-between gap-6 md:justify-end">
+                            <div className="flex items-center justify-between gap-6 @2xl:justify-end">
                                 <div className="flex items-end gap-1">
                                     <EditableText
                                         as="span"
@@ -652,7 +652,7 @@ export function PricingBlock({
         return (
             <div className="flex w-full flex-col gap-10">
                 {title}
-                <div className="grid w-full items-start gap-4 lg:grid-cols-3">
+                <div className="grid w-full items-start gap-4 @4xl:grid-cols-3">
                     {data.items.map((plan, index) => (
                         <PlanCard
                             // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -661,7 +661,7 @@ export function PricingBlock({
                             index={index}
                             className={
                                 index === focus
-                                    ? 'lg:col-span-1 lg:-my-4 lg:py-10'
+                                    ? '@4xl:col-span-1 @4xl:-my-4 @4xl:py-10'
                                     : undefined
                             }
                         />
@@ -793,14 +793,14 @@ export function FaqBlock({
     if (variant === 2) {
         // Two columns: questions on the left, a short prompt to ask more on the right.
         return (
-            <div className="grid w-full gap-10 lg:grid-cols-[1fr_2fr]">
+            <div className="grid w-full gap-10 @4xl:grid-cols-[1fr_2fr]">
                 <div className="flex flex-col gap-4">
                     <EditableText
                         as="h2"
                         path="title"
                         value={data.title}
                         max={120}
-                        className="text-3xl font-medium tracking-tight text-balance sm:text-4xl"
+                        className="text-3xl font-medium tracking-tight text-balance @xl:text-4xl"
                     />
                 </div>
                 <div className="flex w-full flex-col divide-y">

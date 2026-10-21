@@ -70,6 +70,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/toast';
+import { useAppearance } from '@/hooks/use-appearance';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
@@ -837,6 +838,7 @@ function Canvas({
     onText: (blockId: string, path: string, value: string) => void;
 }) {
     const t = useTrans();
+    const { resolvedAppearance } = useAppearance();
     const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
     return (
@@ -854,7 +856,7 @@ function Canvas({
             >
                 <div
                     ref={setNodeRef}
-                    style={themeStyle(theme)}
+                    style={themeStyle(theme, resolvedAppearance === 'dark')}
                     className={cn(
                         'flex min-h-96 flex-col gap-3 overflow-hidden rounded-lg border-2 border-dashed bg-background p-3 text-foreground',
                         isOver && 'border-ring',
