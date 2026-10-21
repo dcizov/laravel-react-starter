@@ -741,14 +741,7 @@ export default function LandingEditor({
                                             </PopoverContent>
                                         </Popover>
                                     </div>
-                                    <div
-                                        className={cn(
-                                            'grid gap-2',
-                                            view === 'grid'
-                                                ? 'grid-cols-2'
-                                                : 'grid-cols-1',
-                                        )}
-                                    >
+                                    <div className="flex flex-col gap-2">
                                         {filteredTypes.map((item) => (
                                             <PaletteItem
                                                 key={item.type}
@@ -1014,61 +1007,50 @@ function PaletteItem({
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: `palette:${type}`,
     });
-    // The number of other layouts, shown as "+N" on the card.
+    // The number of other layouts, shown as "+N" on the row.
     const more = variants.length - 1;
 
     return (
-        <>
-            <div className="relative">
-                <button
-                    ref={setNodeRef}
-                    type="button"
-                    onClick={() => onAdd(0)}
-                    {...attributes}
-                    {...listeners}
-                    className={cn(
-                        'flex w-full flex-col gap-1.5 rounded-lg border bg-background p-1.5 text-left transition-colors hover:bg-muted/60',
-                        isDragging && 'opacity-50',
-                        more > 0 && 'pr-9',
-                    )}
-                >
-                    <span className="flex items-center gap-2 px-0.5 py-1 text-sm font-medium">
-                        <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted">
-                            <Icon aria-hidden="true" className="size-4" />
-                        </span>
-                        <span className="truncate">{label}</span>
-                    </span>
-                </button>
-                {more > 0 && (
-                    <button
-                        type="button"
-                        aria-expanded={open}
-                        aria-label={
-                            open ? t('Hide layouts') : t('Show layouts')
-                        }
-                        title={open ? t('Hide layouts') : t('Show layouts')}
-                        onClick={() => setOpen((value) => !value)}
-                        className="absolute top-2.5 right-2.5 flex items-center gap-0.5 rounded-full border bg-background/90 px-1.5 py-0.5 text-xs text-muted-foreground tabular-nums shadow-sm hover:text-foreground"
-                    >
-                        +{more}
-                        {open ? (
-                            <ChevronDown
-                                className="size-3"
-                                aria-hidden="true"
-                            />
-                        ) : (
-                            <ChevronRight
-                                className="size-3"
-                                aria-hidden="true"
-                            />
-                        )}
-                    </button>
+        <div className="flex flex-col gap-2">
+            <button
+                ref={setNodeRef}
+                type="button"
+                aria-expanded={open}
+                onClick={() => setOpen((value) => !value)}
+                {...attributes}
+                {...listeners}
+                className={cn(
+                    'flex w-full items-center gap-2 rounded-lg border bg-background px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/60',
+                    isDragging && 'opacity-50',
                 )}
-            </div>
+            >
+                <span className="flex min-w-0 flex-1 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted">
+                        <Icon aria-hidden="true" className="size-4" />
+                    </span>
+                    <span className="truncate font-medium">{label}</span>
+                </span>
+                {more > 0 && (
+                    <span className="rounded-full border bg-muted px-2 py-0.5 text-xs text-muted-foreground tabular-nums">
+                        +{more}
+                    </span>
+                )}
+                {open ? (
+                    <ChevronDown
+                        className="size-4 text-muted-foreground"
+                        aria-hidden="true"
+                    />
+                ) : (
+                    <ChevronRight
+                        className="size-4 text-muted-foreground"
+                        aria-hidden="true"
+                    />
+                )}
+            </button>
             {open && (
                 <ul
                     className={cn(
-                        'col-span-full grid gap-2 border-l-2 pl-2',
+                        'grid gap-2 border-l-2 pl-2',
                         view === 'grid' ? 'grid-cols-2' : 'grid-cols-1',
                     )}
                 >
@@ -1088,7 +1070,7 @@ function PaletteItem({
                     ))}
                 </ul>
             )}
-        </>
+        </div>
     );
 }
 
