@@ -38,17 +38,28 @@ import { cn } from '@/lib/utils';
 export function BlockFrame({
     style,
     id,
+    sticky = false,
     children,
 }: {
     style: ResolvedStyle;
     id?: string;
+    sticky?: boolean;
     children: ReactNode;
 }) {
     return (
-        <Reveal animation={style.animation} className="w-full">
+        <Reveal
+            animation={style.animation}
+            className={cn('w-full', sticky && 'sticky top-0 z-50')}
+        >
             <section
                 id={id}
-                className="relative w-full scroll-mt-16 overflow-hidden"
+                className={cn(
+                    'relative w-full scroll-mt-16',
+                    // A sticky bar lets its mobile panel hang below it, so it is not clipped.
+                    sticky
+                        ? 'overflow-visible border-b bg-background/75 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-background/60'
+                        : 'overflow-hidden',
+                )}
                 style={sectionStyle(style)}
             >
                 <TextEffectContext value={style.text_effect}>
@@ -70,6 +81,25 @@ export function BlockFrame({
 
 export function RenderBlock({ block }: { block: LandingBlock }) {
     const style = resolveStyle(block);
+
+    // The navigation bar is always a full-width, fixed-height strip that sticks to the top.
+    // It does not animate in, because it has to be there from the first frame.
+    if (block.type === 'navbar') {
+        return (
+            <BlockFrame
+                style={{
+                    ...style,
+                    padding: 'none',
+                    width: 'full',
+                    animation: 'none',
+                }}
+                id={block.type}
+                sticky
+            >
+                {renderContent(block, style)}
+            </BlockFrame>
+        );
+    }
 
     return (
         <BlockFrame style={style} id={block.type}>

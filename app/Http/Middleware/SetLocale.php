@@ -13,13 +13,15 @@ use Symfony\Component\HttpFoundation\Response;
 class SetLocale
 {
     /**
-     * Use the signed-in user's language. Guests get the default language.
+     * Use the signed-in user's language. Guests get the language they chose, or the default.
      *
      * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = Locales::resolve($request->user()?->locale);
+        $guestLocale = $request->hasSession() ? $request->session()->get('locale') : null;
+
+        $locale = Locales::resolve($request->user()?->locale ?? (is_string($guestLocale) ? $guestLocale : null));
 
         App::setLocale($locale);
 

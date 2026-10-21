@@ -175,7 +175,7 @@ export const TEXT_EFFECT_LABELS: Record<TextEffect, string> = {
 };
 
 export const VARIANT_NAMES: Record<BlockType, string[]> = {
-    navbar: ['Bar', 'Centred', 'Minimal'],
+    navbar: ['Bar', 'Floating', 'Minimal'],
     footer: ['Columns', 'Stacked', 'Bar'],
     hero: ['Centered', 'Split with image', 'Editorial'],
     logos: ['Grid', 'Row', 'Ruled'],

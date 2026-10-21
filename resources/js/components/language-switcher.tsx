@@ -11,20 +11,32 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTrans } from '@/hooks/use-trans';
-import { update } from '@/routes/language';
+import { guest, update } from '@/routes/language';
 
-// Changes the language for the signed-in user. The choice is saved to the account,
-// so it follows them to every device.
+// Changes the language. Signed-in users save the choice to their account, so it follows them to every device.
+// Guests keep it in the session.
 export function LanguageSwitcher() {
     const t = useTrans();
-    const { locale, locales } = usePage().props;
+    const { auth, locale, locales } = usePage().props;
 
     const change = (value: string) => {
         if (value === locale) {
             return;
         }
 
-        router.patch(update().url, { locale: value }, { preserveScroll: true });
+        if (auth.user) {
+            router.patch(
+                update().url,
+                { locale: value },
+                { preserveScroll: true },
+            );
+        } else {
+            router.post(
+                guest().url,
+                { locale: value },
+                { preserveScroll: true },
+            );
+        }
     };
 
     return (

@@ -23,4 +23,18 @@ class LanguageController extends Controller
 
         return back();
     }
+
+    /**
+     * Change the language as a guest, from the public page. The choice is kept in the session.
+     */
+    public function guest(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'locale' => ['required', 'string', Rule::in(Locales::codes())],
+        ]);
+
+        $request->session()->put('locale', $validated['locale']);
+
+        return back();
+    }
 }

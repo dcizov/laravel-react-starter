@@ -8,12 +8,16 @@ use App\Http\Controllers\Admin\LandingController as AdminLandingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImpersonationController;
+use App\Http\Controllers\Settings\LanguageController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'show'])->name('home');
+
+// Language for guests, kept in the session. Signed-in users change it in their settings.
+Route::post('language', [LanguageController::class, 'guest'])->middleware('web')->name('language.guest');
 
 // Local only: preview the error pages at /errors/404 and so on. Production uses them through bootstrap/app.php.
 if (app()->environment('local')) {
