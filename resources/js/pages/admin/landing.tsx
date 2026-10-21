@@ -754,6 +754,7 @@ export default function LandingEditor({
                                                 key={item.type}
                                                 type={item.type}
                                                 label={t(item.label)}
+                                                icon={item.icon}
                                                 variants={
                                                     VARIANT_NAMES[item.type]
                                                 }
@@ -996,12 +997,14 @@ function DeviceButton({
 function PaletteItem({
     type,
     label,
+    icon: Icon,
     variants,
     view,
     onAdd,
 }: {
     type: BlockType;
     label: string;
+    icon: (typeof blockTypes)[number]['icon'];
     variants: string[];
     view: 'grid' | 'list';
     onAdd: (variant: number) => void;
@@ -1026,11 +1029,14 @@ function PaletteItem({
                     className={cn(
                         'flex w-full flex-col gap-1.5 rounded-lg border bg-background p-1.5 text-left transition-colors hover:bg-muted/60',
                         isDragging && 'opacity-50',
+                        more > 0 && 'pr-9',
                     )}
                 >
-                    <BlockMockup type={type} />
-                    <span className="truncate px-0.5 text-xs font-medium">
-                        {label}
+                    <span className="flex items-center gap-2 px-0.5 py-1 text-sm font-medium">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted">
+                            <Icon aria-hidden="true" className="size-4" />
+                        </span>
+                        <span className="truncate">{label}</span>
                     </span>
                 </button>
                 {more > 0 && (
