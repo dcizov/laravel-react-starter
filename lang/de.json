@@ -423,5 +423,9 @@
     "Search blocks": "Blöcke suchen",
     "No blocks match your search.": "Keine Blöcke gefunden.",
     "Show layouts": "Layouts anzeigen",
-    "Hide layouts": "Layouts ausblenden"
+    "Hide layouts": "Layouts ausblenden",
+    "Block settings": "Block-Einstellungen",
+    "Image Preview": "Vorschau",
+    "Two columns": "Zwei Spalten",
+    "One column": "Eine Spalte"
 }

@@ -28,7 +28,11 @@ import {
     Monitor,
     Plus,
     Redo2,
+    Search,
     Shuffle,
+    LayoutGrid,
+    Square,
+    SlidersHorizontal,
     Smartphone,
     Tablet,
     Trash2,
@@ -44,6 +48,7 @@ import {
 } from '@/actions/App/Http/Controllers/Admin/LandingController';
 import { BlockDesign } from '@/components/landing/block-design';
 import { BlockFields } from '@/components/landing/block-fields';
+import { BlockMockup } from '@/components/landing/block-mockup';
 import {
     blockTypes,
     cloneBlock,
@@ -73,6 +78,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTitle,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/toast';
@@ -201,6 +212,8 @@ export default function LandingEditor({
     const [tab, setTab] = useState('block');
     const [leftTab, setLeftTab] = useState('blocks');
     const [query, setQuery] = useState('');
+    // How the block cards are laid out: two per row, or one per row with larger previews.
+    const [view, setView] = useState<'grid' | 'list'>('grid');
 
     // A new draft from the server (after a save or publish) replaces the editor's copy.
     // Done during render, as React recommends for resetting state from props.
@@ -630,36 +643,138 @@ export default function LandingEditor({
                                     value="blocks"
                                     className="flex flex-col gap-2 pt-3"
                                 >
-                                    <Input
-                                        type="search"
-                                        value={query}
-                                        onChange={(event) =>
-                                            setQuery(event.target.value)
-                                        }
-                                        placeholder={t('Search blocks')}
-                                        aria-label={t('Search blocks')}
-                                    />
-                                    {filteredTypes.map((item) => (
-                                        <PaletteItem
-                                            key={item.type}
-                                            type={item.type}
-                                            label={t(item.label)}
-                                            icon={item.icon}
-                                            variants={VARIANT_NAMES[item.type]}
-                                            onAdd={(variant) =>
-                                                addBlock(
-                                                    item.type,
-                                                    undefined,
-                                                    variant,
-                                                )
-                                            }
-                                        />
-                                    ))}
-                                    {filteredTypes.length === 0 && (
-                                        <p className="py-6 text-center text-sm text-muted-foreground">
-                                            {t('No blocks match your search.')}
-                                        </p>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <div className="relative flex-1">
+                                            <Search
+                                                className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                                                aria-hidden="true"
+                                            />
+                                            <Input
+                                                type="search"
+                                                value={query}
+                                                onChange={(event) =>
+                                                    setQuery(event.target.value)
+                                                }
+                                                placeholder={t('Search blocks')}
+                                                aria-label={t('Search blocks')}
+                                                className="pl-8"
+                                            />
+                                        </div>
+                                        <Popover>
+                                            <PopoverTrigger
+                                                render={
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        aria-label={t(
+                                                            'Block settings',
+                                                        )}
+                                                        title={t(
+                                                            'Block settings',
+                                                        )}
+                                                    >
+                                                        <SlidersHorizontal aria-hidden="true" />
+                                                    </Button>
+                                                }
+                                            />
+                                            <PopoverContent
+                                                align="end"
+                                                className="w-56 gap-3 p-3"
+                                            >
+                                                <PopoverTitle className="text-sm font-medium">
+                                                    {t('Block settings')}
+                                                </PopoverTitle>
+                                                <div className="flex flex-col gap-2">
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {t('Image Preview')}
+                                                    </span>
+                                                    <div className="flex gap-1">
+                                                        <Button
+                                                            type="button"
+                                                            variant={
+                                                                view === 'grid'
+                                                                    ? 'secondary'
+                                                                    : 'ghost'
+                                                            }
+                                                            size="icon"
+                                                            aria-pressed={
+                                                                view === 'grid'
+                                                            }
+                                                            aria-label={t(
+                                                                'Two columns',
+                                                            )}
+                                                            title={t(
+                                                                'Two columns',
+                                                            )}
+                                                            onClick={() =>
+                                                                setView('grid')
+                                                            }
+                                                        >
+                                                            <LayoutGrid aria-hidden="true" />
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant={
+                                                                view === 'list'
+                                                                    ? 'secondary'
+                                                                    : 'ghost'
+                                                            }
+                                                            size="icon"
+                                                            aria-pressed={
+                                                                view === 'list'
+                                                            }
+                                                            aria-label={t(
+                                                                'One column',
+                                                            )}
+                                                            title={t(
+                                                                'One column',
+                                                            )}
+                                                            onClick={() =>
+                                                                setView('list')
+                                                            }
+                                                        >
+                                                            <Square aria-hidden="true" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                    <div
+                                        className={cn(
+                                            'grid gap-2',
+                                            view === 'grid'
+                                                ? 'grid-cols-2'
+                                                : 'grid-cols-1',
+                                        )}
+                                    >
+                                        {filteredTypes.map((item) => (
+                                            <PaletteItem
+                                                key={item.type}
+                                                type={item.type}
+                                                label={t(item.label)}
+                                                variants={
+                                                    VARIANT_NAMES[item.type]
+                                                }
+                                                view={view}
+                                                onAdd={(variant) =>
+                                                    addBlock(
+                                                        item.type,
+                                                        undefined,
+                                                        variant,
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                        {filteredTypes.length === 0 && (
+                                            <p className="col-span-full py-6 text-center text-sm text-muted-foreground">
+                                                {t(
+                                                    'No blocks match your search.',
+                                                )}
+                                            </p>
+                                        )}
+                                    </div>
                                 </TabsContent>
 
                                 <TabsContent
@@ -881,14 +996,14 @@ function DeviceButton({
 function PaletteItem({
     type,
     label,
-    icon: Icon,
     variants,
+    view,
     onAdd,
 }: {
     type: BlockType;
     label: string;
-    icon: (typeof blockTypes)[number]['icon'];
     variants: string[];
+    view: 'grid' | 'list';
     onAdd: (variant: number) => void;
 }) {
     const t = useTrans();
@@ -896,68 +1011,78 @@ function PaletteItem({
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: `palette:${type}`,
     });
-    // The number of other layouts, shown as "+N" the way the shadcn builder does.
+    // The number of other layouts, shown as "+N" on the card.
     const more = variants.length - 1;
 
     return (
-        <div className="flex flex-col">
-            <div
-                className={cn(
-                    'flex items-stretch overflow-hidden rounded-lg border bg-background transition-colors hover:bg-muted/60',
-                    isDragging && 'opacity-50',
-                )}
-            >
+        <>
+            <div className="relative">
                 <button
                     ref={setNodeRef}
                     type="button"
                     onClick={() => onAdd(0)}
                     {...attributes}
                     {...listeners}
-                    className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left text-sm"
+                    className={cn(
+                        'flex w-full flex-col gap-1.5 rounded-lg border bg-background p-1.5 text-left transition-colors hover:bg-muted/60',
+                        isDragging && 'opacity-50',
+                    )}
                 >
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                        <Icon aria-hidden="true" className="size-4" />
-                    </span>
-                    <span className="min-w-0 flex-1 truncate font-medium">
+                    <BlockMockup type={type} />
+                    <span className="truncate px-0.5 text-xs font-medium">
                         {label}
                     </span>
-                    {more > 0 && (
-                        <span className="rounded-full bg-muted px-1.5 text-xs text-muted-foreground tabular-nums">
-                            +{more}
-                        </span>
-                    )}
                 </button>
-                <button
-                    type="button"
-                    aria-expanded={open}
-                    aria-label={open ? t('Hide layouts') : t('Show layouts')}
-                    title={open ? t('Hide layouts') : t('Show layouts')}
-                    onClick={() => setOpen((value) => !value)}
-                    className="flex items-center border-l px-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                    {open ? (
-                        <ChevronDown className="size-4" aria-hidden="true" />
-                    ) : (
-                        <ChevronRight className="size-4" aria-hidden="true" />
-                    )}
-                </button>
+                {more > 0 && (
+                    <button
+                        type="button"
+                        aria-expanded={open}
+                        aria-label={
+                            open ? t('Hide layouts') : t('Show layouts')
+                        }
+                        title={open ? t('Hide layouts') : t('Show layouts')}
+                        onClick={() => setOpen((value) => !value)}
+                        className="absolute top-2.5 right-2.5 flex items-center gap-0.5 rounded-full border bg-background/90 px-1.5 py-0.5 text-xs text-muted-foreground tabular-nums shadow-sm hover:text-foreground"
+                    >
+                        +{more}
+                        {open ? (
+                            <ChevronDown
+                                className="size-3"
+                                aria-hidden="true"
+                            />
+                        ) : (
+                            <ChevronRight
+                                className="size-3"
+                                aria-hidden="true"
+                            />
+                        )}
+                    </button>
+                )}
             </div>
             {open && (
-                <ul className="ml-11 flex flex-col gap-0.5 border-l py-1 pl-3">
+                <ul
+                    className={cn(
+                        'col-span-full grid gap-2 border-l-2 pl-2',
+                        view === 'grid' ? 'grid-cols-2' : 'grid-cols-1',
+                    )}
+                >
                     {variants.map((name, index) => (
                         <li key={name}>
                             <button
                                 type="button"
                                 onClick={() => onAdd(index)}
-                                className="w-full rounded-md px-2 py-1 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                                className="flex w-full flex-col gap-1 rounded-md p-1 text-left hover:bg-muted"
                             >
-                                {t(name)}
+                                <BlockMockup type={type} variant={index} />
+                                <span className="truncate px-0.5 text-xs text-muted-foreground">
+                                    {t(name)}
+                                </span>
                             </button>
                         </li>
                     ))}
                 </ul>
             )}
-        </div>
+        </>
     );
 }
 
