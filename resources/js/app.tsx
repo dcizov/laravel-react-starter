@@ -46,8 +46,11 @@ void createInertiaApp({
     },
     layout: (name) => {
         switch (true) {
-            // Public pages: the landing page and the newsletter sign-up. No app shell.
-            case name === 'welcome' || name.startsWith('newsletter/'):
+            // Public pages: the landing page, the newsletter sign-up, and the content and blog pages. No app shell.
+            case name === 'welcome' ||
+                name.startsWith('newsletter/') ||
+                name.startsWith('content/') ||
+                name.startsWith('blog/'):
                 return WithToaster;
             case name.startsWith('auth/'):
                 return [WithToaster, AuthLayout];

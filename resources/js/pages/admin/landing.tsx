@@ -62,6 +62,7 @@ import {
 import type { BlockType, LandingBlock } from '@/components/landing/block-types';
 import { LandingEditContext } from '@/components/landing/landing-edit';
 import { RenderBlock } from '@/components/landing/render-block';
+import { applySavedCta } from '@/components/landing/saved-cta';
 import type { LandingTheme } from '@/components/landing/theme';
 import { themeStyle } from '@/components/landing/theme';
 import { ThemePanel } from '@/components/landing/theme-panel';
@@ -91,6 +92,7 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
+import type { CtaOption } from '@/types/cms';
 
 // What the editor changes, and therefore what undo and redo go back through.
 type Snapshot = { blocks: LandingBlock[]; theme: LandingTheme };
@@ -190,11 +192,13 @@ export default function LandingEditor({
     theme: savedTheme,
     presets,
     blockTypes: typeNames,
+    ctas = [],
 }: {
     draft: LandingBlock[];
     theme: LandingTheme;
     presets: Preset[];
     blockTypes: BlockType[];
+    ctas?: CtaOption[];
 }) {
     const t = useTrans();
     const draftKey = JSON.stringify({ blocks: draft, theme: savedTheme });
@@ -817,6 +821,7 @@ export default function LandingEditor({
                             onDuplicate={duplicateBlock}
                             onShuffle={shuffleBlock}
                             onText={setText}
+                            ctas={ctas}
                         />
 
                         <aside className="flex flex-col gap-4 rounded-lg border p-4">
@@ -868,6 +873,7 @@ export default function LandingEditor({
                                                 block={selected}
                                                 onChange={update}
                                                 onError={showError}
+                                                ctas={ctas}
                                             />
                                             <Separator />
                                             <h3 className="text-sm font-medium">
@@ -1089,6 +1095,7 @@ function Canvas({
     onDuplicate,
     onShuffle,
     onText,
+    ctas,
 }: {
     blocks: LandingBlock[];
     theme: LandingTheme;
@@ -1104,6 +1111,7 @@ function Canvas({
     onDuplicate: (id: string) => void;
     onShuffle: (id: string) => void;
     onText: (blockId: string, path: string, value: string) => void;
+    ctas: CtaOption[];
 }) {
     const t = useTrans();
     const { resolvedAppearance } = useAppearance();
@@ -1179,6 +1187,7 @@ function Canvas({
                                 <SortableBlock
                                     key={block.id}
                                     block={block}
+                                    ctas={ctas}
                                     index={index}
                                     total={blocks.length}
                                     selected={block.id === selectedId}
@@ -1215,8 +1224,10 @@ function SortableBlock({
     onDuplicate,
     onShuffle,
     onText,
+    ctas,
 }: {
     block: LandingBlock;
+    ctas: CtaOption[];
     index: number;
     total: number;
     selected: boolean;
@@ -1375,7 +1386,7 @@ function SortableBlock({
                 )}
             >
                 <LandingEditContext value={binding}>
-                    <RenderBlock block={block} />
+                    <RenderBlock block={applySavedCta(block, ctas)} />
                 </LandingEditContext>
             </div>
         </div>

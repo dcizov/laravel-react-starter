@@ -67,6 +67,8 @@ export type BlockData = {
         text?: string;
         button_label?: string;
         button_url?: string;
+        // A saved call to action from the CMS. When set, its text replaces the fields above on the public page.
+        cta_id?: number;
     };
     navbar: {
         items: NavLinkItem[];

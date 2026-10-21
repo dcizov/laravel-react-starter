@@ -286,6 +286,8 @@ final class LandingBlocks
                 'copyright' => ['nullable', 'string', 'max:160'],
             ],
             'cta' => [
+                // A saved call to action from the cms feature. When set, its content replaces the fields below.
+                'cta_id' => ['nullable', 'integer', 'min:1'],
                 'title' => ['required', 'string', 'max:120'],
                 'text' => ['nullable', 'string', 'max:300'],
                 'button_label' => ['nullable', 'string', 'max:40'],

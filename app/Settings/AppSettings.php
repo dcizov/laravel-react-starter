@@ -41,6 +41,16 @@ class AppSettings extends Settings
 
     public ?array $landing_theme;
 
+    // SEO settings, used while the seo feature is on. The description and image are the defaults for pages
+    // that do not set their own. Indexing off adds noindex to every page and disallows crawlers in robots.txt.
+    public ?string $seo_description;
+
+    public ?string $seo_image;
+
+    public bool $seo_allow_indexing;
+
+    public ?string $seo_twitter;
+
     public static function group(): string
     {
         return 'app';

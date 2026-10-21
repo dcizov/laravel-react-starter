@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { storeImage } from '@/actions/App/Features/Landing/Http/Controllers/Admin/LandingController';
+import { ImageField } from '@/components/image-field';
 import {
     FEATURE_ICON_LABELS,
     FEATURE_ICONS,
@@ -22,16 +22,19 @@ import {
 } from '@/components/ui/native-select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTrans } from '@/hooks/use-trans';
+import type { CtaOption } from '@/types/cms';
 
 // The fields for the selected block. Each change is passed up as the whole block.
 export function BlockFields({
     block,
     onChange,
     onError,
+    ctas = [],
 }: {
     block: LandingBlock;
     onChange: (block: LandingBlock) => void;
     onError: (message: string) => void;
+    ctas?: CtaOption[];
 }) {
     const t = useTrans();
 
@@ -62,6 +65,7 @@ export function BlockFields({
                         onChange={(value) => set({ text: value })}
                     />
                     <ImageField
+                        endpoint={storeImage.url()}
                         label={t('Picture below the headline')}
                         value={block.data.image}
                         onChange={(value) => set({ image: value })}
@@ -244,6 +248,7 @@ export function BlockFields({
             return (
                 <FieldGroup>
                     <ImageField
+                        endpoint={storeImage.url()}
                         label={t('Image')}
                         value={block.data.src}
                         onChange={(value) => set({ src: value })}
@@ -621,36 +626,82 @@ export function BlockFields({
         case 'cta':
             return (
                 <FieldGroup>
-                    <TextField
-                        id="title"
-                        label={t('Heading')}
-                        value={block.data.title}
-                        max={120}
-                        onChange={(value) => set({ title: value })}
-                    />
-                    <TextField
-                        id="text"
-                        label={t('Text')}
-                        value={block.data.text}
-                        max={300}
-                        multiline
-                        onChange={(value) => set({ text: value })}
-                    />
-                    <TextField
-                        id="button_label"
-                        label={t('Button text')}
-                        value={block.data.button_label}
-                        max={40}
-                        onChange={(value) => set({ button_label: value })}
-                    />
-                    <TextField
-                        id="button_url"
-                        label={t('Button link')}
-                        hint={t('https://… or a path such as /register')}
-                        value={block.data.button_url}
-                        max={500}
-                        onChange={(value) => set({ button_url: value })}
-                    />
+                    {ctas.length > 0 && (
+                        <Field>
+                            <FieldLabel htmlFor="cta_id">
+                                {t('Saved call to action')}
+                            </FieldLabel>
+                            <NativeSelect
+                                id="cta_id"
+                                value={block.data.cta_id ?? ''}
+                                onChange={(event) =>
+                                    set({
+                                        cta_id: event.target.value
+                                            ? Number(event.target.value)
+                                            : undefined,
+                                    })
+                                }
+                            >
+                                <NativeSelectOption value="">
+                                    {t('Write it here')}
+                                </NativeSelectOption>
+                                {ctas.map((cta) => (
+                                    <NativeSelectOption
+                                        key={cta.id}
+                                        value={cta.id}
+                                    >
+                                        {cta.name}
+                                    </NativeSelectOption>
+                                ))}
+                            </NativeSelect>
+                            <FieldDescription>
+                                {block.data.cta_id
+                                    ? t(
+                                          'The saved text is used. Edit it under Calls to action.',
+                                      )
+                                    : t('Pick one to reuse it on every page.')}
+                            </FieldDescription>
+                        </Field>
+                    )}
+                    {(!block.data.cta_id || ctas.length === 0) && (
+                        <>
+                            {' '}
+                            <TextField
+                                id="title"
+                                label={t('Heading')}
+                                value={block.data.title}
+                                max={120}
+                                onChange={(value) => set({ title: value })}
+                            />
+                            <TextField
+                                id="text"
+                                label={t('Text')}
+                                value={block.data.text}
+                                max={300}
+                                multiline
+                                onChange={(value) => set({ text: value })}
+                            />
+                            <TextField
+                                id="button_label"
+                                label={t('Button text')}
+                                value={block.data.button_label}
+                                max={40}
+                                onChange={(value) =>
+                                    set({ button_label: value })
+                                }
+                            />
+                            <TextField
+                                id="button_url"
+                                label={t('Button link')}
+                                hint={t(
+                                    'https://… or a path such as /register',
+                                )}
+                                value={block.data.button_url}
+                                max={500}
+                                onChange={(value) => set({ button_url: value })}
+                            />
+                        </>
+                    )}
                 </FieldGroup>
             );
     }
@@ -791,101 +842,3 @@ function TextField({
 }
 
 // Reads the XSRF cookie Laravel sets, so the upload is accepted the same way Inertia's own requests are.
-function csrfToken(): string {
-    const cookie = document.cookie
-        .split('; ')
-        .find((item) => item.startsWith('XSRF-TOKEN='));
-
-    return cookie ? decodeURIComponent(cookie.split('=')[1] ?? '') : '';
-}
-
-export function ImageField({
-    label,
-    value = '',
-    onChange,
-    onError,
-}: {
-    label: string;
-    value?: string;
-    onChange: (url: string) => void;
-    onError: (message: string) => void;
-}) {
-    const t = useTrans();
-    const [uploading, setUploading] = useState(false);
-
-    const upload = async (file: File | undefined) => {
-        if (!file) {
-            return;
-        }
-
-        const body = new FormData();
-        body.append('image', file);
-        setUploading(true);
-
-        try {
-            const response = await fetch(storeImage.url(), {
-                method: 'POST',
-                body,
-                credentials: 'same-origin',
-                headers: {
-                    Accept: 'application/json',
-                    'X-XSRF-TOKEN': csrfToken(),
-                },
-            });
-
-            if (!response.ok) {
-                const data = await response.json().catch(() => null);
-                onError(
-                    data?.errors?.image?.[0] ??
-                        t('The image could not be uploaded.'),
-                );
-
-                return;
-            }
-
-            const data: { url: string } = await response.json();
-            onChange(data.url);
-        } finally {
-            setUploading(false);
-        }
-    };
-
-    return (
-        <Field>
-            <FieldLabel>{label}</FieldLabel>
-            {value && (
-                <img
-                    src={value}
-                    alt=""
-                    className="max-h-32 rounded-md border object-contain"
-                />
-            )}
-            <Input
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                disabled={uploading}
-                onChange={(event) => {
-                    void upload(event.target.files?.[0]);
-                    event.target.value = '';
-                }}
-            />
-            <FieldDescription>
-                {uploading
-                    ? t('Uploading…')
-                    : t('PNG, JPEG or WebP, up to 2 MB.')}
-            </FieldDescription>
-            {value && (
-                <div>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onChange('')}
-                    >
-                        {t('Remove image')}
-                    </Button>
-                </div>
-            )}
-        </Field>
-    );
-}

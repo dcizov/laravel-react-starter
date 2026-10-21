@@ -1,6 +1,7 @@
 import { Shuffle } from 'lucide-react';
 import { useId } from 'react';
-import { ImageField } from '@/components/landing/block-fields';
+import { storeImage } from '@/actions/App/Features/Landing/Http/Controllers/Admin/LandingController';
+import { ImageField } from '@/components/image-field';
 import {
     ANIMATION_LABELS,
     FONT_LABELS,
@@ -108,6 +109,7 @@ export function BlockDesign({
             />
 
             <ImageField
+                endpoint={storeImage.url()}
                 label={t('Background image')}
                 value={style.bg_image}
                 onChange={(value) => set({ bg_image: value })}

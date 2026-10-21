@@ -1,8 +1,11 @@
 <?php
 
+use App\Features\Blog\BlogFeature;
+use App\Features\Cms\CmsFeature;
 use App\Features\Integrations\IntegrationsFeature;
 use App\Features\Landing\LandingFeature;
 use App\Features\Newsletter\NewsletterFeature;
+use App\Features\Seo\SeoFeature;
 
 return [
 
@@ -31,6 +34,9 @@ return [
         LandingFeature::class,
         NewsletterFeature::class,
         IntegrationsFeature::class,
+        CmsFeature::class,
+        BlogFeature::class,
+        SeoFeature::class,
     ],
 
 ];

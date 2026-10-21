@@ -3,7 +3,10 @@
 namespace App\Features\Landing\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Features\FeatureRegistry;
+use App\Http\Controllers\HomeController;
 use App\Settings\AppSettings;
+use App\Support\Seo\SeoHead;
 use App\Features\Landing\LandingBlocks;
 use App\Features\Landing\LandingPresets;
 use Illuminate\Http\JsonResponse;
@@ -19,9 +22,12 @@ use Inertia\Response;
  */
 class LandingController extends Controller
 {
-    public function index(AppSettings $settings): Response
+    public function index(AppSettings $settings, FeatureRegistry $features): Response
     {
         return Inertia::render('admin/landing', [
+            'ctas' => $features->isEnabled('cms')
+                ? \App\Features\Cms\Models\Cta::query()->orderBy('name')->get(['id', 'name', 'heading', 'text', 'button_label', 'button_url'])->values()
+                : [],
             'draft' => $this->draftOf($settings),
             'theme' => $this->themeDraftOf($settings),
             'blockTypes' => LandingBlocks::TYPES,
@@ -69,12 +75,14 @@ class LandingController extends Controller
     /**
      * The draft, rendered with the public page's layout. Only admins can open it.
      */
-    public function preview(AppSettings $settings): Response
+    public function preview(AppSettings $settings, FeatureRegistry $features): Response
     {
         return Inertia::render('welcome', [
-            'blocks' => $this->draftOf($settings),
+            'blocks' => HomeController::blocks($this->draftOf($settings), $features),
             'theme' => $this->themeDraftOf($settings),
             'preview' => true,
+            // A draft must never be indexed.
+            'seo' => [...SeoHead::for(title: $settings->app_name, canonical: null), 'noindex' => true],
         ]);
     }
 

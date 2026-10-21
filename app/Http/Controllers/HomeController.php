@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Features\Cms\Support\CtaReference;
 use App\Features\FeatureRegistry;
 use App\Features\Landing\LandingBlocks;
+use App\Support\Seo\SeoHead;
 use App\Settings\AppSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,9 +26,21 @@ class HomeController extends Controller
         }
 
         return Inertia::render('welcome', [
-            'blocks' => $settings->landing_published ?? LandingBlocks::defaults(),
+            'blocks' => self::blocks($settings->landing_published ?? LandingBlocks::defaults(), $features),
             'theme' => $settings->landing_theme ?? LandingBlocks::defaultTheme(),
             'preview' => false,
+            'seo' => SeoHead::for(title: $settings->app_name, canonical: url('/')),
         ]);
+    }
+
+    /**
+     * Saved calls to action only apply when the cms feature is on.
+     *
+     * @param  list<array{id: string, type: string, data: array<string, mixed>}>  $blocks
+     * @return list<array{id: string, type: string, data: array<string, mixed>}>
+     */
+    public static function blocks(array $blocks, FeatureRegistry $features): array
+    {
+        return $features->isEnabled('cms') ? CtaReference::apply($blocks) : $blocks;
     }
 }

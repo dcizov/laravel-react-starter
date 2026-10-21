@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
+import SeoMeta from '@/components/cms/seo-meta';
 import { BackToTop, scrollBehavior } from '@/components/landing/back-to-top';
 import type { LandingBlock } from '@/components/landing/block-types';
 import { RenderBlock } from '@/components/landing/render-block';
@@ -10,6 +11,7 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
+import type { SeoData } from '@/types/cms';
 import { dashboard, login, register } from '@/routes';
 
 // The landing page. Its blocks and theme come from the admin's published page, or the built-in default.
@@ -18,10 +20,12 @@ export default function Welcome({
     blocks,
     theme,
     preview,
+    seo,
 }: {
     blocks: LandingBlock[];
     theme: LandingTheme;
     preview: boolean;
+    seo?: SeoData;
 }) {
     const t = useTrans();
     const { auth } = usePage().props;
@@ -46,7 +50,7 @@ export default function Welcome({
 
     return (
         <>
-            <Head title={t('Welcome')} />
+            {seo ? <SeoMeta seo={seo} /> : <Head title={t('Welcome')} />}
             <div
                 className="flex min-h-svh flex-col bg-background text-foreground"
                 style={themeStyle(theme, resolvedAppearance === 'dark')}
