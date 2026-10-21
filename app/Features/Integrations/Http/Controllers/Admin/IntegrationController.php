@@ -15,9 +15,6 @@ use Inertia\Response;
  */
 class IntegrationController extends Controller
 {
-    // Shown in place of a saved secret. It never includes any characters of the real value.
-    public const SECRET_MASK = '••••••••';
-
     public function index(): Response
     {
         $connections = IntegrationConnection::query()->get()->keyBy('integration_key');
@@ -44,9 +41,9 @@ class IntegrationController extends Controller
             ];
         }, Catalogue::all());
 
+        // Secrets are write-only: the browser only learns whether one is saved (the configured flag above).
         return Inertia::render('admin/integrations/index', [
             'integrations' => $integrations,
-            'secretMask' => self::SECRET_MASK,
         ]);
     }
 

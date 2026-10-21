@@ -739,7 +739,6 @@
     "Reinstate": "Wieder aktivieren",
     "Remove subscriber": "Abonnent entfernen",
     "Remove this subscriber?": "Diesen Abonnenten entfernen?",
-    "Saved. Leave blank to keep it.": "Gespeichert. Leer lassen, um ihn zu behalten.",
     "Search by email": "Nach E-Mail suchen",
     "Secret key": "Geheimer Schlüssel",
     "Send password reset": "Passwort-Zurücksetzung senden",
@@ -771,5 +770,9 @@
     "You are signed in as :name. Your actions are recorded in the audit log.": "Du bist als :name angemeldet. Deine Aktionen werden im Audit-Protokoll erfasst.",
     "You will not receive any more newsletters from us.": "Du erhältst keinen Newsletter mehr von uns.",
     "You will use the app as this user. Everything you do while impersonating is recorded in the audit log.": "Du nutzt die App als dieser Benutzer. Alles, was du dabei tust, wird im Audit-Protokoll erfasst.",
-    "You're unsubscribed": "Du bist abgemeldet"
+    "You're unsubscribed": "Du bist abgemeldet",
+    "Saved": "Gespeichert",
+    "Replace :field": ":field ersetzen",
+    "Keep the saved value": "Gespeicherten Wert behalten",
+    "Enter the new value": "Neuen Wert eingeben"
 }

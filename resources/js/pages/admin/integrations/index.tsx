@@ -23,9 +23,9 @@ type IntegrationField = {
     key: string;
     label: string;
     secret: boolean;
-    // Only for fields that are not secret. Secret values are never sent to the browser.
+    // Only for fields that are not secret. Secrets are write-only and never sent to the browser.
     value: string | null;
-    // Whether a value has been saved, for secret and other fields alike.
+    // Whether a value is saved. For secrets this is all the browser ever learns.
     configured: boolean;
 };
 
@@ -40,11 +40,10 @@ type Integration = {
 
 type Props = {
     integrations: Integration[];
-    secretMask: string;
 };
 
 // The admin catalogue of third-party tools. Connecting a tool saves its keys, encrypted on the server.
-export default function IntegrationsIndex({ integrations, secretMask }: Props) {
+export default function IntegrationsIndex({ integrations }: Props) {
     const t = useTrans();
     const [active, setActive] = useState<Integration | null>(null);
 
@@ -110,7 +109,6 @@ export default function IntegrationsIndex({ integrations, secretMask }: Props) {
                     <ConnectForm
                         key={active.key}
                         integration={active}
-                        secretMask={secretMask}
                         onClose={() => setActive(null)}
                     />
                 )}
@@ -121,16 +119,14 @@ export default function IntegrationsIndex({ integrations, secretMask }: Props) {
 
 function ConnectForm({
     integration,
-    secretMask,
     onClose,
 }: {
     integration: Integration;
-    secretMask: string;
     onClose: () => void;
 }) {
     const t = useTrans();
 
-    // Secret fields start empty. A blank secret keeps the saved value.
+    // Secret fields start empty. Blank on save keeps the saved value.
     const form = useForm<Record<string, string>>(
         Object.fromEntries(
             integration.fields.map((field) => [
@@ -139,6 +135,18 @@ function ConnectForm({
             ]),
         ),
     );
+
+    // A saved secret is shown as "Saved" until the admin chooses to replace it.
+    const [replacing, setReplacing] = useState<Record<string, boolean>>({});
+
+    const setReplacingField = (key: string, value: boolean) => {
+        setReplacing((current) => ({ ...current, [key]: value }));
+
+        if (!value) {
+            form.setData(key, '');
+            form.clearErrors(key);
+        }
+    };
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -166,33 +174,87 @@ function ConnectForm({
                 {integration.fields.map((field) => {
                     const id = `integration-${integration.key}-${field.key}`;
                     const error = form.errors[field.key];
+                    const isSaved =
+                        field.secret &&
+                        field.configured &&
+                        !replacing[field.key];
 
                     return (
                         <Field
                             key={field.key}
                             data-invalid={!!error || undefined}
                         >
-                            <FieldLabel htmlFor={id}>{field.label}</FieldLabel>
-                            <Input
-                                id={id}
-                                type={field.secret ? 'password' : 'text'}
-                                autoComplete="off"
-                                value={form.data[field.key] ?? ''}
-                                onChange={(event) =>
-                                    form.setData(field.key, event.target.value)
-                                }
-                                placeholder={
-                                    field.secret && field.configured
-                                        ? secretMask
-                                        : ''
-                                }
-                                aria-invalid={!!error || undefined}
-                            />
-                            {field.secret && field.configured && (
-                                <p className="text-xs text-muted-foreground">
-                                    {t('Saved. Leave blank to keep it.')}
-                                </p>
+                            <FieldLabel htmlFor={isSaved ? undefined : id}>
+                                {field.label}
+                            </FieldLabel>
+
+                            {isSaved ? (
+                                <div className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <span
+                                            aria-hidden="true"
+                                            className="font-mono tracking-widest text-muted-foreground"
+                                        >
+                                            ••••••••
+                                        </span>
+                                        <Badge variant="secondary">
+                                            <Check />
+                                            {t('Saved')}
+                                        </Badge>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        aria-label={t('Replace :field', {
+                                            field: field.label,
+                                        })}
+                                        onClick={() =>
+                                            setReplacingField(field.key, true)
+                                        }
+                                    >
+                                        {t('Replace')}
+                                    </Button>
+                                </div>
+                            ) : (
+                                <>
+                                    <Input
+                                        id={id}
+                                        type={
+                                            field.secret ? 'password' : 'text'
+                                        }
+                                        autoComplete="off"
+                                        value={form.data[field.key] ?? ''}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                field.key,
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder={
+                                            field.secret
+                                                ? t('Enter the new value')
+                                                : ''
+                                        }
+                                        aria-invalid={!!error || undefined}
+                                    />
+                                    {field.secret && field.configured && (
+                                        <button
+                                            type="button"
+                                            className="self-start text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                                            onClick={() =>
+                                                setReplacingField(
+                                                    field.key,
+                                                    false,
+                                                )
+                                            }
+                                        >
+                                            {t('Keep the saved value')}
+                                        </button>
+                                    )}
+                                </>
                             )}
+
                             <FieldError>{error}</FieldError>
                         </Field>
                     );
