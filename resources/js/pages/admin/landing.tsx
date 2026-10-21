@@ -26,7 +26,9 @@ import {
     Copy,
     GripVertical,
     Monitor,
+    Plus,
     Redo2,
+    Shuffle,
     Smartphone,
     Tablet,
     Trash2,
@@ -49,6 +51,7 @@ import {
     MAX_BLOCKS,
     resolveStyle,
     setBlockField,
+    variantCount,
     VARIANT_NAMES,
 } from '@/components/landing/block-types';
 import type { BlockType, LandingBlock } from '@/components/landing/block-types';
@@ -69,6 +72,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/toast';
@@ -195,6 +199,8 @@ export default function LandingEditor({
     const [processing, setProcessing] = useState(false);
     const [device, setDevice] = useState<Device>('desktop');
     const [tab, setTab] = useState('block');
+    const [leftTab, setLeftTab] = useState('blocks');
+    const [query, setQuery] = useState('');
 
     // A new draft from the server (after a save or publish) replaces the editor's copy.
     // Done during render, as React recommends for resetting state from props.
@@ -211,6 +217,10 @@ export default function LandingEditor({
     const paletteTypes = useMemo(
         () => blockTypes.filter((item) => typeNames.includes(item.type)),
         [typeNames],
+    );
+
+    const filteredTypes = paletteTypes.filter((item) =>
+        t(item.label).toLowerCase().includes(query.trim().toLowerCase()),
     );
 
     const sensors = useSensors(
@@ -330,6 +340,23 @@ export default function LandingEditor({
         );
 
     // Inline edits from the canvas. Each field's run of typing is one undo step.
+    // Moves a block to the next layout of its type, wrapping back to the first.
+    const shuffleBlock = (id: string) => {
+        const block = blocks.find((item) => item.id === id);
+
+        if (!block || variantCount(block.type) < 2) {
+            return;
+        }
+
+        const next =
+            (resolveStyle(block).variant + 1) % variantCount(block.type);
+
+        update({
+            ...block,
+            style: { ...block.style, variant: next },
+        } as LandingBlock);
+    };
+
     const setText = useCallback(
         (blockId: string, path: string, value: string) =>
             commit(
@@ -581,47 +608,86 @@ export default function LandingEditor({
                     collisionDetection={closestCenter}
                     onDragEnd={onDragEnd}
                 >
-                    <div className="grid gap-4 lg:grid-cols-[200px_minmax(0,1fr)_340px]">
-                        <aside className="flex flex-col gap-2">
-                            <h2 className="text-sm font-medium">
-                                {t('Blocks')}
-                            </h2>
-                            {paletteTypes.map((item) => (
-                                <PaletteItem
-                                    key={item.type}
-                                    type={item.type}
-                                    label={t(item.label)}
-                                    icon={item.icon}
-                                    variants={VARIANT_NAMES[item.type]}
-                                    onAdd={(variant) =>
-                                        addBlock(item.type, undefined, variant)
-                                    }
-                                />
-                            ))}
+                    <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)_340px]">
+                        <aside className="flex flex-col gap-3 rounded-xl border bg-card p-3">
+                            <Tabs value={leftTab} onValueChange={setLeftTab}>
+                                <TabsList className="w-full">
+                                    <TabsTrigger
+                                        value="blocks"
+                                        className="flex-1"
+                                    >
+                                        {t('Blocks')}
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="pages"
+                                        className="flex-1"
+                                    >
+                                        {t('Pages')}
+                                    </TabsTrigger>
+                                </TabsList>
 
-                            <h2 className="mt-4 text-sm font-medium">
-                                {t('Page presets')}
-                            </h2>
-                            <p className="text-xs text-muted-foreground">
-                                {t(
-                                    'Replaces the draft with a complete page. Save or undo afterwards.',
-                                )}
-                            </p>
-                            {presets.map((preset) => (
-                                <button
-                                    key={preset.key}
-                                    type="button"
-                                    onClick={() => setApplying(preset)}
-                                    className="flex flex-col gap-0.5 rounded-md border bg-background px-3 py-2 text-left text-sm hover:bg-muted"
+                                <TabsContent
+                                    value="blocks"
+                                    className="flex flex-col gap-2 pt-3"
                                 >
-                                    <span className="font-medium">
-                                        {preset.label}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {preset.description}
-                                    </span>
-                                </button>
-                            ))}
+                                    <Input
+                                        type="search"
+                                        value={query}
+                                        onChange={(event) =>
+                                            setQuery(event.target.value)
+                                        }
+                                        placeholder={t('Search blocks')}
+                                        aria-label={t('Search blocks')}
+                                    />
+                                    {filteredTypes.map((item) => (
+                                        <PaletteItem
+                                            key={item.type}
+                                            type={item.type}
+                                            label={t(item.label)}
+                                            icon={item.icon}
+                                            variants={VARIANT_NAMES[item.type]}
+                                            onAdd={(variant) =>
+                                                addBlock(
+                                                    item.type,
+                                                    undefined,
+                                                    variant,
+                                                )
+                                            }
+                                        />
+                                    ))}
+                                    {filteredTypes.length === 0 && (
+                                        <p className="py-6 text-center text-sm text-muted-foreground">
+                                            {t('No blocks match your search.')}
+                                        </p>
+                                    )}
+                                </TabsContent>
+
+                                <TabsContent
+                                    value="pages"
+                                    className="flex flex-col gap-2 pt-3"
+                                >
+                                    <p className="text-xs text-muted-foreground">
+                                        {t(
+                                            'Replaces the draft with a complete page. Save or undo afterwards.',
+                                        )}
+                                    </p>
+                                    {presets.map((preset) => (
+                                        <button
+                                            key={preset.key}
+                                            type="button"
+                                            onClick={() => setApplying(preset)}
+                                            className="flex flex-col gap-1 rounded-lg border bg-background p-3 text-left transition-colors hover:bg-muted/60"
+                                        >
+                                            <span className="text-sm font-medium">
+                                                {preset.label}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {preset.description}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </TabsContent>
+                            </Tabs>
                         </aside>
 
                         <Canvas
@@ -640,6 +706,7 @@ export default function LandingEditor({
                             onMove={moveBlock}
                             onRemove={removeBlock}
                             onDuplicate={duplicateBlock}
+                            onShuffle={shuffleBlock}
                             onText={setText}
                         />
 
@@ -829,26 +896,36 @@ function PaletteItem({
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: `palette:${type}`,
     });
+    // The number of other layouts, shown as "+N" the way the shadcn builder does.
+    const more = variants.length - 1;
 
     return (
-        <div className="flex flex-col gap-1">
-            <div className="flex items-stretch gap-1">
+        <div className="flex flex-col">
+            <div
+                className={cn(
+                    'flex items-stretch overflow-hidden rounded-lg border bg-background transition-colors hover:bg-muted/60',
+                    isDragging && 'opacity-50',
+                )}
+            >
                 <button
                     ref={setNodeRef}
                     type="button"
                     onClick={() => onAdd(0)}
                     {...attributes}
                     {...listeners}
-                    className={cn(
-                        'flex min-w-0 flex-1 items-center gap-2 rounded-md border bg-background px-3 py-2 text-left text-sm hover:bg-muted',
-                        isDragging && 'opacity-50',
-                    )}
+                    className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left text-sm"
                 >
-                    <Icon
-                        aria-hidden="true"
-                        className="size-4 text-muted-foreground"
-                    />
-                    {label}
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                        <Icon aria-hidden="true" className="size-4" />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate font-medium">
+                        {label}
+                    </span>
+                    {more > 0 && (
+                        <span className="rounded-full bg-muted px-1.5 text-xs text-muted-foreground tabular-nums">
+                            +{more}
+                        </span>
+                    )}
                 </button>
                 <button
                     type="button"
@@ -856,7 +933,7 @@ function PaletteItem({
                     aria-label={open ? t('Hide layouts') : t('Show layouts')}
                     title={open ? t('Hide layouts') : t('Show layouts')}
                     onClick={() => setOpen((value) => !value)}
-                    className="flex items-center rounded-md border bg-background px-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    className="flex items-center border-l px-2 text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                     {open ? (
                         <ChevronDown className="size-4" aria-hidden="true" />
@@ -866,7 +943,7 @@ function PaletteItem({
                 </button>
             </div>
             {open && (
-                <ul className="ml-4 flex flex-col gap-0.5 border-l pl-3">
+                <ul className="ml-11 flex flex-col gap-0.5 border-l py-1 pl-3">
                     {variants.map((name, index) => (
                         <li key={name}>
                             <button
@@ -897,6 +974,7 @@ function Canvas({
     onMove,
     onRemove,
     onDuplicate,
+    onShuffle,
     onText,
 }: {
     blocks: LandingBlock[];
@@ -911,6 +989,7 @@ function Canvas({
     onMove: (id: string, delta: number) => void;
     onRemove: (id: string) => void;
     onDuplicate: (id: string) => void;
+    onShuffle: (id: string) => void;
     onText: (blockId: string, path: string, value: string) => void;
 }) {
     const t = useTrans();
@@ -918,19 +997,22 @@ function Canvas({
     const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
     return (
-        <div className="flex min-w-0 flex-col items-center gap-2">
-            <div className="flex w-full items-center justify-between gap-2">
-                <div className="text-xs text-muted-foreground">
-                    {device === 'desktop'
-                        ? t('Desktop')
-                        : device === 'tablet'
-                          ? t('Tablet, 768 px')
-                          : t('Mobile, 390 px')}
+        <div className="flex min-w-0 flex-col items-center gap-3">
+            <div className="flex w-full flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sm">
+                    <span className="font-medium">{t('Landing page')}</span>
+                    <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                        {device === 'desktop'
+                            ? t('Desktop')
+                            : device === 'tablet'
+                              ? t('Tablet, 768 px')
+                              : t('Mobile, 390 px')}
+                    </span>
                 </div>
                 <div className="flex items-center gap-1">
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={onCollapseAll}
                         disabled={blocks.length === 0}
@@ -939,7 +1021,7 @@ function Canvas({
                     </Button>
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={onExpandAll}
                         disabled={collapsed.size === 0}
@@ -948,48 +1030,59 @@ function Canvas({
                     </Button>
                 </div>
             </div>
-            <div
-                className="w-full transition-[max-width] duration-300"
-                style={{ maxWidth: DEVICE_WIDTHS[device] }}
-            >
+            <div className="flex w-full justify-center rounded-xl border bg-muted/40 p-4">
                 <div
-                    ref={setNodeRef}
-                    style={themeStyle(theme, resolvedAppearance === 'dark')}
-                    className={cn(
-                        'flex min-h-96 flex-col gap-3 overflow-hidden rounded-lg border-2 border-dashed bg-background p-3 text-foreground',
-                        isOver && 'border-ring',
-                    )}
+                    className="w-full transition-[max-width] duration-300"
+                    style={{ maxWidth: DEVICE_WIDTHS[device] }}
                 >
-                    <SortableContext
-                        items={blocks.map((block) => block.id)}
-                        strategy={verticalListSortingStrategy}
-                    >
-                        {blocks.length === 0 && (
-                            <p className="m-auto text-sm text-muted-foreground">
-                                {t(
-                                    'Drag a block here, or click one in the list.',
-                                )}
-                            </p>
+                    <div
+                        ref={setNodeRef}
+                        style={themeStyle(theme, resolvedAppearance === 'dark')}
+                        className={cn(
+                            'flex min-h-96 flex-col gap-3 overflow-hidden rounded-lg border bg-background p-3 text-foreground shadow-sm',
+                            isOver && 'ring-2 ring-ring',
                         )}
-                        {blocks.map((block, index) => (
-                            <SortableBlock
-                                key={block.id}
-                                block={block}
-                                index={index}
-                                total={blocks.length}
-                                selected={block.id === selectedId}
-                                collapsed={collapsed.has(block.id)}
-                                onToggle={() => onToggleCollapsed(block.id)}
-                                onSelect={() => onSelect(block.id)}
-                                onMove={(delta) => onMove(block.id, delta)}
-                                onRemove={() => onRemove(block.id)}
-                                onDuplicate={() => onDuplicate(block.id)}
-                                onText={(path, value) =>
-                                    onText(block.id, path, value)
-                                }
-                            />
-                        ))}
-                    </SortableContext>
+                    >
+                        <SortableContext
+                            items={blocks.map((block) => block.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {blocks.length === 0 && (
+                                <div className="m-auto flex flex-col items-center gap-3 py-16 text-center">
+                                    <span className="flex size-10 items-center justify-center rounded-full border bg-muted">
+                                        <Plus
+                                            className="size-4"
+                                            aria-hidden="true"
+                                        />
+                                    </span>
+                                    <p className="text-sm text-muted-foreground">
+                                        {t(
+                                            'Drag a block here, or click one in the list.',
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+                            {blocks.map((block, index) => (
+                                <SortableBlock
+                                    key={block.id}
+                                    block={block}
+                                    index={index}
+                                    total={blocks.length}
+                                    selected={block.id === selectedId}
+                                    collapsed={collapsed.has(block.id)}
+                                    onToggle={() => onToggleCollapsed(block.id)}
+                                    onSelect={() => onSelect(block.id)}
+                                    onMove={(delta) => onMove(block.id, delta)}
+                                    onRemove={() => onRemove(block.id)}
+                                    onDuplicate={() => onDuplicate(block.id)}
+                                    onShuffle={() => onShuffle(block.id)}
+                                    onText={(path, value) =>
+                                        onText(block.id, path, value)
+                                    }
+                                />
+                            ))}
+                        </SortableContext>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1007,6 +1100,7 @@ function SortableBlock({
     onMove,
     onRemove,
     onDuplicate,
+    onShuffle,
     onText,
 }: {
     block: LandingBlock;
@@ -1019,6 +1113,7 @@ function SortableBlock({
     onMove: (delta: number) => void;
     onRemove: () => void;
     onDuplicate: () => void;
+    onShuffle: () => void;
     onText: (path: string, value: string) => void;
 }) {
     const t = useTrans();
@@ -1036,52 +1131,68 @@ function SortableBlock({
         [block.id, onText],
     );
 
+    const layoutName =
+        VARIANT_NAMES[block.type][resolveStyle(block).variant] ?? '';
+    const canShuffle = variantCount(block.type) > 1;
+
     return (
         <div
             ref={setNodeRef}
             style={{ transform: CSS.Transform.toString(transform), transition }}
             onClick={onSelect}
             className={cn(
-                'rounded-lg border bg-background',
+                'overflow-hidden rounded-lg border bg-background',
                 selected && 'ring-2 ring-ring',
                 isDragging && 'opacity-70',
             )}
         >
-            <div className="flex items-center justify-between gap-2 border-b px-2 py-1">
-                <button
-                    type="button"
-                    aria-expanded={!collapsed}
-                    aria-label={
-                        collapsed ? t('Expand section') : t('Collapse section')
-                    }
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onToggle();
-                    }}
-                    className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                    {collapsed ? (
-                        <ChevronRight className="size-4" aria-hidden="true" />
-                    ) : (
-                        <ChevronDown className="size-4" aria-hidden="true" />
-                    )}
-                </button>
-                <button
-                    type="button"
-                    className="flex cursor-grab items-center gap-1 text-xs text-muted-foreground"
-                    aria-label={t('Drag to reorder')}
-                    {...attributes}
-                    {...listeners}
-                >
-                    <GripVertical className="size-4" aria-hidden="true" />
-                    {index + 1}
-                    <span className="ml-1 hidden text-foreground sm:inline">
-                        {VARIANT_NAMES[block.type][
-                            resolveStyle(block).variant
-                        ] ?? ''}
+            <div className="flex items-center justify-between gap-2 border-b bg-muted/50 px-2 py-1">
+                <div className="flex min-w-0 items-center gap-1">
+                    <button
+                        type="button"
+                        aria-expanded={!collapsed}
+                        aria-label={
+                            collapsed
+                                ? t('Expand section')
+                                : t('Collapse section')
+                        }
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onToggle();
+                        }}
+                        className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                        {collapsed ? (
+                            <ChevronRight
+                                className="size-4"
+                                aria-hidden="true"
+                            />
+                        ) : (
+                            <ChevronDown
+                                className="size-4"
+                                aria-hidden="true"
+                            />
+                        )}
+                    </button>
+                    <button
+                        type="button"
+                        className="flex cursor-grab items-center gap-1 text-xs text-muted-foreground"
+                        aria-label={t('Drag to reorder')}
+                        {...attributes}
+                        {...listeners}
+                    >
+                        <GripVertical className="size-4" aria-hidden="true" />
+                        <span className="tabular-nums">{index + 1}</span>
+                    </button>
+                    <span className="ml-1 hidden truncate rounded-full border bg-background px-2 py-0.5 text-xs sm:inline">
+                        {t(
+                            blockTypes.find((item) => item.type === block.type)
+                                ?.label ?? block.type,
+                        )}
+                        {layoutName ? ` · ${t(layoutName)}` : ''}
                     </span>
-                </button>
-                <div className="flex items-center gap-1">
+                </div>
+                <div className="flex items-center gap-0.5">
                     <Button
                         variant="ghost"
                         size="icon-sm"
@@ -1105,6 +1216,19 @@ function SortableBlock({
                         }}
                     >
                         <ArrowDown />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={t('Shuffle layout')}
+                        title={t('Shuffle layout')}
+                        disabled={!canShuffle}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onShuffle();
+                        }}
+                    >
+                        <Shuffle />
                     </Button>
                     <Button
                         variant="ghost"

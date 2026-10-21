@@ -417,5 +417,11 @@
     "Caption": "Bildunterschrift",
     "Cards": "Karten",
     "Columns": "Spalten",
-    "Full width": "Volle Breite"
+    "Full width": "Volle Breite",
+    "Landing page": "Landingpage",
+    "Pages": "Seiten",
+    "Search blocks": "Blöcke suchen",
+    "No blocks match your search.": "Keine Blöcke gefunden.",
+    "Show layouts": "Layouts anzeigen",
+    "Hide layouts": "Layouts ausblenden"
 }
