@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Support\Rbac;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -69,6 +70,46 @@ class UserController extends Controller
         $user->syncRoles($role);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User role updated.')]);
+
+        return to_route('users.index');
+    }
+
+    /**
+     * Give several users the same role at once, from the bulk action on the Users table.
+     */
+    public function bulkUpdateRole(Request $request): RedirectResponse
+    {
+        Gate::authorize(Rbac::PERMISSION_USERS_MANAGE_ROLES);
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('users', 'id')],
+            'role' => ['required', Rule::exists('roles', 'name')],
+        ]);
+
+        $role = $validated['role'];
+        $users = User::query()->whereIn('id', $validated['ids'])->get();
+
+        if ($users->contains(fn (User $user) => $user->is($request->user()))) {
+            throw ValidationException::withMessages([
+                'role' => __('You cannot change your own role.'),
+            ]);
+        }
+
+        // Admins who lose the admin role in this change. At least one admin must remain.
+        $adminsLeaving = $role === 'admin'
+            ? 0
+            : $users->filter(fn (User $user) => $user->hasRole('admin'))->count();
+
+        if ($adminsLeaving > 0 && User::role('admin')->count() <= $adminsLeaving) {
+            throw ValidationException::withMessages([
+                'role' => __('At least one admin must remain.'),
+            ]);
+        }
+
+        DB::transaction(fn () => $users->each(fn (User $user) => $user->syncRoles($role)));
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('User roles updated.')]);
 
         return to_route('users.index');
     }

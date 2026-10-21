@@ -128,6 +128,7 @@ export default function Tasks({
                         getRowId={(row) => String(row.id)}
                         pageSizes={pageSizes}
                         enableRowSelection
+                        enableRowDragging
                         toolbar={{
                             search: {
                                 column: 'title',

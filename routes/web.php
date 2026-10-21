@@ -36,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::get('users', [UserController::class, 'index'])->middleware('can:users.view')->name('users.index');
     Route::patch('users/{user}/role', [UserController::class, 'updateRole'])->middleware('can:users.view')->name('users.role.update');
+    Route::patch('users/roles', [UserController::class, 'bulkUpdateRole'])->middleware('can:users.view')->name('users.role.bulk');
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('roles', RoleController::class)

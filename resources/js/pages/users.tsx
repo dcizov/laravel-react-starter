@@ -4,6 +4,7 @@ import { updateRole } from '@/actions/App/Http/Controllers/UserController';
 import { DataTable } from '@/components/data-table/data-table';
 import PageHeader from '@/components/page-header';
 import { toast } from '@/components/ui/toast';
+import { BulkRoleActions } from '@/components/users/bulk-role-actions';
 import { useUserColumns } from '@/components/users/columns';
 import { roleLabels } from '@/components/users/data';
 import type { AccountUser } from '@/components/users/data';
@@ -61,6 +62,10 @@ export default function Users({
                     pageSizes={pageSizes}
                     emptyMessage={t('No users found.')}
                     toolbar={{
+                        // Bulk actions appear while rows are selected.
+                        actions: (table) => (
+                            <BulkRoleActions table={table} roles={roles} />
+                        ),
                         search: {
                             column: 'name',
                             placeholder: t('Filter users...'),

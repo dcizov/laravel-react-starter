@@ -142,11 +142,14 @@ export function useTaskColumns({
                     }
 
                     return (
-                        <div className="flex w-[120px] items-center gap-2">
-                            {status.icon && (
-                                <status.icon className="size-4 text-muted-foreground" />
-                            )}
-                            <span>{t(status.label)}</span>
+                        <div className="w-[120px]">
+                            <Badge
+                                variant="outline"
+                                className="px-1.5 text-muted-foreground"
+                            >
+                                {status.icon && <status.icon />}
+                                {t(status.label)}
+                            </Badge>
                         </div>
                     );
                 },
@@ -172,12 +175,13 @@ export function useTaskColumns({
                     }
 
                     return (
-                        <div className="flex items-center gap-2">
-                            {priority.icon && (
-                                <priority.icon className="size-4 text-muted-foreground" />
-                            )}
-                            <span>{t(priority.label)}</span>
-                        </div>
+                        <Badge
+                            variant="outline"
+                            className="px-1.5 text-muted-foreground"
+                        >
+                            {priority.icon && <priority.icon />}
+                            {t(priority.label)}
+                        </Badge>
                     );
                 },
                 filterFn: (row, id, value: string[]) =>

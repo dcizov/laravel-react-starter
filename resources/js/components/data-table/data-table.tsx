@@ -1,3 +1,21 @@
+import {
+    closestCenter,
+    DndContext,
+    KeyboardSensor,
+    MouseSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+    arrayMove,
+    SortableContext,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useTable } from '@tanstack/react-table';
 import type {
     ColumnDef,
@@ -7,13 +25,14 @@ import type {
     RowSelectionState,
     SortingState,
 } from '@tanstack/react-table';
-import { SearchX } from 'lucide-react';
+import { GripVertical, SearchX } from 'lucide-react';
 import * as React from 'react';
 import { dataTableFeatures } from '@/components/data-table/data-table-features';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar';
 import type { DataTableToolbarOptions } from '@/components/data-table/data-table-toolbar';
+import { Button } from '@/components/ui/button';
 import {
     Empty,
     EmptyHeader,
@@ -39,6 +58,9 @@ type DataTableProps<TData extends RowData> = {
     pageSizes?: number[];
     getRowId?: (row: TData, index: number) => string;
     enableRowSelection?: boolean;
+    // Adds a grip column so rows can be dragged into a new order. The order is kept
+    // in this table only; it is not saved. Pass getRowId so each row keeps its identity.
+    enableRowDragging?: boolean;
     emptyMessage?: string;
 };
 
@@ -76,8 +98,58 @@ function useDataTable<TData extends RowData>(
     });
 }
 
+// The grip button that starts a drag. Only this element carries the drag listeners,
+// so clicks on the rest of the row still reach the checkbox and the cells.
+function DragHandle({ id }: { id: string }) {
+    const t = useTrans();
+    const { attributes, listeners } = useSortable({ id });
+
+    return (
+        <Button
+            {...attributes}
+            {...listeners}
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground hover:bg-transparent"
+        >
+            <GripVertical className="size-3" />
+            <span className="sr-only">{t('Drag to reorder')}</span>
+        </Button>
+    );
+}
+
+// A row that can be dragged vertically, as in the shadcn dashboard-01 block.
+function SortableRow({
+    id,
+    selected,
+    children,
+}: {
+    id: string;
+    selected: boolean;
+    children: React.ReactNode;
+}) {
+    const { transform, transition, setNodeRef, isDragging } = useSortable({
+        id,
+    });
+
+    return (
+        <TableRow
+            ref={setNodeRef}
+            data-state={selected && 'selected'}
+            data-dragging={isDragging}
+            className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+            style={{
+                transform: CSS.Transform.toString(transform),
+                transition,
+            }}
+        >
+            {children}
+        </TableRow>
+    );
+}
+
 // A reusable table with sorting, filtering (with facets), column visibility,
-// row selection, and pagination. Columns and the toolbar come from the caller.
+// row selection, optional row dragging, and pagination. Columns and the toolbar come from the caller.
 export function DataTable<TData extends RowData>({
     columns,
     data,
@@ -86,77 +158,166 @@ export function DataTable<TData extends RowData>({
     pageSizes = [10, 20, 30, 50],
     getRowId,
     enableRowSelection = true,
+    enableRowDragging = false,
     emptyMessage,
 }: DataTableProps<TData>) {
     const t = useTrans();
+
+    // The row order the user has dragged into. It resets when the data prop changes.
+    const [items, setItems] = React.useState(data);
+    const [source, setSource] = React.useState(data);
+
+    if (data !== source) {
+        setSource(data);
+        setItems(data);
+    }
+
+    const rowId = React.useCallback(
+        (row: TData, index: number) =>
+            getRowId ? getRowId(row, index) : String(index),
+        [getRowId],
+    );
+
+    const allColumns = React.useMemo<ColumnDef<DataTableFeatures, TData>[]>(
+        () =>
+            enableRowDragging
+                ? [
+                      {
+                          id: 'drag',
+                          header: () => null,
+                          cell: ({ row }) => <DragHandle id={row.id} />,
+                          enableSorting: false,
+                          enableHiding: false,
+                      },
+                      ...columns,
+                  ]
+                : columns,
+        [columns, enableRowDragging],
+    );
+
     const table = useDataTable({
-        columns,
-        data,
+        columns: allColumns,
+        data: items,
         getRowId,
         enableRowSelection,
         initialPageSize,
     });
+
+    const sensors = useSensors(
+        useSensor(MouseSensor, {}),
+        useSensor(TouchSensor, {}),
+        useSensor(KeyboardSensor, {}),
+    );
+
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) {
+            return;
+        }
+
+        setItems((current) => {
+            const ids = current.map((row, index) => rowId(row, index));
+            const from = ids.indexOf(String(active.id));
+            const to = ids.indexOf(String(over.id));
+
+            return from < 0 || to < 0 ? current : arrayMove(current, from, to);
+        });
+    }
+
+    const rows = table.getRowModel().rows;
+    const rowIds = rows.map((row) => row.id);
+
+    const renderCells = (row: (typeof rows)[number]) =>
+        row.getVisibleCells().map((cell) => (
+            <TableCell key={cell.id}>
+                <table.FlexRender cell={cell} />
+            </TableCell>
+        ));
 
     return (
         <div className="flex flex-col gap-4">
             <DataTableToolbar table={table} options={toolbar ?? {}} />
 
             <div className="overflow-hidden rounded-md border">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead
-                                        key={header.id}
-                                        colSpan={header.colSpan}
-                                    >
-                                        {header.isPlaceholder ? null : (
-                                            <table.FlexRender header={header} />
-                                        )}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={
-                                        row.getIsSelected() && 'selected'
-                                    }
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            <table.FlexRender cell={cell} />
-                                        </TableCell>
+                <DndContext
+                    collisionDetection={closestCenter}
+                    modifiers={[restrictToVerticalAxis]}
+                    onDragEnd={handleDragEnd}
+                    sensors={sensors}
+                >
+                    <Table>
+                        <TableHeader>
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead
+                                            key={header.id}
+                                            colSpan={header.colSpan}
+                                        >
+                                            {header.isPlaceholder ? null : (
+                                                <table.FlexRender
+                                                    header={header}
+                                                />
+                                            )}
+                                        </TableHead>
                                     ))}
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center"
-                                >
-                                    <Empty className="p-0">
-                                        <EmptyHeader>
-                                            <EmptyMedia variant="icon">
-                                                <SearchX />
-                                            </EmptyMedia>
-                                            <EmptyTitle>
-                                                {emptyMessage ??
-                                                    t('No results.')}
-                                            </EmptyTitle>
-                                        </EmptyHeader>
-                                    </Empty>
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            ))}
+                        </TableHeader>
+                        <TableBody>
+                            {rows.length ? (
+                                enableRowDragging ? (
+                                    <SortableContext
+                                        items={rowIds}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        {rows.map((row) => (
+                                            <SortableRow
+                                                key={row.id}
+                                                id={row.id}
+                                                selected={row.getIsSelected()}
+                                            >
+                                                {renderCells(row)}
+                                            </SortableRow>
+                                        ))}
+                                    </SortableContext>
+                                ) : (
+                                    rows.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={
+                                                row.getIsSelected() &&
+                                                'selected'
+                                            }
+                                        >
+                                            {renderCells(row)}
+                                        </TableRow>
+                                    ))
+                                )
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={allColumns.length}
+                                        className="h-24 text-center"
+                                    >
+                                        <Empty className="p-0">
+                                            <EmptyHeader>
+                                                <EmptyMedia variant="icon">
+                                                    <SearchX />
+                                                </EmptyMedia>
+                                                <EmptyTitle>
+                                                    {emptyMessage ??
+                                                        t('No results.')}
+                                                </EmptyTitle>
+                                            </EmptyHeader>
+                                        </Empty>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </DndContext>
             </div>
 
             <DataTablePagination table={table} pageSizes={pageSizes} />

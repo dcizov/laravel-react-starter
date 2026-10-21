@@ -145,6 +145,45 @@ test('a user cannot change roles', function () {
     expect($target->fresh()->hasRole('admin'))->toBeFalse();
 });
 
+test('an admin can give several users the same role at once', function () {
+    $first = User::factory()->create();
+    $second = User::factory()->create();
+
+    $this->actingAs(admin())
+        ->patch(route('users.role.bulk'), ['ids' => [$first->id, $second->id], 'role' => 'admin'])
+        ->assertRedirect(route('users.index'));
+
+    expect($first->fresh()->hasRole('admin'))->toBeTrue()
+        ->and($second->fresh()->hasRole('admin'))->toBeTrue();
+});
+
+test('a bulk role change cannot include the admin doing it', function () {
+    $admin = admin();
+    $target = User::factory()->create();
+
+    $this->actingAs($admin)
+        ->patch(route('users.role.bulk'), ['ids' => [$admin->id, $target->id], 'role' => 'user'])
+        ->assertSessionHasErrors('role');
+
+    expect($admin->fresh()->hasRole('admin'))->toBeTrue()
+        ->and($target->fresh()->hasRole('admin'))->toBeFalse();
+});
+
+test('a bulk role change cannot remove the last admin', function () {
+    $lastAdmin = admin();
+
+    $manager = User::factory()->create();
+    $role = Role::findOrCreate('manager');
+    $role->syncPermissions([Rbac::PERMISSION_USERS_VIEW, Rbac::PERMISSION_USERS_MANAGE_ROLES]);
+    $manager->syncRoles($role);
+
+    $this->actingAs($manager)
+        ->patch(route('users.role.bulk'), ['ids' => [$lastAdmin->id], 'role' => 'user'])
+        ->assertSessionHasErrors('role');
+
+    expect($lastAdmin->fresh()->hasRole('admin'))->toBeTrue();
+});
+
 test('an admin can create a role with the permissions they pick', function () {
     $this->actingAs(admin())
         ->post(route('admin.roles.store'), [
