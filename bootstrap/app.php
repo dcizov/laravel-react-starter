@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             SetLocale::class,
             HandleInertiaRequests::class,
+            EnsureAccountIsActive::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
     })

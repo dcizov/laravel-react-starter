@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\ImpersonationController;
 use App\Settings\AppSettings;
 use App\Support\DisplaySettings;
 use App\Support\Fonts;
@@ -54,6 +55,10 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->values()->all() ?? [],
             ],
+            // Set while an administrator is signed in as this user. Drives the banner that stops it.
+            'impersonating' => $request->hasSession() && $request->session()->has(ImpersonationController::SESSION_KEY)
+                ? ['name' => $request->user()?->name]
+                : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => app()->getLocale(),
             'translations' => Locales::translations(app()->getLocale()),

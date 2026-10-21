@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Support\Rbac;
 use Illuminate\Http\RedirectResponse;
@@ -69,6 +70,8 @@ class UserController extends Controller
 
         $user->syncRoles($role);
 
+        AuditLog::record('user.role_changed', $user, ['role' => $role], $request);
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User role updated.')]);
 
         return to_route('users.index');
@@ -108,6 +111,11 @@ class UserController extends Controller
         }
 
         DB::transaction(fn () => $users->each(fn (User $user) => $user->syncRoles($role)));
+
+        AuditLog::record('user.roles_changed', null, [
+            'role' => $role,
+            'user_ids' => $users->pluck('id')->values()->all(),
+        ], $request);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User roles updated.')]);
 

@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -47,7 +50,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('permissions', [PermissionController::class, 'index'])
             ->middleware('can:permissions.manage')
             ->name('permissions.index');
+
+        // Admin user management. Each action checks users.manage; impersonation and the
+        // audit log have their own permissions.
+        Route::middleware('can:users.manage')->group(function () {
+            Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
+            Route::get('users/export', [UserManagementController::class, 'export'])->name('users.export');
+            Route::patch('users/{user}', [UserManagementController::class, 'update'])->name('users.update');
+            Route::post('users/{user}/verify-email', [UserManagementController::class, 'verifyEmail'])->name('users.verify-email');
+            Route::post('users/{user}/password-reset', [UserManagementController::class, 'sendPasswordReset'])->name('users.password-reset');
+            Route::post('users/{user}/suspend', [UserManagementController::class, 'suspend'])->name('users.suspend');
+            Route::post('users/{user}/reinstate', [UserManagementController::class, 'reinstate'])->name('users.reinstate');
+            Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+        });
+
+        Route::post('users/{user}/impersonate', [ImpersonationController::class, 'start'])
+            ->middleware('can:users.impersonate')
+            ->name('users.impersonate');
+
+        Route::get('audit-log', [AuditLogController::class, 'index'])
+            ->middleware('can:audit.view')
+            ->name('audit-log.index');
     });
 });
+
+// Stopping impersonation must work while signed in as the impersonated user, who may not be verified.
+Route::middleware('auth')->post('impersonation/stop', [ImpersonationController::class, 'stop'])->name('impersonation.stop');
 
 require __DIR__.'/settings.php';

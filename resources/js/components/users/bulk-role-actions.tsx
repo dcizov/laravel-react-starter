@@ -16,11 +16,11 @@ import { roleLabels } from '@/components/users/data';
 import { useTrans } from '@/hooks/use-trans';
 
 // Shown in the toolbar while rows are selected. Gives every selected user the same role.
-export function BulkRoleActions({
+export function BulkRoleActions<T extends AccountUser>({
     table,
     roles,
 }: {
-    table: ReactTable<DataTableFeatures, AccountUser>;
+    table: ReactTable<DataTableFeatures, T>;
     roles: string[];
 }) {
     const t = useTrans();

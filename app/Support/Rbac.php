@@ -18,6 +18,14 @@ final class Rbac
 
     public const PERMISSION_USERS_MANAGE_ROLES = 'users.manage-roles';
 
+    // Edit, verify, suspend, delete, and export users on the admin Users page.
+    public const PERMISSION_USERS_MANAGE = 'users.manage';
+
+    // Sign in as another user, for support. Recorded in the audit log.
+    public const PERMISSION_USERS_IMPERSONATE = 'users.impersonate';
+
+    public const PERMISSION_AUDIT_VIEW = 'audit.view';
+
     public const PERMISSION_ROLES_MANAGE = 'roles.manage';
 
     public const PERMISSION_PERMISSIONS_MANAGE = 'permissions.manage';
@@ -35,6 +43,9 @@ final class Rbac
         self::PERMISSION_TASKS_DELETE_ANY,
         self::PERMISSION_USERS_VIEW,
         self::PERMISSION_USERS_MANAGE_ROLES,
+        self::PERMISSION_USERS_MANAGE,
+        self::PERMISSION_USERS_IMPERSONATE,
+        self::PERMISSION_AUDIT_VIEW,
         self::PERMISSION_ROLES_MANAGE,
         self::PERMISSION_PERMISSIONS_MANAGE,
         self::PERMISSION_SETTINGS_MANAGE,

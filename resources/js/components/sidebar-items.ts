@@ -4,14 +4,18 @@ import {
     ListChecks,
     FolderGit2,
     LayoutGrid,
+    ScrollText,
     Settings,
     ShieldCheck,
+    UserCog,
     UserRound,
     Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { index as indexAuditLog } from '@/routes/admin/audit-log';
 import { index as indexAdminPermissions } from '@/routes/admin/permissions';
 import { index as indexAdminRoles } from '@/routes/admin/roles';
+import { index as indexAdminUsers } from '@/routes/admin/users';
 import { index as indexTasks } from '@/routes/tasks';
 import { show as showUserProfile } from '@/routes/user-profile';
 import { index as indexUsers } from '@/routes/users';
@@ -93,6 +97,20 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 href: indexAdminPermissions(),
                 icon: KeyRound,
                 permission: 'permissions.manage',
+            },
+            {
+                id: 'admin-users',
+                title: 'Manage users',
+                href: indexAdminUsers(),
+                icon: UserCog,
+                permission: 'users.manage',
+            },
+            {
+                id: 'audit-log',
+                title: 'Audit log',
+                href: indexAuditLog(),
+                icon: ScrollText,
+                permission: 'audit.view',
             },
         ],
     },

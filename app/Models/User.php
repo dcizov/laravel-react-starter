@@ -26,6 +26,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
+ * @property Carbon|null $suspended_at
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
@@ -96,6 +97,14 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     }
 
     /**
+     * Whether an administrator has suspended the account. Suspended users cannot sign in.
+     */
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -104,6 +113,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'suspended_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'date_of_birth' => 'date',

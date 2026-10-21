@@ -19,6 +19,8 @@ declare module '@inertiajs/core' {
             translations: Record<string, string>;
             timezone: string;
             displayItems: string[];
+            // Set while an administrator is signed in as this user.
+            impersonating: { name: string } | null;
             sidebarVariant: 'inset' | 'floating';
             locales: { value: string; label: string }[];
             font: 'instrument-sans' | 'inter' | 'manrope' | 'system';
