@@ -81,7 +81,7 @@ export default function Account({
                 )}
             >
                 <form onSubmit={submit} className="space-y-6">
-                    <Field data-invalid={!!form.errors.date_of_birth}>
+                    <Field data-invalid={!!form.errors.date_of_birth || undefined}>
                         <FieldLabel htmlFor="date_of_birth">
                             {t('Date of birth')}
                         </FieldLabel>
@@ -105,7 +105,7 @@ export default function Account({
                         <FieldError>{form.errors.date_of_birth}</FieldError>
                     </Field>
 
-                    <Field data-invalid={!!form.errors.locale}>
+                    <Field data-invalid={!!form.errors.locale || undefined}>
                         <FieldLabel htmlFor="locale">
                             {t('Language')}
                         </FieldLabel>
@@ -139,7 +139,7 @@ export default function Account({
                         <FieldError>{form.errors.locale}</FieldError>
                     </Field>
 
-                    <Field data-invalid={!!form.errors.timezone}>
+                    <Field data-invalid={!!form.errors.timezone || undefined}>
                         <FieldLabel htmlFor="timezone">
                             {t('Timezone')}
                         </FieldLabel>

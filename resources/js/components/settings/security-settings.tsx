@@ -56,7 +56,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                 >
                     {({ errors, processing, isDirty }) => (
                         <>
-                            <Field data-invalid={!!errors.current_password}>
+                            <Field data-invalid={!!errors.current_password || undefined}>
                                 <FieldLabel htmlFor="current_password">
                                     {t('Current password')}
                                 </FieldLabel>
@@ -75,7 +75,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                                 </FieldError>
                             </Field>
 
-                            <Field data-invalid={!!errors.password}>
+                            <Field data-invalid={!!errors.password || undefined}>
                                 <FieldLabel htmlFor="password">
                                     {t('New password')}
                                 </FieldLabel>
@@ -94,7 +94,7 @@ export default function SecuritySettings(props: SecuritySettingsProps) {
                             </Field>
 
                             <Field
-                                data-invalid={!!errors.password_confirmation}
+                                data-invalid={!!errors.password_confirmation || undefined}
                             >
                                 <FieldLabel htmlFor="password_confirmation">
                                     {t('Confirm password')}

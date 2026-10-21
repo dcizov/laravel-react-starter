@@ -43,7 +43,7 @@ class LandingController extends Controller
         $settings->landing_published = $this->draftOf($settings);
         $settings->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Landing page published.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Page published.')]);
 
         return back();
     }

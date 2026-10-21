@@ -22,7 +22,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 <Form {...email.form()}>
                     {({ processing, errors }) => (
                         <>
-                            <Field data-invalid={!!errors.email}>
+                            <Field data-invalid={!!errors.email || undefined}>
                                 <FieldLabel htmlFor="email">
                                     {t('Email address')}
                                 </FieldLabel>

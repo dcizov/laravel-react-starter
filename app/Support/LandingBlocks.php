@@ -22,6 +22,12 @@ final class LandingBlocks
 
     public const MAX_BLOCKS = 40;
 
+    // The icon keys a feature item may use. Must match FEATURE_ICONS in block-types.ts.
+    public const FEATURE_ICONS = [
+        'zap', 'shield', 'layers', 'users', 'chart', 'globe',
+        'lock', 'sparkles', 'check', 'rocket', 'palette', 'settings',
+    ];
+
     /**
      * The built-in page. Used until an admin publishes their own blocks.
      *
@@ -62,12 +68,12 @@ final class LandingBlocks
                 'data' => [
                     'title' => 'What is included',
                     'items' => [
-                        ['title' => 'Accounts', 'text' => 'Sign up, sign in, reset a password, and edit your profile.'],
-                        ['title' => 'Roles and permissions', 'text' => 'Decide what each role can see and change.'],
-                        ['title' => 'Admin area', 'text' => 'Manage users, roles, permissions, the audit log, and app settings.'],
-                        ['title' => 'Task board', 'text' => 'A sample feature with drag-and-drop ordering that is saved for each user.'],
-                        ['title' => 'Two languages', 'text' => 'English and German, with light and dark mode.'],
-                        ['title' => 'Visual editor', 'text' => 'Build this page from blocks, then preview and publish it.'],
+                        ['title' => 'Accounts', 'text' => 'Sign up, sign in, reset a password, and edit your profile.', 'icon' => 'lock'],
+                        ['title' => 'Roles and permissions', 'text' => 'Decide what each role can see and change.', 'icon' => 'shield'],
+                        ['title' => 'Admin area', 'text' => 'Manage users, roles, permissions, the audit log, and app settings.', 'icon' => 'settings'],
+                        ['title' => 'Task board', 'text' => 'A sample feature with drag-and-drop ordering that is saved for each user.', 'icon' => 'layers'],
+                        ['title' => 'Two languages', 'text' => 'English and German, with light and dark mode.', 'icon' => 'globe'],
+                        ['title' => 'Visual editor', 'text' => 'Build this page from blocks, then preview and publish it.', 'icon' => 'palette'],
                     ],
                 ],
             ],
@@ -170,6 +176,7 @@ final class LandingBlocks
                 'items' => ['present', 'array', 'max:12'],
                 'items.*.title' => ['required', 'string', 'max:80'],
                 'items.*.text' => ['nullable', 'string', 'max:200'],
+                'items.*.icon' => ['nullable', 'string', Rule::in(self::FEATURE_ICONS)],
             ],
             'text' => [
                 'heading' => ['nullable', 'string', 'max:120'],
@@ -205,6 +212,7 @@ final class LandingBlocks
                 'title' => ['nullable', 'string', 'max:120'],
                 'items' => ['present', 'array', 'max:4'],
                 'items.*.name' => ['required', 'string', 'max:40'],
+                'items.*.badge' => ['nullable', 'string', 'max:24'],
                 'items.*.price' => ['required', 'string', 'max:20'],
                 'items.*.period' => ['nullable', 'string', 'max:20'],
                 'items.*.description' => ['nullable', 'string', 'max:200'],

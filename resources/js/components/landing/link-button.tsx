@@ -5,16 +5,22 @@ export function LinkButton({
     href,
     label,
     variant = 'outline',
+    size = 'default',
+    className,
 }: {
     href: string;
     label: string;
-    variant?: 'outline' | 'default';
+    variant?: 'default' | 'outline' | 'secondary';
+    size?: 'default' | 'lg';
+    className?: string;
 }) {
     const external = /^https?:\/\//i.test(href);
 
     return (
         <Button
             variant={variant}
+            size={size}
+            className={className}
             nativeButton={false}
             render={
                 <a

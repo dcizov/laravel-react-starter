@@ -231,3 +231,17 @@ test('the visual editor is only offered while the landing page is switched on', 
         ->get(route('dashboard'))
         ->assertInertia(fn ($page) => $page->where('landingEnabled', true));
 });
+
+test('feature icons must be one of the allowed keys, and pricing keeps its badge', function () {
+    expect(fn () => LandingBlocks::validate([
+        block('features-1', 'features', ['items' => [['title' => 'Fast', 'icon' => 'skull']]]),
+    ]))->toThrow(ValidationException::class);
+
+    $draft = LandingBlocks::validate([
+        block('features-2', 'features', ['items' => [['title' => 'Fast', 'icon' => 'zap']]]),
+        block('pricing-2', 'pricing', ['items' => [['name' => 'Pro', 'price' => '€9', 'badge' => 'Most popular']]]),
+    ]);
+
+    expect($draft[0]['data']['items'][0]['icon'])->toBe('zap')
+        ->and($draft[1]['data']['items'][0]['badge'])->toBe('Most popular');
+});

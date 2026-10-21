@@ -125,7 +125,7 @@ export default function AdminSettingsPage({
             >
                 <form onSubmit={submit} encType="multipart/form-data">
                     <FieldGroup>
-                        <Field data-invalid={!!form.errors.app_name}>
+                        <Field data-invalid={!!form.errors.app_name || undefined}>
                             <FieldLabel htmlFor="app_name">
                                 {t('Application name')}
                             </FieldLabel>
@@ -135,14 +135,14 @@ export default function AdminSettingsPage({
                                 onChange={(event) =>
                                     form.setData('app_name', event.target.value)
                                 }
-                                aria-invalid={!!form.errors.app_name}
+                                aria-invalid={!!form.errors.app_name || undefined}
                                 maxLength={100}
                                 required
                             />
                             <FieldError>{form.errors.app_name}</FieldError>
                         </Field>
 
-                        <Field data-invalid={!!form.errors.logo}>
+                        <Field data-invalid={!!form.errors.logo || undefined}>
                             <FieldLabel htmlFor="logo">{t('Logo')}</FieldLabel>
                             <div className="flex flex-wrap items-center gap-4">
                                 <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted p-2">
@@ -169,7 +169,7 @@ export default function AdminSettingsPage({
                                         type="file"
                                         accept="image/png,image/jpeg,image/webp"
                                         className="max-w-xs"
-                                        aria-invalid={!!form.errors.logo}
+                                        aria-invalid={!!form.errors.logo || undefined}
                                         onChange={(event) =>
                                             chooseLogo(event.target.files?.[0])
                                         }
@@ -196,7 +196,7 @@ export default function AdminSettingsPage({
                             <FieldError>{form.errors.logo}</FieldError>
                         </Field>
 
-                        <Field data-invalid={!!form.errors.default_role}>
+                        <Field data-invalid={!!form.errors.default_role || undefined}>
                             <FieldLabel htmlFor="default_role">
                                 {t('Default role for new accounts')}
                             </FieldLabel>
@@ -211,7 +211,7 @@ export default function AdminSettingsPage({
                                 <SelectTrigger
                                     id="default_role"
                                     className="w-full max-w-xs"
-                                    aria-invalid={!!form.errors.default_role}
+                                    aria-invalid={!!form.errors.default_role || undefined}
                                 >
                                     <SelectValue />
                                 </SelectTrigger>

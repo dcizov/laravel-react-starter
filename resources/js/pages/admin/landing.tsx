@@ -559,7 +559,7 @@ function SortableBlock({
 LandingEditor.layout = {
     breadcrumbs: [
         {
-            title: 'Landing page',
+            title: 'Visual editor',
             href: indexAdminLanding(),
         },
     ],

@@ -1,21 +1,31 @@
 import {
     Building2,
+    ChartColumn,
+    CircleCheck,
+    Globe,
     HelpCircle,
     Image as ImageIcon,
+    Layers,
     LayoutGrid,
+    LockKeyhole,
     Megaphone,
     MousePointerClick,
+    Palette,
     Quote,
+    Rocket,
+    Settings,
+    ShieldCheck,
     Sparkles,
     Tag,
-    BarChart3,
     Type,
+    Users,
+    Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 // The shape of every block. Must match App\Support\LandingBlocks on the server, which keeps only these fields.
 // Optional fields are left out of the saved data when empty, so the editor and renderers treat them as possibly missing.
-export type FeatureItem = { title: string; text?: string };
+export type FeatureItem = { title: string; text?: string; icon?: string };
 export type LogoItem = { name: string };
 export type StatItem = { value: string; label: string };
 export type TestimonialItem = { quote: string; name: string; role?: string };
@@ -23,6 +33,7 @@ export type PricingItem = {
     name: string;
     price: string;
     period?: string;
+    badge?: string;
     description?: string;
     features?: string; // One feature per line.
     button_label?: string;
@@ -57,6 +68,37 @@ export type BlockData = {
 
 export type BlockType = keyof BlockData;
 
+// The icons a feature can show. The key is what is saved; the server accepts only these keys.
+export const FEATURE_ICONS: Record<string, LucideIcon> = {
+    zap: Zap,
+    shield: ShieldCheck,
+    layers: Layers,
+    users: Users,
+    chart: ChartColumn,
+    globe: Globe,
+    lock: LockKeyhole,
+    sparkles: Sparkles,
+    check: CircleCheck,
+    rocket: Rocket,
+    palette: Palette,
+    settings: Settings,
+};
+
+export const FEATURE_ICON_LABELS: Record<string, string> = {
+    zap: 'Lightning',
+    shield: 'Shield',
+    layers: 'Layers',
+    users: 'People',
+    chart: 'Chart',
+    globe: 'Globe',
+    lock: 'Lock',
+    sparkles: 'Sparkles',
+    check: 'Check',
+    rocket: 'Rocket',
+    palette: 'Design',
+    settings: 'Settings',
+};
+
 export type LandingBlock = {
     [K in BlockType]: { id: string; type: K; data: BlockData[K] };
 }[BlockType];
@@ -70,7 +112,7 @@ export const blockTypes: {
     { type: 'hero', label: 'Hero', icon: Sparkles },
     { type: 'logos', label: 'Logo row', icon: Building2 },
     { type: 'features', label: 'Features', icon: LayoutGrid },
-    { type: 'stats', label: 'Statistics', icon: BarChart3 },
+    { type: 'stats', label: 'Statistics', icon: ChartColumn },
     { type: 'testimonials', label: 'Testimonials', icon: Quote },
     { type: 'pricing', label: 'Pricing', icon: Tag },
     { type: 'faq', label: 'FAQ', icon: HelpCircle },
@@ -95,7 +137,13 @@ const defaults: { [K in BlockType]: BlockData[K] } = {
     },
     features: {
         title: 'Features',
-        items: [{ title: 'First feature', text: 'Describe it in a sentence.' }],
+        items: [
+            {
+                title: 'First feature',
+                text: 'Describe it in a sentence.',
+                icon: 'sparkles',
+            },
+        ],
     },
     stats: {
         title: '',
@@ -116,6 +164,7 @@ const defaults: { [K in BlockType]: BlockData[K] } = {
         items: [
             {
                 name: 'Starter',
+                badge: '',
                 price: '€9',
                 period: '/month',
                 description: 'For individuals getting started.',

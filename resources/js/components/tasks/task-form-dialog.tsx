@@ -82,7 +82,7 @@ export function TaskFormDialog({
                 </DialogDescription>
 
                 <form onSubmit={submit} className="grid gap-4">
-                    <Field data-invalid={!!form.errors.title}>
+                    <Field data-invalid={!!form.errors.title || undefined}>
                         <FieldLabel htmlFor="task-title">
                             {t('Title')}
                         </FieldLabel>
@@ -98,7 +98,7 @@ export function TaskFormDialog({
                     </Field>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <Field data-invalid={!!form.errors.status}>
+                        <Field data-invalid={!!form.errors.status || undefined}>
                             <FieldLabel htmlFor="task-status">
                                 {t('Status')}
                             </FieldLabel>
@@ -132,7 +132,7 @@ export function TaskFormDialog({
                             <FieldError>{form.errors.status}</FieldError>
                         </Field>
 
-                        <Field data-invalid={!!form.errors.priority}>
+                        <Field data-invalid={!!form.errors.priority || undefined}>
                             <FieldLabel htmlFor="task-priority">
                                 {t('Priority')}
                             </FieldLabel>
@@ -167,7 +167,7 @@ export function TaskFormDialog({
                         </Field>
                     </div>
 
-                    <Field data-invalid={!!form.errors.label}>
+                    <Field data-invalid={!!form.errors.label || undefined}>
                         <FieldLabel htmlFor="task-label">
                             {t('Label')}
                         </FieldLabel>

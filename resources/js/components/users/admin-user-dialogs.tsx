@@ -88,7 +88,7 @@ function EditUserForm({
                     onChange={(event) =>
                         form.setData('name', event.target.value)
                     }
-                    aria-invalid={!!form.errors.name}
+                    aria-invalid={!!form.errors.name || undefined}
                 />
                 {form.errors.name && (
                     <p className="text-sm text-destructive">
@@ -106,7 +106,7 @@ function EditUserForm({
                     onChange={(event) =>
                         form.setData('email', event.target.value)
                     }
-                    aria-invalid={!!form.errors.email}
+                    aria-invalid={!!form.errors.email || undefined}
                 />
                 {form.errors.email && (
                     <p className="text-sm text-destructive">

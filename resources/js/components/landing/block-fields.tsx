@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { storeImage } from '@/actions/App/Http/Controllers/Admin/LandingController';
-import { MAX_FEATURE_ITEMS, MAX_ITEMS } from '@/components/landing/block-types';
+import {
+    FEATURE_ICON_LABELS,
+    FEATURE_ICONS,
+    MAX_FEATURE_ITEMS,
+    MAX_ITEMS,
+} from '@/components/landing/block-types';
 import type { LandingBlock } from '@/components/landing/block-types';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +15,10 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+    NativeSelect,
+    NativeSelectOption,
+} from '@/components/ui/native-select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTrans } from '@/hooks/use-trans';
 
@@ -52,7 +61,7 @@ export function BlockFields({
                         onChange={(value) => set({ text: value })}
                     />
                     <ImageField
-                        label={t('Background image')}
+                        label={t('Picture below the headline')}
                         value={block.data.image}
                         onChange={(value) => set({ image: value })}
                         onError={onError}
@@ -131,6 +140,40 @@ export function BlockFields({
                                     })
                                 }
                             />
+                            <Field>
+                                <FieldLabel
+                                    htmlFor={`landing-${block.id}-${index}-icon`}
+                                >
+                                    {t('Icon')}
+                                </FieldLabel>
+                                <NativeSelect
+                                    id={`landing-${block.id}-${index}-icon`}
+                                    value={item.icon ?? 'sparkles'}
+                                    onChange={(event) =>
+                                        set({
+                                            items: block.data.items.map(
+                                                (current, i) =>
+                                                    i === index
+                                                        ? {
+                                                              ...current,
+                                                              icon: event.target
+                                                                  .value,
+                                                          }
+                                                        : current,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    {Object.keys(FEATURE_ICONS).map((key) => (
+                                        <NativeSelectOption
+                                            key={key}
+                                            value={key}
+                                        >
+                                            {t(FEATURE_ICON_LABELS[key] ?? key)}
+                                        </NativeSelectOption>
+                                    ))}
+                                </NativeSelect>
+                            </Field>
                             <div>
                                 <Button
                                     type="button"
@@ -339,6 +382,14 @@ export function BlockFields({
                         items={block.data.items}
                         fields={[
                             { key: 'name', label: t('Plan name'), max: 40 },
+                            {
+                                key: 'badge',
+                                label: t('Badge'),
+                                max: 24,
+                                hint: t(
+                                    'Optional, for example Most popular. A badge highlights the plan.',
+                                ),
+                            },
                             { key: 'price', label: t('Price'), max: 20 },
                             {
                                 key: 'period',

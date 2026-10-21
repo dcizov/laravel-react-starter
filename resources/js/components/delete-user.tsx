@@ -70,7 +70,7 @@ export default function DeleteUser() {
                     >
                         {({ resetAndClearErrors, processing, errors }) => (
                             <>
-                                <Field data-invalid={!!errors.password}>
+                                <Field data-invalid={!!errors.password || undefined}>
                                     <FieldLabel
                                         htmlFor="password"
                                         className="sr-only"

@@ -30,7 +30,7 @@ export default function ConfirmPassword() {
             <Form {...store.form()} resetOnSuccess={['password']}>
                 {({ processing, errors }) => (
                     <div className="space-y-6">
-                        <Field data-invalid={!!errors.password}>
+                        <Field data-invalid={!!errors.password || undefined}>
                             <FieldLabel htmlFor="password">
                                 {t('Password')}
                             </FieldLabel>

@@ -35,7 +35,7 @@ export default function Login({ status, canResetPassword }: Props) {
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
-                            <Field data-invalid={!!errors.email}>
+                            <Field data-invalid={!!errors.email || undefined}>
                                 <FieldLabel htmlFor="email">
                                     {t('Email address')}
                                 </FieldLabel>
@@ -52,7 +52,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                 <FieldError>{errors.email}</FieldError>
                             </Field>
 
-                            <Field data-invalid={!!errors.password}>
+                            <Field data-invalid={!!errors.password || undefined}>
                                 <div className="flex items-center">
                                     <FieldLabel htmlFor="password">
                                         {t('Password')}

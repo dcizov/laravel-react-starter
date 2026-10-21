@@ -43,7 +43,7 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
                             </FieldError>
                         </div>
 
-                        <Field data-invalid={!!errors.password}>
+                        <Field data-invalid={!!errors.password || undefined}>
                             <FieldLabel htmlFor="password">
                                 {t('Password')}
                             </FieldLabel>
