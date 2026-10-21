@@ -29,6 +29,8 @@ export type SidebarLink = NavItem & {
     icon: LucideIcon;
     // The Gate ability the user needs to see the link. Links without one are open to everyone.
     permission?: string;
+    // Only shown while the public landing page is switched on in admin settings.
+    needsLandingPage?: boolean;
 };
 
 export type SidebarEntry = SidebarLink;
@@ -116,10 +118,11 @@ export const sidebarGroups: SidebarGroupDef[] = [
             },
             {
                 id: 'admin-landing',
-                title: 'Landing page',
+                title: 'Visual editor',
                 href: indexAdminLanding(),
                 icon: LayoutTemplate,
                 permission: 'landing.manage',
+                needsLandingPage: true,
             },
         ],
     },
@@ -153,10 +156,12 @@ export const displayGroups = sidebarGroups.map((group) => ({
 export function visibleSidebarGroups(
     displayItems: string[],
     permissions: string[],
+    landingEnabled: boolean,
 ): SidebarGroupDef[] {
     const allowed = (link: SidebarLink) =>
         displayItems.includes(link.id) &&
-        (!link.permission || permissions.includes(link.permission));
+        (!link.permission || permissions.includes(link.permission)) &&
+        (!link.needsLandingPage || landingEnabled);
 
     return sidebarGroups
         .map((group): SidebarGroupDef => ({

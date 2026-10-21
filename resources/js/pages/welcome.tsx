@@ -74,7 +74,7 @@ export default function Welcome({
                     )}
                 </header>
 
-                <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 px-4 pb-16 md:px-8">
+                <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-2 px-4 pb-16 md:px-8">
                     {blocks.map((block) => (
                         <RenderBlock key={block.id} block={block} />
                     ))}

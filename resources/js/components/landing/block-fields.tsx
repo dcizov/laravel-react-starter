@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { storeImage } from '@/actions/App/Http/Controllers/Admin/LandingController';
-import { MAX_FEATURE_ITEMS } from '@/components/landing/block-types';
+import { MAX_FEATURE_ITEMS, MAX_ITEMS } from '@/components/landing/block-types';
 import type { LandingBlock } from '@/components/landing/block-types';
 import { Button } from '@/components/ui/button';
 import {
@@ -235,14 +235,317 @@ export function BlockFields({
                     />
                 </FieldGroup>
             );
+        case 'logos':
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="title"
+                        label={t('Section title')}
+                        value={block.data.title}
+                        max={120}
+                        onChange={(value) => set({ title: value })}
+                    />
+                    <ItemList
+                        idPrefix={block.id}
+                        items={block.data.items}
+                        fields={[{ key: 'name', label: t('Name'), max: 60 }]}
+                        newItem={{ name: t('Partner') }}
+                        max={MAX_ITEMS.logos ?? 12}
+                        addLabel={t('Add logo')}
+                        onChange={(items) => set({ items })}
+                    />
+                </FieldGroup>
+            );
+
+        case 'stats':
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="title"
+                        label={t('Section title')}
+                        value={block.data.title}
+                        max={120}
+                        onChange={(value) => set({ title: value })}
+                    />
+                    <ItemList
+                        idPrefix={block.id}
+                        items={block.data.items}
+                        fields={[
+                            {
+                                key: 'value',
+                                label: t('Number or short text'),
+                                max: 20,
+                            },
+                            { key: 'label', label: t('Label'), max: 60 },
+                        ]}
+                        newItem={{ value: '0', label: t('Label') }}
+                        max={MAX_ITEMS.stats ?? 6}
+                        addLabel={t('Add statistic')}
+                        onChange={(items) => set({ items })}
+                    />
+                </FieldGroup>
+            );
+
+        case 'testimonials':
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="title"
+                        label={t('Section title')}
+                        value={block.data.title}
+                        max={120}
+                        onChange={(value) => set({ title: value })}
+                    />
+                    <ItemList
+                        idPrefix={block.id}
+                        items={block.data.items}
+                        fields={[
+                            {
+                                key: 'quote',
+                                label: t('Quote'),
+                                max: 400,
+                                multiline: true,
+                            },
+                            { key: 'name', label: t('Name'), max: 80 },
+                            {
+                                key: 'role',
+                                label: t('Role or company'),
+                                max: 80,
+                            },
+                        ]}
+                        newItem={{
+                            quote: t('Write a short quote here.'),
+                            name: t('Name'),
+                        }}
+                        max={MAX_ITEMS.testimonials ?? 6}
+                        addLabel={t('Add testimonial')}
+                        onChange={(items) => set({ items })}
+                    />
+                </FieldGroup>
+            );
+
+        case 'pricing':
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="title"
+                        label={t('Section title')}
+                        value={block.data.title}
+                        max={120}
+                        onChange={(value) => set({ title: value })}
+                    />
+                    <ItemList
+                        idPrefix={block.id}
+                        items={block.data.items}
+                        fields={[
+                            { key: 'name', label: t('Plan name'), max: 40 },
+                            { key: 'price', label: t('Price'), max: 20 },
+                            {
+                                key: 'period',
+                                label: t('Period'),
+                                max: 20,
+                                hint: t(
+                                    'For example /month. Leave blank for a one-off price.',
+                                ),
+                            },
+                            {
+                                key: 'description',
+                                label: t('Description'),
+                                max: 200,
+                                multiline: true,
+                            },
+                            {
+                                key: 'features',
+                                label: t('Features'),
+                                max: 1000,
+                                multiline: true,
+                                rows: 4,
+                                hint: t('One feature per line.'),
+                            },
+                            {
+                                key: 'button_label',
+                                label: t('Button text'),
+                                max: 40,
+                            },
+                            {
+                                key: 'button_url',
+                                label: t('Button link'),
+                                max: 500,
+                                hint: t(
+                                    'https://… or a path such as /register',
+                                ),
+                            },
+                        ]}
+                        newItem={{ name: t('Plan'), price: '€0' }}
+                        max={MAX_ITEMS.pricing ?? 4}
+                        addLabel={t('Add plan')}
+                        onChange={(items) => set({ items })}
+                    />
+                </FieldGroup>
+            );
+
+        case 'faq':
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="title"
+                        label={t('Section title')}
+                        value={block.data.title}
+                        max={120}
+                        onChange={(value) => set({ title: value })}
+                    />
+                    <ItemList
+                        idPrefix={block.id}
+                        items={block.data.items}
+                        fields={[
+                            { key: 'question', label: t('Question'), max: 200 },
+                            {
+                                key: 'answer',
+                                label: t('Answer'),
+                                max: 1000,
+                                multiline: true,
+                            },
+                        ]}
+                        newItem={{ question: t('Your question?'), answer: '' }}
+                        max={MAX_ITEMS.faq ?? 10}
+                        addLabel={t('Add question')}
+                        onChange={(items) => set({ items })}
+                    />
+                </FieldGroup>
+            );
+
+        case 'cta':
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="title"
+                        label={t('Heading')}
+                        value={block.data.title}
+                        max={120}
+                        onChange={(value) => set({ title: value })}
+                    />
+                    <TextField
+                        id="text"
+                        label={t('Text')}
+                        value={block.data.text}
+                        max={300}
+                        multiline
+                        onChange={(value) => set({ text: value })}
+                    />
+                    <TextField
+                        id="button_label"
+                        label={t('Button text')}
+                        value={block.data.button_label}
+                        max={40}
+                        onChange={(value) => set({ button_label: value })}
+                    />
+                    <TextField
+                        id="button_url"
+                        label={t('Button link')}
+                        hint={t('https://… or a path such as /register')}
+                        value={block.data.button_url}
+                        max={500}
+                        onChange={(value) => set({ button_url: value })}
+                    />
+                </FieldGroup>
+            );
     }
+}
+
+// A list of items the admin can add to, remove, and edit. Each item has the same fields.
+type ListField = {
+    key: string;
+    label: string;
+    max: number;
+    multiline?: boolean;
+    rows?: number;
+    hint?: string;
+};
+type ListItem = Record<string, string | undefined>;
+
+function ItemList({
+    idPrefix,
+    items,
+    fields,
+    newItem,
+    max,
+    addLabel,
+    onChange,
+}: {
+    idPrefix: string;
+    items: ListItem[];
+    fields: ListField[];
+    newItem: ListItem;
+    max: number;
+    addLabel: string;
+    onChange: (items: ListItem[]) => void;
+}) {
+    const t = useTrans();
+
+    return (
+        <>
+            {items.map((item, index) => (
+                <div
+                    // Items have no id in the saved data, so the position is the key.
+                    // eslint-disable-next-line @eslint-react/no-array-index-key
+                    key={index}
+                    className="flex flex-col gap-2 rounded-md border p-3"
+                >
+                    {fields.map((field) => (
+                        <TextField
+                            key={field.key}
+                            id={`${idPrefix}-${index}-${field.key}`}
+                            label={field.label}
+                            hint={field.hint}
+                            value={item[field.key]}
+                            max={field.max}
+                            multiline={field.multiline}
+                            rows={field.rows}
+                            onChange={(value) =>
+                                onChange(
+                                    items.map((current, i) =>
+                                        i === index
+                                            ? { ...current, [field.key]: value }
+                                            : current,
+                                    ),
+                                )
+                            }
+                        />
+                    ))}
+                    <div>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                                onChange(items.filter((_, i) => i !== index))
+                            }
+                        >
+                            {t('Remove item')}
+                        </Button>
+                    </div>
+                </div>
+            ))}
+            <div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={items.length >= max}
+                    onClick={() => onChange([...items, { ...newItem }])}
+                >
+                    {addLabel}
+                </Button>
+            </div>
+        </>
+    );
 }
 
 function TextField({
     id,
     label,
     hint,
-    value,
+    value = '',
     max,
     multiline = false,
     rows = 3,
@@ -251,7 +554,7 @@ function TextField({
     id: string;
     label: string;
     hint?: string;
-    value: string;
+    value?: string;
     max: number;
     multiline?: boolean;
     rows?: number;
@@ -294,12 +597,12 @@ function csrfToken(): string {
 
 function ImageField({
     label,
-    value,
+    value = '',
     onChange,
     onError,
 }: {
     label: string;
-    value: string;
+    value?: string;
     onChange: (url: string) => void;
     onError: (message: string) => void;
 }) {

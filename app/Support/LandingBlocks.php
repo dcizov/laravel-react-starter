@@ -15,7 +15,10 @@ use Illuminate\Validation\ValidationException;
  */
 final class LandingBlocks
 {
-    public const TYPES = ['hero', 'features', 'text', 'image', 'button'];
+    public const TYPES = [
+        'hero', 'features', 'text', 'image', 'button',
+        'logos', 'stats', 'testimonials', 'pricing', 'faq', 'cta',
+    ];
 
     public const MAX_BLOCKS = 40;
 
@@ -31,22 +34,76 @@ final class LandingBlocks
                 'id' => 'default-hero',
                 'type' => 'hero',
                 'data' => [
-                    'title' => "Let's get started",
-                    'text' => 'Laravel has an incredibly rich ecosystem. We suggest starting with the following.',
-                    'button_label' => 'Deploy now',
-                    'button_url' => 'https://cloud.laravel.com',
+                    'title' => 'Start building your Laravel app today',
+                    'text' => 'A Laravel 13 and React 19 starter with accounts, roles and permissions, an admin area, and a task board. Change this page in the Visual editor.',
+                    'button_label' => 'Get started',
+                    'button_url' => '/register',
                     'image' => '',
                 ],
             ],
             [
-                'id' => 'default-docs',
-                'type' => 'button',
-                'data' => ['label' => 'Read the documentation', 'url' => 'https://laravel.com/docs'],
+                'id' => 'default-logos',
+                'type' => 'logos',
+                'data' => [
+                    'title' => 'Built with',
+                    'items' => [
+                        ['name' => 'Laravel'],
+                        ['name' => 'React'],
+                        ['name' => 'Inertia.js'],
+                        ['name' => 'Tailwind CSS'],
+                        ['name' => 'shadcn/ui'],
+                        ['name' => 'Spatie Permission'],
+                    ],
+                ],
             ],
             [
-                'id' => 'default-laracasts',
-                'type' => 'button',
-                'data' => ['label' => 'Watch video tutorials at Laracasts', 'url' => 'https://laracasts.com'],
+                'id' => 'default-features',
+                'type' => 'features',
+                'data' => [
+                    'title' => 'What is included',
+                    'items' => [
+                        ['title' => 'Accounts', 'text' => 'Sign up, sign in, reset a password, and edit your profile.'],
+                        ['title' => 'Roles and permissions', 'text' => 'Decide what each role can see and change.'],
+                        ['title' => 'Admin area', 'text' => 'Manage users, roles, permissions, the audit log, and app settings.'],
+                        ['title' => 'Task board', 'text' => 'A sample feature with drag-and-drop ordering that is saved for each user.'],
+                        ['title' => 'Two languages', 'text' => 'English and German, with light and dark mode.'],
+                        ['title' => 'Visual editor', 'text' => 'Build this page from blocks, then preview and publish it.'],
+                    ],
+                ],
+            ],
+            [
+                'id' => 'default-stats',
+                'type' => 'stats',
+                'data' => [
+                    'title' => 'At a glance',
+                    'items' => [
+                        ['value' => '13', 'label' => 'Laravel major version'],
+                        ['value' => '2', 'label' => 'Languages included'],
+                        ['value' => '2', 'label' => 'Built-in roles: admin and user'],
+                    ],
+                ],
+            ],
+            [
+                'id' => 'default-faq',
+                'type' => 'faq',
+                'data' => [
+                    'title' => 'Questions',
+                    'items' => [
+                        ['question' => 'How do I change what visitors see?', 'answer' => 'Open the Visual editor, change the blocks, and save a draft. Preview shows the draft, and Publish makes it live.'],
+                        ['question' => 'Can I turn this page off?', 'answer' => 'Yes. In Admin settings, switch off Show the landing page. Guests then go to sign in, and signed-in users go to the dashboard.'],
+                        ['question' => 'Can I add more sections?', 'answer' => 'Yes. Add any block from the palette, in any order. A page can hold up to 40 blocks.'],
+                    ],
+                ],
+            ],
+            [
+                'id' => 'default-cta',
+                'type' => 'cta',
+                'data' => [
+                    'title' => 'Ready to build?',
+                    'text' => 'Create an account, or sign in to go to your dashboard.',
+                    'button_label' => 'Create an account',
+                    'button_url' => '/register',
+                ],
             ],
         ];
     }
@@ -125,6 +182,47 @@ final class LandingBlocks
             'button' => [
                 'label' => ['required', 'string', 'max:40'],
                 'url' => ['required', 'string', 'max:500', self::safeUrl()],
+            ],
+            'logos' => [
+                'title' => ['nullable', 'string', 'max:120'],
+                'items' => ['present', 'array', 'max:12'],
+                'items.*.name' => ['required', 'string', 'max:60'],
+            ],
+            'stats' => [
+                'title' => ['nullable', 'string', 'max:120'],
+                'items' => ['present', 'array', 'max:6'],
+                'items.*.value' => ['required', 'string', 'max:20'],
+                'items.*.label' => ['required', 'string', 'max:60'],
+            ],
+            'testimonials' => [
+                'title' => ['nullable', 'string', 'max:120'],
+                'items' => ['present', 'array', 'max:6'],
+                'items.*.quote' => ['required', 'string', 'max:400'],
+                'items.*.name' => ['required', 'string', 'max:80'],
+                'items.*.role' => ['nullable', 'string', 'max:80'],
+            ],
+            'pricing' => [
+                'title' => ['nullable', 'string', 'max:120'],
+                'items' => ['present', 'array', 'max:4'],
+                'items.*.name' => ['required', 'string', 'max:40'],
+                'items.*.price' => ['required', 'string', 'max:20'],
+                'items.*.period' => ['nullable', 'string', 'max:20'],
+                'items.*.description' => ['nullable', 'string', 'max:200'],
+                'items.*.features' => ['nullable', 'string', 'max:1000'],
+                'items.*.button_label' => ['nullable', 'string', 'max:40'],
+                'items.*.button_url' => ['nullable', 'string', 'max:500', self::safeUrl()],
+            ],
+            'faq' => [
+                'title' => ['nullable', 'string', 'max:120'],
+                'items' => ['present', 'array', 'max:10'],
+                'items.*.question' => ['required', 'string', 'max:200'],
+                'items.*.answer' => ['nullable', 'string', 'max:1000'],
+            ],
+            'cta' => [
+                'title' => ['required', 'string', 'max:120'],
+                'text' => ['nullable', 'string', 'max:300'],
+                'button_label' => ['nullable', 'string', 'max:40'],
+                'button_url' => ['nullable', 'string', 'max:500', self::safeUrl()],
             ],
             default => [],
         };

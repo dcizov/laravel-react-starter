@@ -231,10 +231,10 @@ export default function LandingEditor({
 
     return (
         <>
-            <Head title={t('Landing page')} />
+            <Head title={t('Visual editor')} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <PageHeader
-                    title={t('Landing page')}
+                    title={t('Visual editor')}
                     description={t(
                         'Drag blocks onto the page, then edit their text and images. Save a draft, then publish it when it is ready.',
                     )}

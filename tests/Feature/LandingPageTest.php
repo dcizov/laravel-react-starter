@@ -7,6 +7,7 @@ use App\Support\LandingBlocks;
 use App\Support\Rbac;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
     Rbac::sync();
@@ -174,4 +175,59 @@ test('the admin settings save the error-page and landing switches', function () 
 
 test('the built-in default blocks pass the same validation as admin blocks', function () {
     expect(LandingBlocks::validate(LandingBlocks::defaults()))->toEqual(LandingBlocks::defaults());
+});
+
+test('the new section types accept their fields and drop anything else', function () {
+    $draft = LandingBlocks::validate([
+        block('logos-1', 'logos', ['title' => 'Trusted by', 'items' => [['name' => 'Acme', 'x' => 'drop']]]),
+        block('stats-1', 'stats', ['items' => [['value' => '10k+', 'label' => 'Users']]]),
+        block('faq-1', 'faq', ['items' => [['question' => 'Why?', 'answer' => 'Because.', 'html' => '<b>x</b>']]]),
+        block('cta-1', 'cta', ['title' => 'Start', 'button_label' => 'Go', 'button_url' => '/register']),
+    ]);
+
+    expect($draft[0]['data']['items'][0])->toEqual(['name' => 'Acme'])
+        ->and($draft[2]['data']['items'][0])->not->toHaveKey('html')
+        ->and($draft[3]['data'])->toHaveKeys(['title', 'button_url']);
+});
+
+test('the new section types reject unsafe links and too many items', function () {
+    expect(fn () => LandingBlocks::validate([
+        block('pricing-1', 'pricing', ['items' => [[
+            'name' => 'Pro',
+            'price' => '€9',
+            'button_label' => 'Buy',
+            'button_url' => 'javascript:alert(1)',
+        ]]]),
+    ]))->toThrow(ValidationException::class);
+
+    expect(fn () => LandingBlocks::validate([
+        block('stats-1', 'stats', ['items' => array_fill(0, 7, ['value' => '1', 'label' => 'x'])]),
+    ]))->toThrow(ValidationException::class);
+});
+
+test('the default page uses the section types and starts with a hero', function () {
+    $types = array_column(LandingBlocks::defaults(), 'type');
+
+    expect($types)->toContain('logos', 'features', 'stats', 'faq', 'cta')
+        ->and($types[0])->toBe('hero');
+});
+
+test('the visual editor is only offered while the landing page is switched on', function () {
+    $user = User::factory()->create();
+    $user->assignRole(Rbac::DEFAULT_ROLE);
+    $settings = app(AppSettings::class);
+
+    $settings->landing_enabled = false;
+    $settings->save();
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page->where('landingEnabled', false));
+
+    $settings->landing_enabled = true;
+    $settings->save();
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page->where('landingEnabled', true));
 });

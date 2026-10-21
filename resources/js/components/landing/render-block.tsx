@@ -1,5 +1,13 @@
 import type { LandingBlock } from '@/components/landing/block-types';
-import { Button } from '@/components/ui/button';
+import { LinkButton } from '@/components/landing/link-button';
+import {
+    CtaBlock,
+    FaqBlock,
+    LogosBlock,
+    PricingBlock,
+    StatsBlock,
+    TestimonialsBlock,
+} from '@/components/landing/marketing-blocks';
 
 // Draws one block. Used on the public page, the preview, and the editor canvas, so they always match.
 // Text is rendered as plain text. There is no HTML from the admin.
@@ -82,6 +90,24 @@ export function RenderBlock({ block }: { block: LandingBlock }) {
                 </figure>
             ) : null;
 
+        case 'logos':
+            return <LogosBlock data={block.data} />;
+
+        case 'stats':
+            return <StatsBlock data={block.data} />;
+
+        case 'testimonials':
+            return <TestimonialsBlock data={block.data} />;
+
+        case 'pricing':
+            return <PricingBlock data={block.data} />;
+
+        case 'faq':
+            return <FaqBlock data={block.data} />;
+
+        case 'cta':
+            return <CtaBlock data={block.data} />;
+
         case 'button':
             return block.data.label && block.data.url ? (
                 <div className="flex justify-center py-4">
@@ -92,25 +118,4 @@ export function RenderBlock({ block }: { block: LandingBlock }) {
                 </div>
             ) : null;
     }
-}
-
-// External links open in a new tab. Paths on this site stay in the tab.
-function LinkButton({ href, label }: { href: string; label: string }) {
-    const external = /^https?:\/\//i.test(href);
-
-    return (
-        <Button
-            variant="outline"
-            nativeButton={false}
-            render={
-                <a
-                    href={href}
-                    target={external ? '_blank' : undefined}
-                    rel={external ? 'noreferrer' : undefined}
-                />
-            }
-        >
-            {label}
-        </Button>
-    );
 }

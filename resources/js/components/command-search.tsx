@@ -41,8 +41,12 @@ function hrefOf(link: SidebarLink): string {
 // Search over the visible pages and a few actions. Opened from the top bar.
 export function CommandSearch({ open, onOpenChange, onToggleTheme }: Props) {
     const t = useTrans();
-    const { displayItems, auth } = usePage().props;
-    const groups = visibleSidebarGroups(displayItems, auth.permissions);
+    const { displayItems, auth, landingEnabled } = usePage().props;
+    const groups = visibleSidebarGroups(
+        displayItems,
+        auth.permissions,
+        landingEnabled,
+    );
 
     const run = (action: () => void) => {
         onOpenChange(false);

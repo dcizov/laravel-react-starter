@@ -64,6 +64,7 @@ class HandleInertiaRequests extends Middleware
             'translations' => Locales::translations(app()->getLocale()),
             'timezone' => $request->user()?->timezone ?? Timezones::defaultFor(app()->getLocale()),
             'displayItems' => DisplaySettings::forUser($request->user()),
+            'landingEnabled' => $appSettings->landing_enabled,
             'sidebarVariant' => SidebarVariant::forUser($request->user()),
             'locales' => Locales::options(),
             'font' => Fonts::forUser($request->user()),
