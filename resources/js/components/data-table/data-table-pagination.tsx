@@ -21,9 +21,11 @@ import { useTrans } from '@/hooks/use-trans';
 export function DataTablePagination<TData extends RowData>({
     table,
     pageSizes,
+    showSelection,
 }: {
     table: ReactTable<DataTableFeatures, TData>;
     pageSizes: number[];
+    showSelection: boolean;
 }) {
     const t = useTrans();
     const selected = table.getFilteredSelectedRowModel().rows.length;
@@ -33,7 +35,11 @@ export function DataTablePagination<TData extends RowData>({
     return (
         <div className="flex items-center justify-between px-2">
             <div className="flex-1 text-sm text-muted-foreground">
-                {t(':selected of :total row(s) selected.', { selected, total })}
+                {showSelection &&
+                    t(':selected of :total row(s) selected.', {
+                        selected,
+                        total,
+                    })}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
                 <div className="flex items-center space-x-2">

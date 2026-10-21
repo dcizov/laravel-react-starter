@@ -52,5 +52,6 @@ test('ids the user cannot see are ignored when saving the order', function () {
         ->assertRedirect();
 
     $this->assertDatabaseMissing('task_orders', ['task_id' => $someoneElsesTask->id]);
-    $this->assertDatabaseHas('task_orders', ['task_id' => $first->id, 'position' => 1]);
+    // The hidden id is dropped before positions are assigned, so the visible task is first.
+    $this->assertDatabaseHas('task_orders', ['task_id' => $first->id, 'position' => 0]);
 });

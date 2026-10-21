@@ -146,6 +146,7 @@ export default function AdminUsers({
                     data={users}
                     getRowId={(row) => String(row.id)}
                     pageSizes={pageSizes}
+                    enableRowSelection
                     emptyMessage={t('No users found.')}
                     renderDetail={renderDetail}
                     toolbar={{

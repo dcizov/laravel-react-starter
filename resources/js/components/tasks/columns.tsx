@@ -7,7 +7,6 @@ import { labels, priorities, statuses } from '@/components/tasks/data';
 import type { Task } from '@/components/tasks/data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -41,33 +40,6 @@ export function useTaskColumns({
 
     return React.useMemo<ColumnDef<DataTableFeatures, Task>[]>(
         () => [
-            {
-                id: 'select',
-                header: ({ table }) => (
-                    <Checkbox
-                        checked={table.getIsAllPageRowsSelected()}
-                        indeterminate={
-                            !table.getIsAllPageRowsSelected() &&
-                            table.getIsSomePageRowsSelected()
-                        }
-                        onCheckedChange={(value) =>
-                            table.toggleAllPageRowsSelected(!!value)
-                        }
-                        aria-label={t('Select all')}
-                        className="translate-y-[2px]"
-                    />
-                ),
-                cell: ({ row }) => (
-                    <Checkbox
-                        checked={row.getIsSelected()}
-                        onCheckedChange={(value) => row.toggleSelected(!!value)}
-                        aria-label={t('Select row')}
-                        className="translate-y-[2px]"
-                    />
-                ),
-                enableSorting: false,
-                enableHiding: false,
-            },
             {
                 accessorKey: 'code',
                 header: ({ column }) => (

@@ -175,7 +175,6 @@ export default function Tasks({
                         data={tasks}
                         getRowId={(row) => String(row.id)}
                         pageSizes={pageSizes}
-                        enableRowSelection
                         enableRowDragging
                         onRowOrderChange={(ids) => {
                             // Saved for this user only. The server sends the tasks back in this order.

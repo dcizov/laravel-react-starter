@@ -96,7 +96,7 @@ function useDataTable<TData extends RowData>(
         initialState: {
             pagination: { pageIndex: 0, pageSize: props.initialPageSize ?? 10 },
         },
-        enableRowSelection: props.enableRowSelection ?? true,
+        enableRowSelection: props.enableRowSelection ?? false,
         onRowSelectionChange: setRowSelection,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
@@ -163,7 +163,7 @@ export function DataTable<TData extends RowData>({
     initialPageSize = 10,
     pageSizes = [10, 20, 30, 50],
     getRowId,
-    enableRowSelection = true,
+    enableRowSelection = false,
     enableRowDragging = false,
     onRowOrderChange,
     renderDetail,
@@ -347,7 +347,11 @@ export function DataTable<TData extends RowData>({
                 </DndContext>
             </div>
 
-            <DataTablePagination table={table} pageSizes={pageSizes} />
+            <DataTablePagination
+                table={table}
+                pageSizes={pageSizes}
+                showSelection={enableRowSelection}
+            />
         </div>
     );
 }
