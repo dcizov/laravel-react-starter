@@ -30,6 +30,8 @@ import * as React from 'react';
 import { dataTableFeatures } from '@/components/data-table/data-table-features';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
+import { DataTableRowDetail } from '@/components/data-table/data-table-row-detail';
+import type { DataTableDetail } from '@/components/data-table/data-table-row-detail';
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar';
 import type { DataTableToolbarOptions } from '@/components/data-table/data-table-toolbar';
 import { Button } from '@/components/ui/button';
@@ -61,6 +63,8 @@ type DataTableProps<TData extends RowData> = {
     // Adds a grip column so rows can be dragged into a new order. The order is kept
     // in this table only; it is not saved. Pass getRowId so each row keeps its identity.
     enableRowDragging?: boolean;
+    // Builds the drawer for a row. Cells in columns with meta.detail open it when clicked.
+    renderDetail?: (row: TData) => DataTableDetail | null;
     emptyMessage?: string;
 };
 
@@ -159,6 +163,7 @@ export function DataTable<TData extends RowData>({
     getRowId,
     enableRowSelection = true,
     enableRowDragging = false,
+    renderDetail,
     emptyMessage,
 }: DataTableProps<TData>) {
     const t = useTrans();
@@ -229,11 +234,25 @@ export function DataTable<TData extends RowData>({
     const rowIds = rows.map((row) => row.id);
 
     const renderCells = (row: (typeof rows)[number]) =>
-        row.getVisibleCells().map((cell) => (
-            <TableCell key={cell.id}>
-                <table.FlexRender cell={cell} />
-            </TableCell>
-        ));
+        row.getVisibleCells().map((cell) => {
+            const content = <table.FlexRender cell={cell} />;
+            const detail =
+                renderDetail && cell.column.columnDef.meta?.detail
+                    ? renderDetail(row.original)
+                    : null;
+
+            return (
+                <TableCell key={cell.id}>
+                    {detail ? (
+                        <DataTableRowDetail detail={detail}>
+                            {content}
+                        </DataTableRowDetail>
+                    ) : (
+                        content
+                    )}
+                </TableCell>
+            );
+        });
 
     return (
         <div className="flex flex-col gap-4">

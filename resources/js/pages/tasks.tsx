@@ -3,9 +3,10 @@ import { ListChecks, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { destroy, update } from '@/actions/App/Http/Controllers/TaskController';
 import { DataTable } from '@/components/data-table/data-table';
+import type { DataTableDetail } from '@/components/data-table/data-table-row-detail';
 import PageHeader from '@/components/page-header';
 import { useTaskColumns } from '@/components/tasks/columns';
-import { priorities, statuses } from '@/components/tasks/data';
+import { labels, priorities, statuses } from '@/components/tasks/data';
 import type { Task } from '@/components/tasks/data';
 import { TaskFormDialog } from '@/components/tasks/task-form-dialog';
 import {
@@ -19,6 +20,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { DrawerClose } from '@/components/ui/drawer';
 import {
     Empty,
     EmptyContent,
@@ -50,6 +52,48 @@ export default function Tasks({
         setFormKey((key) => key + 1);
         setDialogOpen(true);
     }, []);
+
+    // The drawer that opens from a task title: its fields, with an edit button.
+    const renderDetail = useCallback(
+        (task: Task): DataTableDetail => {
+            const detailRow = (name: string, value: React.ReactNode) => (
+                <div className="grid grid-cols-[100px_1fr] items-center gap-3">
+                    <dt className="text-muted-foreground">{name}</dt>
+                    <dd>{value}</dd>
+                </div>
+            );
+            const status = statuses.find((item) => item.value === task.status);
+            const priority = priorities.find(
+                (item) => item.value === task.priority,
+            );
+            const label = labels.find((item) => item.value === task.label);
+
+            return {
+                title: task.title,
+                description: task.code,
+                body: (
+                    <dl className="flex flex-col gap-3">
+                        {detailRow(t('Status'), status && t(status.label))}
+                        {detailRow(
+                            t('Priority'),
+                            priority && t(priority.label),
+                        )}
+                        {detailRow(t('Label'), label && t(label.label))}
+                        {task.owner && detailRow(t('Owner'), task.owner)}
+                    </dl>
+                ),
+                // Closing the drawer and opening the dialog together avoids two modal layers.
+                footer: (
+                    <DrawerClose
+                        render={<Button onClick={() => openDialog(task)} />}
+                    >
+                        {t('Edit task')}
+                    </DrawerClose>
+                ),
+            };
+        },
+        [t, openDialog],
+    );
 
     const changeLabel = useCallback((id: number, label: string) => {
         router.patch(update.url(id), { label }, { preserveScroll: true });
@@ -129,6 +173,7 @@ export default function Tasks({
                         pageSizes={pageSizes}
                         enableRowSelection
                         enableRowDragging
+                        renderDetail={renderDetail}
                         toolbar={{
                             search: {
                                 column: 'title',

@@ -48,6 +48,8 @@ declare module '@tanstack/table-core' {
     > {
         // The label shown in the View menu. It is translated where it is rendered.
         label?: string;
+        // Makes this column's cell open the row's detail drawer (see DataTable renderDetail).
+        detail?: boolean;
     }
     /* eslint-enable @typescript-eslint/no-unused-vars */
 }

@@ -82,7 +82,7 @@ export function useTaskColumns({
             {
                 accessorKey: 'title',
                 filterFn: 'includesString',
-                meta: { label: 'Title' },
+                meta: { label: 'Title', detail: true },
                 header: ({ column }) => (
                     <DataTableColumnHeader column={column} title={t('Title')} />
                 ),
