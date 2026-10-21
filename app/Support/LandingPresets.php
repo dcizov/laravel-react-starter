@@ -57,7 +57,7 @@ final class LandingPresets
         return [
             self::block('default-hero', 'hero', [
                 'title' => 'Start building your Laravel app today',
-                'text' => 'A Laravel 13 and React 19 starter with accounts, roles and permissions, an admin area, and a task board. Change this page in the Visual editor.',
+                'text' => 'A Laravel 13 and React 19 starter with accounts, roles and permissions, an admin area, and a task board. Change this page in the Visual Editor.',
                 'button_label' => 'Get started',
                 'button_url' => '/register',
                 'image' => '',
@@ -81,7 +81,7 @@ final class LandingPresets
                     ['title' => 'Admin area', 'text' => 'Manage users, roles, permissions, the audit log, and app settings.', 'icon' => 'settings'],
                     ['title' => 'Task board', 'text' => 'A sample feature with drag-and-drop ordering that is saved for each user.', 'icon' => 'layers'],
                     ['title' => 'Two languages', 'text' => 'English and German, with light and dark mode.', 'icon' => 'globe'],
-                    ['title' => 'Visual editor', 'text' => 'Build this page from blocks, then preview and publish it.', 'icon' => 'palette'],
+                    ['title' => 'Visual Editor', 'text' => 'Build this page from blocks, then preview and publish it.', 'icon' => 'palette'],
                 ],
             ], ['variant' => 0]),
             self::block('default-stats', 'stats', [
@@ -95,7 +95,7 @@ final class LandingPresets
             self::block('default-faq', 'faq', [
                 'title' => 'Questions',
                 'items' => [
-                    ['question' => 'How do I change what visitors see?', 'answer' => 'Open the Visual editor, change the blocks, and save a draft. Preview shows the draft, and Publish makes it live.'],
+                    ['question' => 'How do I change what visitors see?', 'answer' => 'Open the Visual Editor, change the blocks, and save a draft. Preview shows the draft, and Publish makes it live.'],
                     ['question' => 'Can I turn this page off?', 'answer' => 'Yes. In Admin settings, switch off Show the landing page. Guests then go to sign in, and signed-in users go to the dashboard.'],
                     ['question' => 'Can I add more sections?', 'answer' => 'Yes. Add any block from the palette, in any order. A page can hold up to 40 blocks.'],
                 ],

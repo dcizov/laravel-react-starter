@@ -3,6 +3,7 @@
 // In the visual editor the desktop layout is always shown, so every link stays editable at any width.
 import { Menu, X } from 'lucide-react';
 import { use } from 'react';
+import { AccountLinks, AccountMenu } from '@/components/landing/account-menu';
 import type { BlockData, NavLinkItem } from '@/components/landing/block-types';
 import {
     EditableText,
@@ -116,7 +117,10 @@ export function NavbarBlock({
                         />
                     </summary>
                     <div className="flex flex-col gap-4 pt-4">
-                        <nav className="flex flex-col gap-3">{links}</nav>
+                        <nav className="flex flex-col gap-3">
+                            {links}
+                            <AccountLinks />
+                        </nav>
                         {button}
                     </div>
                 </details>
@@ -141,7 +145,10 @@ export function NavbarBlock({
                 >
                     {links}
                 </nav>
-                {button && <div className="flex">{button}</div>}
+                <div className="flex items-center gap-4">
+                    {button}
+                    <AccountMenu />
+                </div>
             </div>
         </div>
     );

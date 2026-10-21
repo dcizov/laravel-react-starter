@@ -45,7 +45,8 @@ test('the home page shows the default landing page when it is switched on', func
         ->assertInertia(fn ($page) => $page
             ->component('welcome')
             ->where('preview', false)
-            ->where('blocks.0.type', 'hero')
+            ->where('blocks.0.type', 'navbar')
+            ->where('blocks.1.type', 'hero')
             ->where('theme.font', 'sans'));
 });
 
@@ -219,11 +220,12 @@ test('the new section types reject unsafe links and too many items', function ()
     ]))->toThrow(ValidationException::class);
 });
 
-test('the default page uses the section types and starts with a hero', function () {
+test('the default page uses the section types, with a navigation bar and then a hero', function () {
     $types = array_column(LandingBlocks::defaults(), 'type');
 
     expect($types)->toContain('logos', 'features', 'stats', 'faq', 'cta')
-        ->and($types[0])->toBe('hero');
+        ->and($types[0])->toBe('navbar')
+        ->and($types[1])->toBe('hero');
 });
 
 test('the visual editor is only offered while the landing page is switched on', function () {

@@ -99,6 +99,26 @@ final class LandingBlocks
             }
         }
 
+        // Checked here rather than with 'distinct' alone, so every duplicate is reported on its own key.
+        $seen = [];
+        $duplicates = [];
+
+        foreach ($blocks as $index => $block) {
+            $id = is_array($block) ? ($block['id'] ?? null) : null;
+
+            if (is_string($id) && $id !== '') {
+                if (isset($seen[$id])) {
+                    $duplicates["blocks.$index.id"] = [__('Each block needs its own id.')];
+                }
+
+                $seen[$id] = true;
+            }
+        }
+
+        if ($duplicates !== []) {
+            throw ValidationException::withMessages($duplicates);
+        }
+
         $validated = Validator::make(['blocks' => $blocks], $rules)->validate()['blocks'];
 
         return array_values(array_map(function (array $block): array {
