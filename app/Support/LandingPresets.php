@@ -26,14 +26,14 @@ final class LandingPresets
                 'key' => 'launch',
                 'label' => __('Product launch'),
                 'description' => __('Split hero, feature list, and a highlighted price.'),
-                'blocks' => self::launch(),
+                'blocks' => self::frame(self::launch(), 'Acme', 0, 2, 'Ship faster with a page that is ready on day one.'),
                 'theme' => self::oceanTheme(),
             ],
             [
                 'key' => 'agency',
                 'label' => __('Agency'),
                 'description' => __('Editorial type, quotes in a wall, and a quiet call to action.'),
-                'blocks' => self::agency(),
+                'blocks' => self::frame(self::agency(), 'Studio North', 2, 1, 'Design and strategy for companies that care about the details.'),
                 'theme' => self::editorialTheme(),
             ],
         ];
@@ -46,6 +46,14 @@ final class LandingPresets
      */
     public static function starter(): array
     {
+        return self::frame(self::starterSections(), 'Laravel Starter', 0, 0, 'A starter kit for Laravel and React.');
+    }
+
+    /**
+     * @return list<array{id: string, type: string, data: array<string, mixed>, style?: array<string, mixed>}>
+     */
+    private static function starterSections(): array
+    {
         return [
             self::block('default-hero', 'hero', [
                 'title' => 'Start building your Laravel app today',
@@ -53,7 +61,7 @@ final class LandingPresets
                 'button_label' => 'Get started',
                 'button_url' => '/register',
                 'image' => '',
-            ], ['variant' => 0, 'padding' => 'lg']),
+            ], ['variant' => 0, 'padding' => 'lg', 'text_effect' => 'words']),
             self::block('default-logos', 'logos', [
                 'title' => 'Built with',
                 'items' => [
@@ -113,7 +121,7 @@ final class LandingPresets
                 'button_label' => 'Start free trial',
                 'button_url' => '/register',
                 'image' => '',
-            ], ['variant' => 1, 'padding' => 'lg']),
+            ], ['variant' => 1, 'padding' => 'lg', 'text_effect' => 'words']),
             self::block('launch-logos', 'logos', [
                 'title' => 'Trusted by teams at',
                 'items' => [['name' => 'Acme'], ['name' => 'Northwind'], ['name' => 'Globex'], ['name' => 'Initech']],
@@ -169,7 +177,7 @@ final class LandingPresets
                 'button_label' => 'Tell us about your project',
                 'button_url' => '/register',
                 'image' => '',
-            ], ['variant' => 2, 'padding' => 'xl']),
+            ], ['variant' => 2, 'padding' => 'xl', 'text_effect' => 'words']),
             self::block('agency-text', 'text', [
                 'heading' => 'About us',
                 'body' => "We work with a few clients at a time, so every project gets our full attention.\nWe start with the goal, then shape the design and the build around it.",
@@ -235,6 +243,57 @@ final class LandingPresets
             'font' => 'serif',
             'text_size' => 'lg',
         ];
+    }
+
+    /**
+     * Adds a navigation bar above and a footer below the sections. The bar links to the sections that exist on
+     * the page, so none of them point at a missing anchor.
+     *
+     * @param  list<array{id: string, type: string, data: array<string, mixed>, style?: array<string, mixed>}>  $sections
+     * @return list<array{id: string, type: string, data: array<string, mixed>, style?: array<string, mixed>}>
+     */
+    private static function frame(array $sections, string $brand, int $navVariant, int $footerVariant, string $tagline): array
+    {
+        $present = array_column($sections, 'type');
+        $names = [
+            'features' => __('Features'),
+            'stats' => __('Results'),
+            'testimonials' => __('Stories'),
+            'pricing' => __('Pricing'),
+            'faq' => __('FAQ'),
+        ];
+
+        $links = [];
+
+        foreach ($names as $type => $label) {
+            if (in_array($type, $present, true)) {
+                $links[] = ['label' => $label, 'url' => '#'.$type];
+            }
+        }
+
+        $links = array_slice($links, 0, 5);
+
+        $navbar = self::block('nav-main', 'navbar', [
+            'brand' => $brand,
+            'items' => $links,
+            'button_label' => __('Get started'),
+            'button_url' => '/register',
+        ], ['variant' => $navVariant]);
+
+        $footer = self::block('footer-main', 'footer', [
+            'brand' => $brand,
+            'text' => $tagline,
+            'columns' => [
+                ['title' => __('Page'), 'links' => $links],
+                ['title' => __('Account'), 'links' => [
+                    ['label' => __('Log in'), 'url' => '/login'],
+                    ['label' => __('Register'), 'url' => '/register'],
+                ]],
+            ],
+            'copyright' => '© '.date('Y').' '.$brand.'. '.__('All rights reserved.'),
+        ], ['variant' => $footerVariant]);
+
+        return [$navbar, ...$sections, $footer];
     }
 
     /**

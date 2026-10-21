@@ -18,6 +18,7 @@ final class LandingBlocks
     public const TYPES = [
         'hero', 'features', 'text', 'image', 'button',
         'logos', 'stats', 'testimonials', 'pricing', 'faq', 'cta',
+        'navbar', 'footer',
     ];
 
     public const MAX_BLOCKS = 40;
@@ -159,6 +160,7 @@ final class LandingBlocks
             'heading_size' => ['nullable', Rule::in(['sm', 'md', 'lg', 'xl'])],
             'font' => ['nullable', Rule::in(['theme', 'serif', 'mono'])],
             'animation' => ['nullable', Rule::in(['none', 'fade-up', 'fade-in', 'zoom-in', 'slide-right'])],
+            'text_effect' => ['nullable', Rule::in(['none', 'words'])],
         ];
     }
 
@@ -232,6 +234,24 @@ final class LandingBlocks
                 'items.*.question' => ['required', 'string', 'max:200'],
                 'items.*.answer' => ['nullable', 'string', 'max:1000'],
             ],
+            'navbar' => [
+                'brand' => ['required', 'string', 'max:40'],
+                'items' => ['present', 'array', 'max:6'],
+                'items.*.label' => ['required', 'string', 'max:40'],
+                'items.*.url' => ['required', 'string', 'max:500', self::safeUrl()],
+                'button_label' => ['nullable', 'string', 'max:40'],
+                'button_url' => ['nullable', 'string', 'max:500', self::safeUrl()],
+            ],
+            'footer' => [
+                'brand' => ['nullable', 'string', 'max:40'],
+                'text' => ['nullable', 'string', 'max:300'],
+                'columns' => ['present', 'array', 'max:4'],
+                'columns.*.title' => ['required', 'string', 'max:40'],
+                'columns.*.links' => ['present', 'array', 'max:6'],
+                'columns.*.links.*.label' => ['required', 'string', 'max:40'],
+                'columns.*.links.*.url' => ['required', 'string', 'max:500', self::safeUrl()],
+                'copyright' => ['nullable', 'string', 'max:160'],
+            ],
             'cta' => [
                 'title' => ['required', 'string', 'max:120'],
                 'text' => ['nullable', 'string', 'max:300'],
@@ -243,7 +263,7 @@ final class LandingBlocks
     }
 
     /**
-     * Allows https and http links, and paths on this site such as /storage/landing/a.png.
+     * Allows https and http links, paths on this site such as /storage/landing/a.png, and #anchors on the page.
      * Rejects javascript:, data:, and protocol-relative links (//example.com).
      */
     private static function safeUrl(): Closure
@@ -253,7 +273,7 @@ final class LandingBlocks
                 return;
             }
 
-            if (! is_string($value) || preg_match('#^(https?://[^\s]+|/(?!/)[^\s]*)$#i', $value) !== 1) {
+            if (! is_string($value) || preg_match('#^(https?://[^\s]+|/(?!/)[^\s]*|\#[A-Za-z0-9_-]{0,80})$#i', $value) !== 1) {
                 $fail(__('Use a full http or https link, or a path starting with /.'));
             }
         };

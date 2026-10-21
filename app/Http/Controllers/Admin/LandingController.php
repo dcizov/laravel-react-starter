@@ -24,8 +24,6 @@ class LandingController extends Controller
         return Inertia::render('admin/landing', [
             'draft' => $this->draftOf($settings),
             'theme' => $this->themeDraftOf($settings),
-            'published' => $settings->landing_published ?? LandingBlocks::defaults(),
-            'hasDraft' => $settings->landing_draft !== null,
             'blockTypes' => LandingBlocks::TYPES,
             'presets' => $this->presets(),
         ]);

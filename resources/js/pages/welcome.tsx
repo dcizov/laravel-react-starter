@@ -5,6 +5,7 @@ import type { LandingTheme } from '@/components/landing/theme';
 import { themeStyle } from '@/components/landing/theme';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
+import { cn } from '@/lib/utils';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
 import { dashboard, login, register } from '@/routes';
 
@@ -21,6 +22,8 @@ export default function Welcome({
 }) {
     const t = useTrans();
     const { auth } = usePage().props;
+    // A navigation bar block has its own place for sign-in links, so the default header is left out.
+    const hasNavbar = blocks.some((block) => block.type === 'navbar');
 
     return (
         <>
@@ -50,38 +53,46 @@ export default function Welcome({
                     </div>
                 )}
 
-                <header className="flex items-center justify-end gap-2 p-4 md:p-6">
-                    {auth.user ? (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            render={<Link href={dashboard()} />}
-                            nativeButton={false}
-                        >
-                            {t('Dashboard')}
-                        </Button>
-                    ) : (
-                        <>
+                {!hasNavbar && (
+                    <header className="flex items-center justify-end gap-2 p-4 md:p-6">
+                        {auth.user ? (
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                render={<Link href={login()} />}
+                                render={<Link href={dashboard()} />}
                                 nativeButton={false}
                             >
-                                {t('Log in')}
+                                {t('Dashboard')}
                             </Button>
-                            <Button
-                                size="sm"
-                                render={<Link href={register()} />}
-                                nativeButton={false}
-                            >
-                                {t('Register')}
-                            </Button>
-                        </>
-                    )}
-                </header>
+                        ) : (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    render={<Link href={login()} />}
+                                    nativeButton={false}
+                                >
+                                    {t('Log in')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    render={<Link href={register()} />}
+                                    nativeButton={false}
+                                >
+                                    {t('Register')}
+                                </Button>
+                            </>
+                        )}
+                    </header>
+                )}
 
-                <main className="flex w-full flex-1 flex-col pb-16">
+                <main
+                    className={cn(
+                        'flex w-full flex-1 flex-col',
+                        !blocks.some((block) => block.type === 'footer') &&
+                            'pb-16',
+                    )}
+                >
                     {blocks.map((block) => (
                         <RenderBlock key={block.id} block={block} />
                     ))}

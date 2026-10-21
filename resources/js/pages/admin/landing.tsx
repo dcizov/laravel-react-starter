@@ -176,8 +176,6 @@ export default function LandingEditor({
     draft: LandingBlock[];
     theme: LandingTheme;
     presets: Preset[];
-    published: LandingBlock[];
-    hasDraft: boolean;
     blockTypes: BlockType[];
 }) {
     const t = useTrans();

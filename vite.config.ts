@@ -37,6 +37,7 @@ export default defineConfig({
                 '@base-ui/react/avatar',
                 '@base-ui/react/button',
                 '@base-ui/react/checkbox',
+                'motion/react',
                 '@base-ui/react/collapsible',
                 '@base-ui/react/dialog',
                 '@base-ui/react/input',

@@ -5,6 +5,7 @@ import {
     FEATURE_ICONS,
     MAX_FEATURE_ITEMS,
     MAX_ITEMS,
+    MAX_LINKS,
 } from '@/components/landing/block-types';
 import type { LandingBlock } from '@/components/landing/block-types';
 import { Button } from '@/components/ui/button';
@@ -464,6 +465,169 @@ export function BlockFields({
                     />
                 </FieldGroup>
             );
+
+        case 'navbar':
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="brand"
+                        label={t('Brand name')}
+                        value={block.data.brand}
+                        max={40}
+                        onChange={(value) => set({ brand: value })}
+                    />
+                    <ItemList
+                        idPrefix={block.id}
+                        items={block.data.items}
+                        fields={[
+                            { key: 'label', label: t('Link text'), max: 40 },
+                            {
+                                key: 'url',
+                                label: t('Link'),
+                                hint: t(
+                                    '#features for a section, or a path such as /register',
+                                ),
+                                max: 500,
+                            },
+                        ]}
+                        newItem={{ label: t('Link'), url: '#' }}
+                        max={MAX_ITEMS.navbar ?? 6}
+                        addLabel={t('Add link')}
+                        onChange={(items) => set({ items })}
+                    />
+                    <TextField
+                        id="button_label"
+                        label={t('Button text')}
+                        value={block.data.button_label}
+                        max={40}
+                        onChange={(value) => set({ button_label: value })}
+                    />
+                    <TextField
+                        id="button_url"
+                        label={t('Button link')}
+                        hint={t('https://… or a path such as /register')}
+                        value={block.data.button_url}
+                        max={500}
+                        onChange={(value) => set({ button_url: value })}
+                    />
+                </FieldGroup>
+            );
+
+        case 'footer': {
+            const columns = block.data.columns;
+            const setColumn = (
+                index: number,
+                patch: Partial<(typeof columns)[number]>,
+            ) =>
+                set({
+                    columns: columns.map((column, i) =>
+                        i === index ? { ...column, ...patch } : column,
+                    ),
+                });
+
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="brand"
+                        label={t('Brand name')}
+                        value={block.data.brand}
+                        max={40}
+                        onChange={(value) => set({ brand: value })}
+                    />
+                    <TextField
+                        id="text"
+                        label={t('Text')}
+                        value={block.data.text}
+                        max={300}
+                        multiline
+                        onChange={(value) => set({ text: value })}
+                    />
+                    {columns.map((column, index) => (
+                        <div
+                            // Columns have no id in the saved data, so the position is the key.
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-2 rounded-md border p-3"
+                        >
+                            <TextField
+                                id={`${block.id}-column-${index}`}
+                                label={t('Column heading')}
+                                value={column.title}
+                                max={40}
+                                onChange={(value) =>
+                                    setColumn(index, { title: value })
+                                }
+                            />
+                            <ItemList
+                                idPrefix={`${block.id}-${index}`}
+                                items={column.links}
+                                fields={[
+                                    {
+                                        key: 'label',
+                                        label: t('Link text'),
+                                        max: 40,
+                                    },
+                                    { key: 'url', label: t('Link'), max: 500 },
+                                ]}
+                                newItem={{ label: t('Link'), url: '/' }}
+                                max={MAX_LINKS}
+                                addLabel={t('Add link')}
+                                onChange={(links) =>
+                                    setColumn(index, {
+                                        links: links.map((link) => ({
+                                            label: link.label ?? '',
+                                            url: link.url ?? '',
+                                        })),
+                                    })
+                                }
+                            />
+                            <div>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={columns.length <= 1}
+                                    onClick={() =>
+                                        set({
+                                            columns: columns.filter(
+                                                (_, i) => i !== index,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    {t('Remove column')}
+                                </Button>
+                            </div>
+                        </div>
+                    ))}
+                    <div>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={columns.length >= (MAX_ITEMS.footer ?? 4)}
+                            onClick={() =>
+                                set({
+                                    columns: [
+                                        ...columns,
+                                        { title: t('Column'), links: [] },
+                                    ],
+                                })
+                            }
+                        >
+                            {t('Add column')}
+                        </Button>
+                    </div>
+                    <TextField
+                        id="copyright"
+                        label={t('Copyright line')}
+                        value={block.data.copyright}
+                        max={160}
+                        onChange={(value) => set({ copyright: value })}
+                    />
+                </FieldGroup>
+            );
+        }
 
         case 'cta':
             return (

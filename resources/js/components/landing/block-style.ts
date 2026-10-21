@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react';
 import type {
     Align,
-    Animation,
     FontChoice,
     HeadingSize,
     Padding,
@@ -92,22 +91,4 @@ export function alignClass(align: Align): string {
     return align === 'left'
         ? 'items-start text-left'
         : 'items-center text-center';
-}
-
-// The entrance animation. Hidden states only apply when the visitor has not asked for reduced motion.
-const ANIMATION_HIDDEN: Record<Exclude<Animation, 'none'>, string> = {
-    'fade-up': 'motion-safe:translate-y-8 motion-safe:opacity-0',
-    'fade-in': 'motion-safe:opacity-0',
-    'zoom-in': 'motion-safe:scale-95 motion-safe:opacity-0',
-    'slide-right': 'motion-safe:-translate-x-10 motion-safe:opacity-0',
-};
-
-export function animationClass(animation: Animation, visible: boolean): string {
-    if (animation === 'none') {
-        return '';
-    }
-
-    return visible
-        ? 'motion-safe:transition-[opacity,translate,scale] motion-safe:duration-700 motion-safe:ease-out'
-        : `motion-safe:transition-[opacity,translate,scale] motion-safe:duration-700 ${ANIMATION_HIDDEN[animation]}`;
 }

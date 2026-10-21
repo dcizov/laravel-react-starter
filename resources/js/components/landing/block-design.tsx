@@ -7,6 +7,7 @@ import {
     HEADING_LABELS,
     PADDING_LABELS,
     resolveStyle,
+    TEXT_EFFECT_LABELS,
     VARIANT_NAMES,
     variantCount,
     WIDTH_LABELS,
@@ -19,6 +20,7 @@ import type {
     HeadingSize,
     LandingBlock,
     Padding,
+    TextEffect,
     Width,
 } from '@/components/landing/block-types';
 import { Button } from '@/components/ui/button';
@@ -205,11 +207,24 @@ export function BlockDesign({
                 id={`${id}-animation`}
                 label={t('Entrance animation')}
                 hint={t(
-                    'Animations are skipped for visitors who ask for less motion.',
+                    'Plays on the public page and in the preview. Skipped for visitors who ask for less motion.',
                 )}
                 value={style.animation}
                 onChange={(value) => set({ animation: value as Animation })}
                 options={Object.entries(ANIMATION_LABELS).map(
+                    ([value, label]) => [value, t(label)],
+                )}
+            />
+
+            <SelectField
+                id={`${id}-text-effect`}
+                label={t('Heading effect')}
+                hint={t(
+                    'Headings reveal one word at a time on the public page.',
+                )}
+                value={style.text_effect}
+                onChange={(value) => set({ text_effect: value as TextEffect })}
+                options={Object.entries(TEXT_EFFECT_LABELS).map(
                     ([value, label]) => [value, t(label)],
                 )}
             />

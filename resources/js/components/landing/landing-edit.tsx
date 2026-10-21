@@ -1,3 +1,4 @@
+import { animate, motion, useInView, useReducedMotion } from 'motion/react';
 import { createContext, use, useEffect, useRef, useState } from 'react';
 import type {
     ClipboardEvent,
@@ -5,8 +6,7 @@ import type {
     KeyboardEvent,
     ReactNode,
 } from 'react';
-import { animationClass } from '@/components/landing/block-style';
-import type { Animation } from '@/components/landing/block-types';
+import type { Animation, TextEffect } from '@/components/landing/block-types';
 import { cn } from '@/lib/utils';
 
 // Only the visual editor provides this. On the public page it is null, so text is plain and nothing is editable.
@@ -16,6 +16,9 @@ export type EditBinding = {
 };
 
 export const LandingEditContext = createContext<EditBinding | null>(null);
+
+// The text effect of the block being drawn. BlockFrame provides it, and only public headings read it.
+export const TextEffectContext = createContext<TextEffect>('none');
 
 type Tags =
     | 'h1'
@@ -51,8 +54,17 @@ export function EditableText({
     max?: number;
 }) {
     const edit = use(LandingEditContext);
+    const textEffect = use(TextEffectContext);
 
     if (!edit || value === undefined) {
+        if (
+            value !== undefined &&
+            textEffect === 'words' &&
+            (Tag === 'h1' || Tag === 'h2' || Tag === 'h3')
+        ) {
+            return <WordReveal as={Tag} className={className} text={value} />;
+        }
+
         return <Tag className={className}>{value}</Tag>;
     }
 
@@ -120,8 +132,118 @@ export function EditableText({
     );
 }
 
-// Fades or slides a block in the first time it scrolls into view. The hidden state is only applied when
-// the visitor has not asked for reduced motion (the motion-safe: classes in block-style.ts).
+// Headings on the public page: each word blurs into place in turn. Screen readers get the whole sentence once.
+function WordReveal({
+    as: Tag,
+    className,
+    text,
+}: {
+    as: 'h1' | 'h2' | 'h3';
+    className?: string;
+    text: string;
+}) {
+    const reduce = useReducedMotion();
+
+    if (reduce) {
+        return <Tag className={className}>{text}</Tag>;
+    }
+
+    const words = text.split(' ');
+
+    return (
+        <Tag className={className}>
+            <span className="sr-only">{text}</span>
+            <span aria-hidden="true">
+                {words.map((word, index) => (
+                    <motion.span
+                        // Words can repeat, so the position is part of the key.
+                        // eslint-disable-next-line @eslint-react/no-array-index-key
+                        key={`${index}-${word}`}
+                        className="inline-block"
+                        initial={{ opacity: 0, filter: 'blur(8px)', y: 6 }}
+                        whileInView={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{
+                            duration: 0.5,
+                            delay: index * 0.07,
+                            ease: 'easeOut',
+                        }}
+                    >
+                        {word}
+                        {index < words.length - 1 ? '\u00A0' : ''}
+                    </motion.span>
+                ))}
+            </span>
+        </Tag>
+    );
+}
+
+// A number that counts up when it scrolls into view. Public page only; the editor shows the typed value.
+// The text is kept in state, so React never has to fight with a text node it did not create.
+export function AnimatedNumber({
+    value,
+    className,
+}: {
+    value: string;
+    className?: string;
+}) {
+    const reduce = useReducedMotion();
+    const ref = useRef<HTMLParagraphElement>(null);
+    const inView = useInView(ref, { once: true, amount: 0.6 });
+    const [text, setText] = useState(value);
+
+    useEffect(() => {
+        const match = /^(\D*)(\d[\d,]*(?:\.\d+)?)(.*)$/.exec(value);
+
+        if (!match || !inView || reduce) {
+            setText(value);
+
+            return;
+        }
+
+        const [, prefix = '', digits = '', suffix = ''] = match;
+        const target = Number(digits.replace(/,/g, ''));
+        const decimals = digits.includes('.')
+            ? (digits.split('.')[1]?.length ?? 0)
+            : 0;
+        const grouped = digits.includes(',');
+        const format = (n: number) =>
+            grouped
+                ? n.toLocaleString('en-US', {
+                      minimumFractionDigits: decimals,
+                      maximumFractionDigits: decimals,
+                  })
+                : n.toFixed(decimals);
+
+        const controls = animate(0, target, {
+            duration: 1.4,
+            ease: 'easeOut',
+            onUpdate: (latest) => setText(prefix + format(latest) + suffix),
+            onComplete: () => setText(value),
+        });
+
+        return () => controls.stop();
+    }, [inView, reduce, value]);
+
+    return (
+        <p ref={ref} className={className}>
+            {text}
+        </p>
+    );
+}
+
+// Fades, slides, or zooms a block in the first time it scrolls into view (motion's whileInView).
+// Off in the editor, so the canvas always shows the real content, and off for reduced motion.
+const REVEAL_FROM: Record<
+    Exclude<Animation, 'none'>,
+    { opacity: number; x?: number; y?: number; scale?: number }
+> = {
+    'fade-up': { opacity: 0, y: 32 },
+    'fade-in': { opacity: 0 },
+    'zoom-in': { opacity: 0, scale: 0.95 },
+    'slide-right': { opacity: 0, x: -40 },
+};
+
 export function Reveal({
     animation,
     className,
@@ -131,45 +253,22 @@ export function Reveal({
     className?: string;
     children: ReactNode;
 }) {
-    const ref = useRef<HTMLDivElement>(null);
-    // Starts hidden on the server and in the first render too, so the markup matches on both sides.
-    const [seen, setSeen] = useState(false);
+    const reduce = useReducedMotion();
+    const edit = use(LandingEditContext);
 
-    useEffect(() => {
-        const element = ref.current;
-
-        if (animation === 'none' || !element) {
-            return;
-        }
-
-        // Without IntersectionObserver the block is simply shown.
-        if (typeof IntersectionObserver === 'undefined') {
-            setSeen(true);
-
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry?.isIntersecting) {
-                    setSeen(true);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.12 },
-        );
-
-        observer.observe(element);
-
-        return () => observer.disconnect();
-    }, [animation]);
+    if (animation === 'none' || reduce || edit) {
+        return <div className={className}>{children}</div>;
+    }
 
     return (
-        <div
-            ref={ref}
-            className={cn(animationClass(animation, seen), className)}
+        <motion.div
+            className={className}
+            initial={REVEAL_FROM[animation]}
+            whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+            viewport={{ once: true, amount: 0.12 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
         >
             {children}
-        </div>
+        </motion.div>
     );
 }

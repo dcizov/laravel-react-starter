@@ -1,8 +1,9 @@
 // Marketing sections for the landing page: logo row, statistics, testimonials, pricing, and FAQ.
-// Each one has three layouts, chosen by the block's variant. The layouts are written for this app;
-// they follow common patterns in free shadcn landing templates and do not copy their code.
+// Each one comes in three layouts, picked by the block's variant. The layouts are original to this app,
+// built from plain Tailwind and the app's own UI components.
 // Text is always plain text, so nothing an admin types can add markup.
-import { Check, PlusIcon, Quote } from 'lucide-react';
+import { Check, Quote } from 'lucide-react';
+import { use } from 'react';
 import { TITLE_SECTION } from '@/components/landing/block-style';
 import type {
     BlockData,
@@ -12,14 +13,12 @@ import type {
     StatItem,
     TestimonialItem,
 } from '@/components/landing/block-types';
-import { EditableText } from '@/components/landing/landing-edit';
-import { LinkButton } from '@/components/landing/link-button';
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
+    AnimatedNumber,
+    EditableText,
+    LandingEditContext,
+} from '@/components/landing/landing-edit';
+import { LinkButton } from '@/components/landing/link-button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -134,6 +133,34 @@ export function LogosBlock({
     );
 }
 
+// In the editor the value is typed. On the public page it counts up when it scrolls into view.
+function StatValue({
+    path,
+    value,
+    className,
+}: {
+    path: string;
+    value: string;
+    className: string;
+}) {
+    const edit = use(LandingEditContext);
+
+    if (edit) {
+        return (
+            <EditableText
+                as="p"
+                path={path}
+                value={value}
+                required
+                max={20}
+                className={className}
+            />
+        );
+    }
+
+    return <AnimatedNumber value={value} className={className} />;
+}
+
 export function StatsBlock({
     data,
     variant,
@@ -149,12 +176,9 @@ export function StatsBlock({
                 className,
             )}
         >
-            <EditableText
-                as="p"
+            <StatValue
                 path={`items.${index}.value`}
                 value={item.value}
-                required
-                max={20}
                 className="bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-5xl font-semibold tracking-tight text-transparent"
             />
             <EditableText
@@ -494,6 +518,7 @@ export function PricingBlock({
                                     variant={plan.badge ? 'default' : 'outline'}
                                     href={plan.button_url}
                                     label={plan.button_label}
+                                    labelPath={`items.${index}.button_label`}
                                 />
                             )}
                         </div>
@@ -555,6 +580,68 @@ export function PricingBlock({
     );
 }
 
+// One question and answer. A native <details> needs no script, and its summary holds the editable question.
+// In the editor the item stays open and clicks on the question do not collapse it.
+function FaqEntry({
+    item,
+    index,
+    className,
+}: {
+    item: FaqItem;
+    index: number;
+    className: string;
+}) {
+    const edit = use(LandingEditContext);
+
+    return (
+        <details
+            className={cn('group', className)}
+            open={edit ? true : undefined}
+        >
+            <summary
+                className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-medium [&::-webkit-details-marker]:hidden"
+                onClick={(event) => {
+                    if (edit) {
+                        event.preventDefault();
+                    }
+                }}
+            >
+                <EditableText
+                    as="span"
+                    path={`items.${index}.question`}
+                    value={item.question}
+                    required
+                    max={200}
+                />
+                <PlusGlyph />
+            </summary>
+            {item.answer && (
+                <EditableText
+                    as="p"
+                    path={`items.${index}.answer`}
+                    value={item.answer}
+                    multiline
+                    max={1000}
+                    className="pt-3 text-muted-foreground"
+                />
+            )}
+        </details>
+    );
+}
+
+// A plus sign that turns into a cross while the entry is open.
+function PlusGlyph() {
+    return (
+        <span
+            aria-hidden="true"
+            className="relative size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-45"
+        >
+            <span className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-current" />
+            <span className="absolute top-0 left-1/2 h-full w-px -translate-x-1/2 bg-current" />
+        </span>
+    );
+}
+
 export function FaqBlock({
     data,
     variant,
@@ -566,34 +653,17 @@ export function FaqBlock({
         return (
             <div className="flex w-full flex-col gap-8">
                 <SectionTitle path="title" value={data.title} />
-                <dl className="mx-auto flex w-full max-w-3xl flex-col divide-y">
+                <div className="mx-auto flex w-full max-w-3xl flex-col divide-y">
                     {data.items.map((item: FaqItem, index: number) => (
-                        <div
+                        <FaqEntry
                             // eslint-disable-next-line @eslint-react/no-array-index-key
                             key={index}
-                            className="flex flex-col gap-2 py-6 text-left"
-                        >
-                            <EditableText
-                                as="dt"
-                                path={`items.${index}.question`}
-                                value={item.question}
-                                required
-                                max={200}
-                                className="text-base font-medium"
-                            />
-                            {item.answer && (
-                                <EditableText
-                                    as="dd"
-                                    path={`items.${index}.answer`}
-                                    value={item.answer}
-                                    multiline
-                                    max={1000}
-                                    className="text-muted-foreground"
-                                />
-                            )}
-                        </div>
+                            item={item}
+                            index={index}
+                            className="py-5"
+                        />
                     ))}
-                </dl>
+                </div>
             </div>
         );
     }
@@ -604,60 +674,33 @@ export function FaqBlock({
                 <SectionTitle path="title" value={data.title} />
                 <div className="grid w-full gap-4 md:grid-cols-2">
                     {data.items.map((item: FaqItem, index: number) => (
-                        <div
+                        <FaqEntry
                             // eslint-disable-next-line @eslint-react/no-array-index-key
                             key={index}
-                            className="flex flex-col gap-3 rounded-2xl border bg-card p-6 text-left"
-                        >
-                            <EditableText
-                                as="h3"
-                                path={`items.${index}.question`}
-                                value={item.question}
-                                required
-                                max={200}
-                                className="font-medium"
-                            />
-                            {item.answer && (
-                                <EditableText
-                                    as="p"
-                                    path={`items.${index}.answer`}
-                                    value={item.answer}
-                                    multiline
-                                    max={1000}
-                                    className="text-sm text-muted-foreground"
-                                />
-                            )}
-                        </div>
+                            item={item}
+                            index={index}
+                            className="rounded-2xl border bg-card p-6 text-left"
+                        />
                     ))}
                 </div>
             </div>
         );
     }
 
-    // The accordion keeps its questions as plain text: a text field cannot sit inside the accordion button.
     return (
         <div className="flex w-full flex-col gap-8">
             <SectionTitle path="title" value={data.title} />
-            <Accordion className="mx-auto flex w-full max-w-3xl flex-col gap-3">
+            <div className="mx-auto flex w-full max-w-3xl flex-col gap-3">
                 {data.items.map((item: FaqItem, index: number) => (
-                    <AccordionItem
+                    <FaqEntry
                         // eslint-disable-next-line @eslint-react/no-array-index-key
                         key={index}
-                        value={`item-${index}`}
-                        className="rounded-2xl border bg-card px-5"
-                    >
-                        <AccordionTrigger className="py-4 text-left text-base font-medium hover:no-underline [&_svg[data-slot=accordion-trigger-icon]]:!hidden">
-                            {item.question}
-                            <PlusIcon className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-aria-expanded/accordion-trigger:rotate-45" />
-                        </AccordionTrigger>
-                        {item.answer && (
-                            <AccordionContent className="pb-4 text-muted-foreground">
-                                {item.answer}
-                            </AccordionContent>
-                        )}
-                    </AccordionItem>
+                        item={item}
+                        index={index}
+                        className="rounded-2xl border bg-card px-5 py-1"
+                    />
                 ))}
-            </Accordion>
+            </div>
         </div>
     );
 }

@@ -13,7 +13,11 @@ import type {
     ResolvedStyle,
 } from '@/components/landing/block-types';
 import { FEATURE_ICONS, resolveStyle } from '@/components/landing/block-types';
-import { EditableText, Reveal } from '@/components/landing/landing-edit';
+import {
+    EditableText,
+    Reveal,
+    TextEffectContext,
+} from '@/components/landing/landing-edit';
 import { LinkButton } from '@/components/landing/link-button';
 import {
     FaqBlock,
@@ -22,6 +26,7 @@ import {
     StatsBlock,
     TestimonialsBlock,
 } from '@/components/landing/marketing-blocks';
+import { FooterBlock, NavbarBlock } from '@/components/landing/site-blocks';
 import { cn } from '@/lib/utils';
 
 // Draws one block. Used on the public page, the preview, and the editor canvas, so they always match.
@@ -29,29 +34,35 @@ import { cn } from '@/lib/utils';
 
 // Every block sits in a full-width section, which takes the background and the entrance animation.
 // Its content is kept to the chosen width and padding.
+// The id is the block type, so a navbar link such as "#features" scrolls to the features block.
 export function BlockFrame({
     style,
+    id,
     children,
 }: {
     style: ResolvedStyle;
+    id?: string;
     children: ReactNode;
 }) {
     return (
         <Reveal animation={style.animation} className="w-full">
             <section
-                className="relative w-full overflow-hidden"
+                id={id}
+                className="relative w-full scroll-mt-16 overflow-hidden"
                 style={sectionStyle(style)}
             >
-                <div
-                    className={cn(
-                        'mx-auto flex w-full flex-col gap-8 px-4 md:px-8',
-                        WIDTH_CLASSES[style.width],
-                        PADDING_CLASSES[style.padding],
-                        alignClass(style.align),
-                    )}
-                >
-                    {children}
-                </div>
+                <TextEffectContext value={style.text_effect}>
+                    <div
+                        className={cn(
+                            'mx-auto flex w-full flex-col gap-8 px-4 md:px-8',
+                            WIDTH_CLASSES[style.width],
+                            PADDING_CLASSES[style.padding],
+                            alignClass(style.align),
+                        )}
+                    >
+                        {children}
+                    </div>
+                </TextEffectContext>
             </section>
         </Reveal>
     );
@@ -60,7 +71,11 @@ export function BlockFrame({
 export function RenderBlock({ block }: { block: LandingBlock }) {
     const style = resolveStyle(block);
 
-    return <BlockFrame style={style}>{renderContent(block, style)}</BlockFrame>;
+    return (
+        <BlockFrame style={style} id={block.type}>
+            {renderContent(block, style)}
+        </BlockFrame>
+    );
 }
 
 function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
@@ -74,6 +89,7 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
                     <LinkButton
                         size="lg"
                         href={data.button_url}
+                        labelPath="button_label"
                         label={data.button_label}
                     />
                 ) : null;
@@ -246,6 +262,12 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
         case 'cta':
             return <CtaBlock data={block.data} variant={style.variant} />;
 
+        case 'navbar':
+            return <NavbarBlock data={block.data} variant={style.variant} />;
+
+        case 'footer':
+            return <FooterBlock data={block.data} variant={style.variant} />;
+
         case 'button':
             return block.data.label && block.data.url ? (
                 <div
@@ -259,6 +281,7 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
                     <LinkButton
                         size="lg"
                         href={block.data.url}
+                        labelPath="label"
                         label={block.data.label}
                     />
                 </div>
@@ -492,6 +515,7 @@ function CtaBlock({
                 size="lg"
                 variant={variant === 0 ? 'secondary' : 'default'}
                 href={data.button_url}
+                labelPath="button_label"
                 label={data.button_label}
             />
         ) : null;

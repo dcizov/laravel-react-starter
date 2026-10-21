@@ -8,6 +8,8 @@ import {
     Layers,
     LayoutGrid,
     LockKeyhole,
+    PanelBottom,
+    PanelTop,
     Megaphone,
     MousePointerClick,
     Palette,
@@ -40,6 +42,8 @@ export type PricingItem = {
     button_url?: string;
 };
 export type FaqItem = { question: string; answer?: string };
+export type NavLinkItem = { label: string; url: string };
+export type FooterColumn = { title: string; links: NavLinkItem[] };
 
 export type BlockData = {
     hero: {
@@ -64,6 +68,18 @@ export type BlockData = {
         button_label?: string;
         button_url?: string;
     };
+    navbar: {
+        brand: string;
+        items: NavLinkItem[];
+        button_label?: string;
+        button_url?: string;
+    };
+    footer: {
+        brand?: string;
+        text?: string;
+        columns: FooterColumn[];
+        copyright?: string;
+    };
 };
 
 export type BlockType = keyof BlockData;
@@ -77,6 +93,7 @@ export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl';
 export type FontChoice = 'theme' | 'serif' | 'mono';
 export type Animation =
     'none' | 'fade-up' | 'fade-in' | 'zoom-in' | 'slide-right';
+export type TextEffect = 'none' | 'words';
 
 export type BlockStyle = Partial<{
     variant: number; // 0, 1, or 2. Each block type names its layouts in VARIANT_NAMES.
@@ -90,6 +107,7 @@ export type BlockStyle = Partial<{
     heading_size: HeadingSize;
     font: FontChoice;
     animation: Animation;
+    text_effect: TextEffect; // 'words' reveals headings one word at a time.
 }>;
 
 export type ResolvedStyle = Required<BlockStyle>;
@@ -106,6 +124,7 @@ export const DEFAULT_STYLE: ResolvedStyle = {
     heading_size: 'md',
     font: 'theme',
     animation: 'fade-up',
+    text_effect: 'none',
 };
 
 // Fills in the defaults for any setting the block does not store.
@@ -150,7 +169,14 @@ export const ANIMATION_LABELS: Record<Animation, string> = {
 };
 
 // The layouts each block type can use. The index is saved as style.variant.
+export const TEXT_EFFECT_LABELS: Record<TextEffect, string> = {
+    none: 'None',
+    words: 'Words, one by one',
+};
+
 export const VARIANT_NAMES: Record<BlockType, string[]> = {
+    navbar: ['Bar', 'Centred', 'Minimal'],
+    footer: ['Columns', 'Stacked', 'Bar'],
     hero: ['Centered', 'Split with image', 'Editorial'],
     logos: ['Grid', 'Row', 'Ruled'],
     features: ['Cards', 'List', 'Columns'],
@@ -183,6 +209,7 @@ export const blockTypes: {
     label: string;
     icon: LucideIcon;
 }[] = [
+    { type: 'navbar', label: 'Navigation bar', icon: PanelTop },
     { type: 'hero', label: 'Hero', icon: Sparkles },
     { type: 'logos', label: 'Logo row', icon: Building2 },
     { type: 'features', label: 'Features', icon: LayoutGrid },
@@ -194,6 +221,7 @@ export const blockTypes: {
     { type: 'text', label: 'Text', icon: Type },
     { type: 'image', label: 'Image', icon: ImageIcon },
     { type: 'button', label: 'Button', icon: MousePointerClick },
+    { type: 'footer', label: 'Footer', icon: PanelBottom },
 ];
 
 // The icons a feature can show. The key is what is saved; the server accepts only these keys.
@@ -292,6 +320,34 @@ const defaults: { [K in BlockType]: BlockData[K] } = {
     text: { heading: 'Heading', body: 'Write something here.' },
     image: { src: '', alt: '' },
     button: { label: 'Button', url: '' },
+    navbar: {
+        brand: 'Brand',
+        items: [
+            { label: 'Features', url: '#features' },
+            { label: 'Pricing', url: '#pricing' },
+            { label: 'FAQ', url: '#faq' },
+        ],
+        button_label: 'Get started',
+        button_url: '/register',
+    },
+    footer: {
+        brand: 'Brand',
+        text: 'A short line about what you do.',
+        columns: [
+            {
+                title: 'Product',
+                links: [
+                    { label: 'Features', url: '#features' },
+                    { label: 'Pricing', url: '#pricing' },
+                ],
+            },
+            {
+                title: 'Company',
+                links: [{ label: 'Contact', url: '/register' }],
+            },
+        ],
+        copyright: '© 2026 Brand. All rights reserved.',
+    },
 };
 
 export function createBlock(type: BlockType): LandingBlock {
@@ -354,4 +410,9 @@ export const MAX_ITEMS: Partial<Record<BlockType, number>> = {
     testimonials: 6,
     pricing: 4,
     faq: 10,
+    navbar: 6,
+    footer: 4,
 };
+
+// Links inside a navbar or footer column.
+export const MAX_LINKS = 6;

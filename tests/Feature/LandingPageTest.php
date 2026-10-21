@@ -305,6 +305,7 @@ test('style values must be from the allowed choices', function (string $field, m
     'overlay too dark' => ['bg_overlay', 95],
     'background image is javascript' => ['bg_image', 'javascript:alert(1)'],
     'unknown animation' => ['animation', 'spin'],
+    'unknown text effect' => ['text_effect', 'spin'],
 ]);
 
 test('the page theme keeps its fields and rejects bad values', function () {
@@ -370,4 +371,98 @@ test('the visual editor is given the starting pages and their themes', function 
             ->where('presets.0.key', 'starter')
             ->where('presets.1.theme.primary', '#0369a1')
             ->has('theme'));
+});
+
+test('a navigation bar keeps its links and button, and drops anything else', function () {
+    $draft = LandingBlocks::validate([
+        block('nav-1', 'navbar', [
+            'brand' => 'Acme',
+            'items' => [
+                ['label' => 'Features', 'url' => '#features', 'x' => 'drop'],
+                ['label' => 'Log in', 'url' => '/login'],
+                ['label' => 'Docs', 'url' => 'https://example.com/docs'],
+            ],
+            'button_label' => 'Start',
+            'button_url' => '/register',
+            'html' => '<b>x</b>',
+        ]),
+    ]);
+
+    expect($draft[0]['data'])->toHaveKeys(['brand', 'items', 'button_label', 'button_url'])
+        ->and($draft[0]['data'])->not->toHaveKey('html')
+        ->and($draft[0]['data']['items'][0])->toEqual(['label' => 'Features', 'url' => '#features'])
+        ->and($draft[0]['data']['items'][2]['url'])->toBe('https://example.com/docs');
+});
+
+test('a navigation bar rejects unsafe links, a missing brand, and too many links', function () {
+    expect(fn () => LandingBlocks::validate([
+        block('nav-2', 'navbar', ['brand' => 'Acme', 'items' => [['label' => 'Bad', 'url' => 'javascript:alert(1)']]]),
+    ]))->toThrow(ValidationException::class);
+
+    expect(fn () => LandingBlocks::validate([
+        block('nav-3', 'navbar', ['items' => []]),
+    ]))->toThrow(ValidationException::class);
+
+    expect(fn () => LandingBlocks::validate([
+        block('nav-4', 'navbar', ['brand' => 'Acme', 'items' => array_fill(0, 7, ['label' => 'x', 'url' => '/'])]),
+    ]))->toThrow(ValidationException::class);
+});
+
+test('a footer keeps its columns and links, and rejects unsafe links and too many columns', function () {
+    $draft = LandingBlocks::validate([
+        block('footer-1', 'footer', [
+            'brand' => 'Acme',
+            'text' => 'Short line.',
+            'columns' => [
+                ['title' => 'Product', 'links' => [['label' => 'Pricing', 'url' => '#pricing']]],
+                ['title' => 'Legal', 'links' => [], 'x' => 'drop'],
+            ],
+            'copyright' => '© 2026 Acme',
+        ]),
+    ]);
+
+    expect($draft[0]['data']['columns'])->toHaveCount(2)
+        ->and($draft[0]['data']['columns'][0]['links'][0])->toEqual(['label' => 'Pricing', 'url' => '#pricing'])
+        ->and($draft[0]['data']['columns'][1])->not->toHaveKey('x');
+
+    expect(fn () => LandingBlocks::validate([
+        block('footer-2', 'footer', ['columns' => [['title' => 'A', 'links' => [['label' => 'x', 'url' => 'data:text/html,x']]]]]),
+    ]))->toThrow(ValidationException::class);
+
+    expect(fn () => LandingBlocks::validate([
+        block('footer-3', 'footer', ['columns' => array_fill(0, 5, ['title' => 'A', 'links' => []])]),
+    ]))->toThrow(ValidationException::class);
+});
+
+test('a draft with two blocks sharing an id is refused', function () {
+    $this->actingAs(landingAdmin())
+        ->put(route('admin.landing.draft.update'), ['theme' => landingTheme(), 'blocks' => [
+            block('same-id', 'text', ['body' => 'One']),
+            block('same-id', 'text', ['body' => 'Two']),
+        ]])
+        ->assertSessionHasErrors('blocks.1.id');
+});
+
+test('every starting page opens with a navigation bar and closes with a footer', function () {
+    foreach (LandingPresets::all() as $preset) {
+        $blocks = $preset['blocks'];
+
+        expect($blocks[0]['type'])->toBe('navbar')
+            ->and($blocks[array_key_last($blocks)]['type'])->toBe('footer');
+
+        // Every link on the bar points at a section that is on the page.
+        $types = array_column($blocks, 'type');
+
+        foreach ($blocks[0]['data']['items'] as $link) {
+            if (str_starts_with($link['url'], '#')) {
+                expect($types)->toContain(substr($link['url'], 1));
+            }
+        }
+    }
+});
+
+test('the public page passes the default theme when nothing is published', function () {
+    $this->get('/')->assertInertia(fn ($page) => $page
+        ->has('theme')
+        ->where('theme.primary', LandingBlocks::defaultTheme()['primary']));
 });
