@@ -5,6 +5,7 @@
 import { usePage } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
 import { use } from 'react';
+import type { ReactNode } from 'react';
 import { AppLogoMark } from '@/components/app-logo';
 import {
     AccountLinks,
@@ -82,6 +83,73 @@ function Brand({ className }: { className?: string }) {
     );
 }
 
+// The menu for small screens: the logo, language and theme controls, and a menu of the links, the account
+// links and the call to action. Shared by the navigation bar layouts that hide their links on phones.
+function MobileMenu({
+    links,
+    button,
+    floating,
+}: {
+    links: ReactNode;
+    button: ReactNode;
+    floating: boolean;
+}) {
+    const edit = use(LandingEditContext);
+    const t = useTrans();
+
+    if (edit) {
+        return null;
+    }
+
+    return (
+        <div
+            className={cn(
+                'flex items-center justify-between gap-2 py-3 @2xl:hidden',
+                floating &&
+                    'mx-auto my-3 max-w-5xl rounded-full border bg-background/80 pl-5 backdrop-blur-md',
+            )}
+        >
+            <Brand />
+            <div className="flex items-center gap-1">
+                <LanguageSwitcher />
+                <ThemeSwitch />
+                <details className="group">
+                    <summary
+                        aria-label={t('Menu')}
+                        className="flex size-9 cursor-pointer list-none items-center justify-center rounded-md hover:bg-muted [&::-webkit-details-marker]:hidden"
+                    >
+                        <Menu
+                            className="size-5 group-open:hidden"
+                            aria-hidden="true"
+                        />
+                        <X
+                            className="hidden size-5 group-open:block"
+                            aria-hidden="true"
+                        />
+                    </summary>
+                    <div className="absolute inset-x-0 top-full z-50 flex flex-col gap-4 border-b bg-background p-4 shadow-lg">
+                        <nav
+                            className="flex flex-col gap-3"
+                            onClick={(event) => {
+                                // Close the menu once a link is chosen, so the page is visible again.
+                                if (event.target instanceof HTMLAnchorElement) {
+                                    event.currentTarget
+                                        .closest('details')
+                                        ?.removeAttribute('open');
+                                }
+                            }}
+                        >
+                            {links}
+                            <AccountLinks />
+                        </nav>
+                        {button}
+                    </div>
+                </details>
+            </div>
+        </div>
+    );
+}
+
 // The navigation bar. The logo and the links sit on the left. On the right: language, theme, then the
 // profile menu (or Log in for guests). A call to action is shown unless a signed-in visitor is on the public page.
 // The horizontal padding comes from the block frame, so the bar lines up with the rest of the page.
@@ -93,7 +161,6 @@ export function NavbarBlock({
     variant: number;
 }) {
     const edit = use(LandingEditContext);
-    const t = useTrans();
     const signedIn = useSignedInOnPublicPage();
     const floating = variant === 1;
     const minimal = variant === 2;
@@ -145,56 +212,7 @@ export function NavbarBlock({
                     {tools}
                 </div>
             </div>
-            {!edit && (
-                <div
-                    className={cn(
-                        'flex items-center justify-between gap-2 py-3 @2xl:hidden',
-                        floating &&
-                            'mx-auto my-3 max-w-5xl rounded-full border bg-background/80 pl-5 backdrop-blur-md',
-                    )}
-                >
-                    <Brand />
-                    <div className="flex items-center gap-1">
-                        <LanguageSwitcher />
-                        <ThemeSwitch />
-                        <details className="group">
-                            <summary
-                                aria-label={t('Menu')}
-                                className="flex size-9 cursor-pointer list-none items-center justify-center rounded-md hover:bg-muted [&::-webkit-details-marker]:hidden"
-                            >
-                                <Menu
-                                    className="size-5 group-open:hidden"
-                                    aria-hidden="true"
-                                />
-                                <X
-                                    className="hidden size-5 group-open:block"
-                                    aria-hidden="true"
-                                />
-                            </summary>
-                            <div className="absolute inset-x-0 top-full z-50 flex flex-col gap-4 border-b bg-background p-4 shadow-lg">
-                                <nav
-                                    className="flex flex-col gap-3"
-                                    onClick={(event) => {
-                                        // Close the menu once a link is chosen, so the page is visible again.
-                                        if (
-                                            event.target instanceof
-                                            HTMLAnchorElement
-                                        ) {
-                                            event.currentTarget
-                                                .closest('details')
-                                                ?.removeAttribute('open');
-                                        }
-                                    }}
-                                >
-                                    {links}
-                                    <AccountLinks />
-                                </nav>
-                                {button}
-                            </div>
-                        </details>
-                    </div>
-                </div>
-            )}
+            <MobileMenu links={links} button={button} floating={floating} />
         </div>
     );
 }
@@ -345,6 +363,7 @@ export function NavbarExtra({
     data: BlockData['navbar'];
     variant: number;
 }) {
+    const edit = use(LandingEditContext);
     const signedIn = useSignedInOnPublicPage();
     const links = data.items.map((link, index) => (
         <SiteLink
@@ -359,15 +378,17 @@ export function NavbarExtra({
         <>
             <LanguageSwitcher />
             <ThemeSwitch />
+            <AccountMenu />
         </>
     );
-    const cta = !signedIn && data.button_label !== undefined && (
-        <LinkButton
-            href={data.button_url ?? '/register'}
-            label={data.button_label}
-            labelPath="button_label"
-        />
-    );
+    const button =
+        !signedIn && data.button_label && data.button_url ? (
+            <LinkButton
+                href={data.button_url}
+                label={data.button_label}
+                labelPath="button_label"
+            />
+        ) : null;
 
     if (variant === 3) {
         return (
@@ -376,7 +397,7 @@ export function NavbarExtra({
                     <Brand />
                     <div className="flex items-center gap-2">
                         {tools}
-                        {cta}
+                        {button}
                     </div>
                 </div>
                 <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t pt-3">
@@ -386,14 +407,30 @@ export function NavbarExtra({
         );
     }
 
+    // On phones the links, sign-in and call to action move into the menu, so the bar stays on one line.
     return (
-        <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4 py-3">
-            <Brand />
-            <nav className="hidden items-center gap-6 @2xl:flex">{links}</nav>
-            <div className="flex items-center justify-end gap-2">
-                {tools}
-                {cta}
+        <div className="relative w-full">
+            <div
+                className={cn(
+                    'grid-cols-[1fr_auto_1fr] items-center gap-4 py-3',
+                    edit ? 'grid' : 'hidden @2xl:grid',
+                )}
+            >
+                <Brand />
+                <nav
+                    className={cn(
+                        'items-center gap-6',
+                        edit ? 'flex' : 'hidden @2xl:flex',
+                    )}
+                >
+                    {links}
+                </nav>
+                <div className="flex items-center justify-end gap-2">
+                    {tools}
+                    {button}
+                </div>
             </div>
+            <MobileMenu links={links} button={button} floating={false} />
         </div>
     );
 }
