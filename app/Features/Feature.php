@@ -29,6 +29,16 @@ abstract class Feature
     abstract public static function providers(): array;
 
     /**
+     * The permissions this feature defines. They are offered in the roles screens only while it is enabled.
+     *
+     * @return list<string>
+     */
+    public static function permissions(): array
+    {
+        return [];
+    }
+
+    /**
      * Other features this one needs, by slug. They must be enabled as well.
      *
      * @return list<string>

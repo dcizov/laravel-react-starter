@@ -98,6 +98,9 @@ final class FeatureManager
             if ($work !== null) {
                 $work();
             }
+
+            // Last, so the permissions match the new FEATURES list in the fresh process.
+            $this->artisan('feature:sync-permissions');
         } catch (\Throwable $e) {
             if ($before === null) {
                 @unlink($path);

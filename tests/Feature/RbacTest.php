@@ -25,7 +25,7 @@ test('new accounts get the default role and no extra permissions', function () {
 });
 
 test('the admin role has every permission', function () {
-    expect(admin()->getAllPermissions()->pluck('name')->all())->toEqualCanonicalizing(Rbac::PERMISSIONS);
+    expect(admin()->getAllPermissions()->pluck('name')->all())->toEqualCanonicalizing(Rbac::permissions());
 });
 
 test('a regular user only sees their own tasks', function () {
@@ -234,7 +234,7 @@ test('the admin role keeps every permission when it is saved', function () {
         ->assertRedirect(route('admin.roles.index'));
 
     expect(Role::findByName('admin')->permissions->pluck('name')->sort()->values()->all())
-        ->toEqual(collect(Rbac::PERMISSIONS)->sort()->values()->all());
+        ->toEqual(collect(Rbac::permissions())->sort()->values()->all());
 });
 
 test('the permissions page is read-only', function () {

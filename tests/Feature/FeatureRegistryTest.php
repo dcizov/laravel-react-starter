@@ -5,6 +5,9 @@ use App\Features\FeatureManager;
 use App\Features\FeatureRegistry;
 use App\Features\Landing\LandingFeature;
 use App\Features\Newsletter\NewsletterFeature;
+use App\Models\User;
+use App\Support\Rbac;
+use Spatie\Permission\Models\Role;
 
 // Two small features used to check dependencies. They are declared here so the tests do not depend on real features.
 final class FakeBaseFeature extends Feature
@@ -98,4 +101,36 @@ test('enabling an unknown feature is refused before anything is written', functi
 
     expect(fn () => app(FeatureManager::class)->enable('nope', migrate: false))
         ->toThrow(InvalidArgumentException::class, 'Unknown feature [nope].');
+});
+
+test('the roles screen only offers the permissions of enabled features', function () {
+    Rbac::sync();
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    config(['features.enabled' => ['landing']]);
+
+    $response = $this->actingAs($admin)
+        ->get(route('admin.roles.create'))
+        ->assertOk();
+
+    $props = $response->viewData('page')['props'];
+
+    expect($props['permissions'])->toContain('landing.manage')
+        ->and($props['permissions'])->not->toContain('newsletter.manage')
+        ->and($props['permissions'])->not->toContain('integrations.manage');
+});
+
+test('syncing with a feature disabled removes its permission from admin, and keeps the permission row', function () {
+    Rbac::sync();
+
+    config(['features.enabled' => ['landing']]);
+    Rbac::syncFeaturePermissions();
+
+    $admin = Role::findByName('admin');
+
+    expect($admin->hasPermissionTo('landing.manage'))->toBeTrue()
+        ->and($admin->hasPermissionTo('newsletter.manage'))->toBeFalse()
+        ->and(\Spatie\Permission\Models\Permission::query()->where('name', 'newsletter.manage')->exists())->toBeTrue();
 });

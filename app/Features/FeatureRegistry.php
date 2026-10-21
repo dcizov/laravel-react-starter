@@ -77,6 +77,25 @@ final class FeatureRegistry
     }
 
     /**
+     * The permissions of every enabled feature.
+     *
+     * @return list<string>
+     */
+    public function permissions(): array
+    {
+        $available = $this->available();
+        $permissions = [];
+
+        foreach ($this->enabled() as $slug) {
+            foreach ($available[$slug]::permissions() as $permission) {
+                $permissions[] = $permission;
+            }
+        }
+
+        return $permissions;
+    }
+
+    /**
      * The service providers of every enabled feature.
      *
      * @return list<class-string>

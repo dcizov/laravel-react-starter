@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Features\FeatureRegistry;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -39,11 +40,11 @@ final class Rbac
     public const PERMISSION_INTEGRATIONS_MANAGE = 'integrations.manage';
 
     /**
-     * Every permission the application checks.
+     * The permissions of the core app. Feature permissions are added by permissions(), while the feature is enabled.
      *
      * @var list<string>
      */
-    public const PERMISSIONS = [
+    public const CORE_PERMISSIONS = [
         self::PERMISSION_TASKS_VIEW_ANY,
         self::PERMISSION_TASKS_UPDATE_ANY,
         self::PERMISSION_TASKS_DELETE_ANY,
@@ -55,20 +56,33 @@ final class Rbac
         self::PERMISSION_ROLES_MANAGE,
         self::PERMISSION_PERMISSIONS_MANAGE,
         self::PERMISSION_SETTINGS_MANAGE,
-        self::PERMISSION_LANDING_MANAGE,
-        self::PERMISSION_NEWSLETTER_MANAGE,
-        self::PERMISSION_INTEGRATIONS_MANAGE,
     ];
+
+    /**
+     * The permissions that exist right now: the core ones plus those of the enabled features.
+     *
+     * @return list<string>
+     */
+    public static function permissions(): array
+    {
+        return array_values(array_unique([
+            ...self::CORE_PERMISSIONS,
+            ...app(FeatureRegistry::class)->permissions(),
+        ]));
+    }
 
     /**
      * The roles and the permissions each one has.
      *
-     * @var array<string, list<string>>
+     * @return array<string, list<string>>
      */
-    public const ROLES = [
-        'admin' => self::PERMISSIONS,
-        'user' => [],
-    ];
+    public static function roles(): array
+    {
+        return [
+            'admin' => self::permissions(),
+            'user' => [],
+        ];
+    }
 
     /**
      * Roles the app depends on. They cannot be renamed or deleted, and the admin role always has every permission.
@@ -89,16 +103,35 @@ final class Rbac
     {
         $registrar = app(PermissionRegistrar::class);
 
-        foreach (self::PERMISSIONS as $name) {
+        foreach (self::permissions() as $name) {
             Permission::findOrCreate($name);
         }
 
         // Spatie caches the permission list. Clear it so the roles below see the rows just created.
         $registrar->forgetCachedPermissions();
 
-        foreach (self::ROLES as $name => $permissions) {
+        foreach (self::roles() as $name => $permissions) {
             Role::findOrCreate($name)->syncPermissions($permissions);
         }
+
+        $registrar->forgetCachedPermissions();
+    }
+
+    /**
+     * Bring the permissions in line with the enabled features after one is switched on or off. Only the
+     * permission rows and the admin role change. Other roles are left alone, so edits made in the roles screen survive.
+     */
+    public static function syncFeaturePermissions(): void
+    {
+        $registrar = app(PermissionRegistrar::class);
+
+        foreach (self::permissions() as $name) {
+            Permission::findOrCreate($name);
+        }
+
+        $registrar->forgetCachedPermissions();
+
+        Role::findOrCreate('admin')->syncPermissions(self::permissions());
 
         $registrar->forgetCachedPermissions();
     }

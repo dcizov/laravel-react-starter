@@ -30,8 +30,11 @@ so the frontend pages are included or removed.
 
 Register a new feature by adding its class to `available` in `config/features.php`.
 
-## Known limits
+## Build and permissions
 
-- The React code of disabled features stays in the JavaScript bundle. Only routes and menu entries are switched off.
-- Permissions are still listed in `App\Support\Rbac::PERMISSIONS`, so the roles page shows the permissions of disabled features.
+- The frontend build leaves out the pages of disabled features. The page lists are in `vite.config.ts` (`FEATURE_PAGES`).
+  Keep them in step with the feature folders, and run `npm run build` (or restart `npm run dev`) after changing `FEATURES`.
+- Permissions come from each feature's `permissions()`. The roles and permissions screens only show the permissions of enabled
+  features. `feature:enable` and `feature:disable` run `feature:sync-permissions`, which gives the admin role exactly the
+  enabled features' permissions. Other roles are not changed.
 - Setting `FEATURES` to an unknown name, or enabling a feature without its dependency, stops the application with a clear message.

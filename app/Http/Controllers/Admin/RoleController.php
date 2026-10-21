@@ -76,7 +76,10 @@ class RoleController extends Controller
         }
 
         $role->syncPermissions(
-            $role->name === 'admin' ? Rbac::PERMISSIONS : ($validated['permissions'] ?? []),
+            // Permissions of disabled features are not in the form, so keep the ones the role already has.
+            $role->name === 'admin'
+                ? Rbac::permissions()
+                : [...($validated['permissions'] ?? []), ...$role->permissions->pluck('name')->diff(Rbac::permissions())->all()],
         );
 
         $this->flush();
@@ -122,8 +125,8 @@ class RoleController extends Controller
                 'name' => $role->name,
                 'system' => $this->isSystem($role),
             ] : null,
-            'permissions' => Permission::query()->orderBy('name')->pluck('name')->values(),
-            'granted' => $role ? $role->permissions->pluck('name')->values() : [],
+            'permissions' => Permission::query()->whereIn('name', Rbac::permissions())->orderBy('name')->pluck('name')->values(),
+            'granted' => $role ? $role->permissions->pluck('name')->intersect(Rbac::permissions())->values() : [],
         ];
     }
 
@@ -146,7 +149,7 @@ class RoleController extends Controller
         return [
             'name' => $nameRules,
             'permissions' => ['array'],
-            'permissions.*' => ['string', Rule::exists('permissions', 'name')],
+            'permissions.*' => ['string', Rule::in(Rbac::permissions())],
         ];
     }
 

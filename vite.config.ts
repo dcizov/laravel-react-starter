@@ -5,10 +5,58 @@ import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
+import { loadEnv } from 'vite';
+import type { Plugin } from 'vite';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+
+// The default matches config/features.php.
+const DEFAULT_FEATURES = 'landing,newsletter,integrations';
+
+// The page files of each feature, relative to resources/js. Pages of a feature that is switched off are left
+// out of the bundle. Keep this in step with the feature folders under app/Features.
+const FEATURE_PAGES: Record<string, string[]> = {
+    landing: ['./pages/welcome.tsx', './pages/admin/landing.tsx'],
+    newsletter: ['./pages/newsletter/**', './pages/admin/newsletter.tsx'],
+    integrations: ['./pages/admin/integrations/**'],
+};
+
+// Placeholder in app.tsx, replaced at build time by the exclusions for disabled features.
+const EXCLUDES_PLACEHOLDER = '__FEATURE_PAGE_EXCLUDES__';
+
+// Removes the pages of disabled features from the page glob in app.tsx, so their code is not bundled.
+// FEATURES is read at build (or dev server) start, so run "npm run build" after changing it.
+function featurePages(features: string[]): Plugin {
+    const excludes = Object.entries(FEATURE_PAGES)
+        .filter(([feature]) => !features.includes(feature))
+        .flatMap(([, patterns]) => patterns.map((pattern) => `'!${pattern}'`))
+        .join(', ');
+
+    return {
+        name: 'feature-pages',
+        enforce: 'pre',
+        transform(code, id) {
+            if (!id.replace(/\\/g, '/').endsWith('/resources/js/app.tsx')) {
+                return null;
+            }
+
+            return code.replace(`'${EXCLUDES_PLACEHOLDER}'`, excludes);
+        },
+    };
+}
+
+const env = loadEnv('production', process.cwd(), '');
+const enabledFeatures = (
+    process.env.FEATURES ??
+    env.FEATURES ??
+    DEFAULT_FEATURES
+)
+    .split(',')
+    .map((feature) => feature.trim())
+    .filter(Boolean);
 
 export default defineConfig({
     plugins: lazyPlugins(() => [
+        featurePages(enabledFeatures),
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
@@ -32,31 +80,31 @@ export default defineConfig({
     // dev server runs re-optimises the deps and breaks the chunk paths in the browser.
     optimizeDeps: {
         include: [
-                '@base-ui/react',
-                '@base-ui/react/alert-dialog',
-                '@base-ui/react/avatar',
-                '@base-ui/react/button',
-                '@base-ui/react/checkbox',
-                'motion/react',
-                '@base-ui/react/collapsible',
-                '@base-ui/react/dialog',
-                '@base-ui/react/input',
-                '@base-ui/react/menu',
-                '@base-ui/react/merge-props',
-                '@base-ui/react/navigation-menu',
-                '@base-ui/react/popover',
-                '@base-ui/react/progress',
-                '@base-ui/react/radio',
-                '@base-ui/react/radio-group',
-                '@base-ui/react/select',
-                '@base-ui/react/separator',
-                '@base-ui/react/switch',
-                '@base-ui/react/tabs',
-                '@base-ui/react/toast',
-                '@base-ui/react/toggle',
-                '@base-ui/react/toggle-group',
-                '@base-ui/react/tooltip',
-                '@base-ui/react/use-render',
+            '@base-ui/react',
+            '@base-ui/react/alert-dialog',
+            '@base-ui/react/avatar',
+            '@base-ui/react/button',
+            '@base-ui/react/checkbox',
+            'motion/react',
+            '@base-ui/react/collapsible',
+            '@base-ui/react/dialog',
+            '@base-ui/react/input',
+            '@base-ui/react/menu',
+            '@base-ui/react/merge-props',
+            '@base-ui/react/navigation-menu',
+            '@base-ui/react/popover',
+            '@base-ui/react/progress',
+            '@base-ui/react/radio',
+            '@base-ui/react/radio-group',
+            '@base-ui/react/select',
+            '@base-ui/react/separator',
+            '@base-ui/react/switch',
+            '@base-ui/react/tabs',
+            '@base-ui/react/toast',
+            '@base-ui/react/toggle',
+            '@base-ui/react/toggle-group',
+            '@base-ui/react/tooltip',
+            '@base-ui/react/use-render',
         ],
     },
     server: {

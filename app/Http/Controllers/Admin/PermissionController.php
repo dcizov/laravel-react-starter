@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\Rbac;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Permission;
@@ -17,6 +18,7 @@ class PermissionController extends Controller
     public function index(): Response
     {
         $permissions = Permission::query()
+            ->whereIn('name', Rbac::permissions())
             ->withCount('roles')
             ->orderBy('name')
             ->get()
