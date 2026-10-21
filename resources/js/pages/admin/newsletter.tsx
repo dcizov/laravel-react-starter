@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/table';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
-import { destroy, exportCsv, index } from '@/routes/admin/newsletter';
+import { csv, destroy, index } from '@/routes/admin/newsletter';
 
 type Subscriber = {
     id: number;
@@ -101,7 +101,7 @@ export default function AdminNewsletter({
                     )}
                     actions={
                         <a
-                            href={exportCsv.url()}
+                            href={csv.url()}
                             className={cn(
                                 buttonVariants({ variant: 'outline' }),
                             )}

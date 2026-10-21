@@ -22,8 +22,11 @@ class SubscribeController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Addresses are stored in lower case, so "Ada@Example.com" and "ada@example.com" are the same subscriber.
+        $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
+
         $data = $request->validate([
-            'email' => ['required', 'string', 'lowercase', 'email:rfc', 'max:190'],
+            'email' => ['required', 'string', 'email:rfc', 'max:190'],
         ]);
 
         $subscriber = NewsletterSubscriber::query()->firstOrNew(['email' => $data['email']]);

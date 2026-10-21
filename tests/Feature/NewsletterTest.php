@@ -103,7 +103,7 @@ test('the CSV export lists the subscribers', function () {
     NewsletterSubscriber::query()->create(['email' => 'csv@example.com', 'status' => 'subscribed', 'token' => 'token-csv']);
 
     $response = $this->actingAs($admin)
-        ->get(route('admin.newsletter.export'))
+        ->get(route('admin.newsletter.csv'))
         ->assertOk()
         ->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
 
