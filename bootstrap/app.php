@@ -33,8 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
-        // Outside local and testing, these errors get the app's own pages instead of Laravel's.
-        // Local keeps Laravel's debug page. The pages can be previewed at /errors/{code} in local.
+        // These errors get the app's own pages instead of Laravel's, except where the exceptions below apply.
         $exceptions->respond(function ($response, \Throwable $exception, Request $request) {
             $status = $response->getStatusCode();
             $errorPages = [
@@ -47,7 +46,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
             $wantsJson = $request->expectsJson() || $request->is('api/*');
 
-            if (app()->environment(['local', 'testing']) || $wantsJson || ! isset($errorPages[$status])) {
+            // Tests keep Laravel's responses. Local shows the app's pages too, so they can be checked.
+            // The debug page stays for a real server error while debug is on.
+            $keepLaravelPage = app()->environment('testing') || ($status === 500 && config('app.debug'));
+
+            if ($keepLaravelPage || $wantsJson || ! isset($errorPages[$status])) {
                 return $response;
             }
 

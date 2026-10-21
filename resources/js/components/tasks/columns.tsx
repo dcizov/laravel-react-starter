@@ -147,7 +147,9 @@ export function useTaskColumns({
                                 variant="outline"
                                 className="px-1.5 text-muted-foreground"
                             >
-                                {status.icon && <status.icon />}
+                                {status.icon && (
+                                    <status.icon className={status.iconClass} />
+                                )}
                                 {t(status.label)}
                             </Badge>
                         </div>
@@ -179,7 +181,9 @@ export function useTaskColumns({
                             variant="outline"
                             className="px-1.5 text-muted-foreground"
                         >
-                            {priority.icon && <priority.icon />}
+                            {priority.icon && (
+                                <priority.icon className={priority.iconClass} />
+                            )}
                             {t(priority.label)}
                         </Badge>
                     );

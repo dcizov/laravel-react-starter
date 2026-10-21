@@ -60,9 +60,11 @@ type DataTableProps<TData extends RowData> = {
     pageSizes?: number[];
     getRowId?: (row: TData, index: number) => string;
     enableRowSelection?: boolean;
-    // Adds a grip column so rows can be dragged into a new order. The order is kept
-    // in this table only; it is not saved. Pass getRowId so each row keeps its identity.
+    // Adds a grip column so rows can be dragged into a new order. The table shows the new order at once;
+    // pass onRowOrderChange to save it. Pass getRowId so each row keeps its identity.
     enableRowDragging?: boolean;
+    // Called with the full list of row ids in their new order after a drag. Use it to save the order.
+    onRowOrderChange?: (ids: string[]) => void;
     // Builds the drawer for a row. Cells in columns with meta.detail open it when clicked.
     renderDetail?: (row: TData) => DataTableDetail | null;
     emptyMessage?: string;
@@ -163,6 +165,7 @@ export function DataTable<TData extends RowData>({
     getRowId,
     enableRowSelection = true,
     enableRowDragging = false,
+    onRowOrderChange,
     renderDetail,
     emptyMessage,
 }: DataTableProps<TData>) {
@@ -221,13 +224,18 @@ export function DataTable<TData extends RowData>({
             return;
         }
 
-        setItems((current) => {
-            const ids = current.map((row, index) => rowId(row, index));
-            const from = ids.indexOf(String(active.id));
-            const to = ids.indexOf(String(over.id));
+        const ids = items.map((row, index) => rowId(row, index));
+        const from = ids.indexOf(String(active.id));
+        const to = ids.indexOf(String(over.id));
 
-            return from < 0 || to < 0 ? current : arrayMove(current, from, to);
-        });
+        if (from < 0 || to < 0) {
+            return;
+        }
+
+        const moved = arrayMove(items, from, to);
+
+        setItems(moved);
+        onRowOrderChange?.(moved.map((row, index) => rowId(row, index)));
     }
 
     const rows = table.getRowModel().rows;

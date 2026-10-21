@@ -1,7 +1,11 @@
 import { Head, router } from '@inertiajs/react';
 import { ListChecks, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-import { destroy, update } from '@/actions/App/Http/Controllers/TaskController';
+import {
+    destroy,
+    reorder,
+    update,
+} from '@/actions/App/Http/Controllers/TaskController';
 import { DataTable } from '@/components/data-table/data-table';
 import type { DataTableDetail } from '@/components/data-table/data-table-row-detail';
 import PageHeader from '@/components/page-header';
@@ -173,6 +177,14 @@ export default function Tasks({
                         pageSizes={pageSizes}
                         enableRowSelection
                         enableRowDragging
+                        onRowOrderChange={(ids) => {
+                            // Saved for this user only. The server sends the tasks back in this order.
+                            router.put(
+                                reorder.url(),
+                                { ids: ids.map(Number) },
+                                { preserveScroll: true },
+                            );
+                        }}
                         renderDetail={renderDetail}
                         toolbar={{
                             search: {

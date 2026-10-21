@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Support\Rbac;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,10 +24,21 @@ class TaskController extends Controller
         $user = $request->user();
         $canViewAll = $user->can(Rbac::PERMISSION_TASKS_VIEW_ANY);
 
+        // Each user's own drag order. Tasks they have not placed yet come last, by id.
+        $positions = DB::table('task_orders')
+            ->where('user_id', $user->id)
+            ->pluck('position', 'task_id');
+
         $tasks = ($canViewAll ? Task::query() : $user->tasks())
             ->with('user:id,name')
             ->orderBy('id')
             ->get()
+            ->sortBy(fn (Task $task) => sprintf(
+                '%010d-%010d',
+                $positions[$task->id] ?? 9999999999,
+                $task->id,
+            ))
+            ->values()
             ->map(fn (Task $task) => [
                 'id' => $task->id,
                 'code' => $task->code,
@@ -41,6 +53,45 @@ class TaskController extends Controller
             'tasks' => $tasks,
             'showOwner' => $canViewAll,
         ]);
+    }
+
+    /**
+     * Save the order the user dragged the tasks into. The ids are the full list in display order.
+     * Only tasks the user can see are stored, so an id they cannot see is ignored.
+     */
+    public function reorder(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'max:1000'],
+            'ids.*' => ['integer', 'distinct'],
+        ]);
+
+        $user = $request->user();
+        $canViewAll = $user->can(Rbac::PERMISSION_TASKS_VIEW_ANY);
+
+        $visible = ($canViewAll ? Task::query() : $user->tasks())
+            ->whereIn('id', $validated['ids'])
+            ->pluck('id')
+            ->all();
+
+        // Keep the order the client sent, dropping anything that is not visible.
+        $ordered = array_values(array_intersect($validated['ids'], $visible));
+
+        DB::transaction(function () use ($user, $ordered) {
+            DB::table('task_orders')->where('user_id', $user->id)->delete();
+
+            DB::table('task_orders')->insert(array_map(
+                fn (int $taskId, int $position) => [
+                    'user_id' => $user->id,
+                    'task_id' => $taskId,
+                    'position' => $position,
+                ],
+                $ordered,
+                array_keys($ordered),
+            ));
+        });
+
+        return back();
     }
 
     /**

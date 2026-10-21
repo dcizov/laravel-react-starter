@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('profile', 'user-profile')->name('user-profile.show');
     Route::get('tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
+    Route::put('tasks/order', [TaskController::class, 'reorder'])->name('tasks.reorder');
     Route::patch('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::get('users', [UserController::class, 'index'])->middleware('can:users.view')->name('users.index');
