@@ -22,6 +22,11 @@ final class LandingBlocks
 
     public const MAX_BLOCKS = 40;
 
+    // The page theme choices. Must match theme.ts on the client.
+    public const FONTS = ['sans', 'serif', 'mono'];
+
+    public const TEXT_SIZES = ['sm', 'md', 'lg'];
+
     // The icon keys a feature item may use. Must match FEATURE_ICONS in block-types.ts.
     public const FEATURE_ICONS = [
         'zap', 'shield', 'layers', 'users', 'chart', 'globe',
@@ -29,88 +34,29 @@ final class LandingBlocks
     ];
 
     /**
-     * The built-in page. Used until an admin publishes their own blocks.
+     * The built-in page. Used until an admin publishes their own. See LandingPresets::starter().
      *
-     * @return list<array{id: string, type: string, data: array<string, mixed>}>
+     * @return list<array{id: string, type: string, data: array<string, mixed>, style?: array<string, mixed>}>
      */
     public static function defaults(): array
     {
+        return LandingPresets::starter();
+    }
+
+    /**
+     * The built-in theme. Used until an admin publishes their own.
+     *
+     * @return array{primary: string, background: string, foreground: string, radius: float, font: string, text_size: string}
+     */
+    public static function defaultTheme(): array
+    {
         return [
-            [
-                'id' => 'default-hero',
-                'type' => 'hero',
-                'data' => [
-                    'title' => 'Start building your Laravel app today',
-                    'text' => 'A Laravel 13 and React 19 starter with accounts, roles and permissions, an admin area, and a task board. Change this page in the Visual editor.',
-                    'button_label' => 'Get started',
-                    'button_url' => '/register',
-                    'image' => '',
-                ],
-            ],
-            [
-                'id' => 'default-logos',
-                'type' => 'logos',
-                'data' => [
-                    'title' => 'Built with',
-                    'items' => [
-                        ['name' => 'Laravel'],
-                        ['name' => 'React'],
-                        ['name' => 'Inertia.js'],
-                        ['name' => 'Tailwind CSS'],
-                        ['name' => 'shadcn/ui'],
-                        ['name' => 'Spatie Permission'],
-                    ],
-                ],
-            ],
-            [
-                'id' => 'default-features',
-                'type' => 'features',
-                'data' => [
-                    'title' => 'What is included',
-                    'items' => [
-                        ['title' => 'Accounts', 'text' => 'Sign up, sign in, reset a password, and edit your profile.', 'icon' => 'lock'],
-                        ['title' => 'Roles and permissions', 'text' => 'Decide what each role can see and change.', 'icon' => 'shield'],
-                        ['title' => 'Admin area', 'text' => 'Manage users, roles, permissions, the audit log, and app settings.', 'icon' => 'settings'],
-                        ['title' => 'Task board', 'text' => 'A sample feature with drag-and-drop ordering that is saved for each user.', 'icon' => 'layers'],
-                        ['title' => 'Two languages', 'text' => 'English and German, with light and dark mode.', 'icon' => 'globe'],
-                        ['title' => 'Visual editor', 'text' => 'Build this page from blocks, then preview and publish it.', 'icon' => 'palette'],
-                    ],
-                ],
-            ],
-            [
-                'id' => 'default-stats',
-                'type' => 'stats',
-                'data' => [
-                    'title' => 'At a glance',
-                    'items' => [
-                        ['value' => '13', 'label' => 'Laravel major version'],
-                        ['value' => '2', 'label' => 'Languages included'],
-                        ['value' => '2', 'label' => 'Built-in roles: admin and user'],
-                    ],
-                ],
-            ],
-            [
-                'id' => 'default-faq',
-                'type' => 'faq',
-                'data' => [
-                    'title' => 'Questions',
-                    'items' => [
-                        ['question' => 'How do I change what visitors see?', 'answer' => 'Open the Visual editor, change the blocks, and save a draft. Preview shows the draft, and Publish makes it live.'],
-                        ['question' => 'Can I turn this page off?', 'answer' => 'Yes. In Admin settings, switch off Show the landing page. Guests then go to sign in, and signed-in users go to the dashboard.'],
-                        ['question' => 'Can I add more sections?', 'answer' => 'Yes. Add any block from the palette, in any order. A page can hold up to 40 blocks.'],
-                    ],
-                ],
-            ],
-            [
-                'id' => 'default-cta',
-                'type' => 'cta',
-                'data' => [
-                    'title' => 'Ready to build?',
-                    'text' => 'Create an account, or sign in to go to your dashboard.',
-                    'button_label' => 'Create an account',
-                    'button_url' => '/register',
-                ],
-            ],
+            'primary' => '#171717',
+            'background' => '#ffffff',
+            'foreground' => '#0a0a0a',
+            'radius' => 0.625,
+            'font' => 'sans',
+            'text_size' => 'md',
         ];
     }
 
@@ -139,6 +85,11 @@ final class LandingBlocks
             $rules["blocks.$index.id"] = ['required', 'string', 'regex:/^[A-Za-z0-9-]{1,40}$/'];
             $rules["blocks.$index.type"] = ['required', Rule::in(self::TYPES)];
             $rules["blocks.$index.data"] = ['required', 'array'];
+            $rules["blocks.$index.style"] = ['nullable', 'array'];
+
+            foreach (self::styleRules() as $field => $styleRules) {
+                $rules["blocks.$index.style.$field"] = $styleRules;
+            }
 
             if (is_string($type) && in_array($type, self::TYPES, true)) {
                 foreach (self::fieldRules($type) as $field => $fieldRules) {
@@ -149,11 +100,66 @@ final class LandingBlocks
 
         $validated = Validator::make(['blocks' => $blocks], $rules)->validate()['blocks'];
 
-        return array_values(array_map(fn (array $block) => [
-            'id' => $block['id'],
-            'type' => $block['type'],
-            'data' => $block['data'],
-        ], $validated));
+        return array_values(array_map(function (array $block): array {
+            $result = [
+                'id' => $block['id'],
+                'type' => $block['type'],
+                'data' => $block['data'],
+            ];
+
+            if (array_key_exists('style', $block)) {
+                $result['style'] = $block['style'] ?? [];
+            }
+
+            return $result;
+        }, $validated));
+    }
+
+    /**
+     * Checks the page theme from an admin. Only the colours, corner radius, font, and text size are kept.
+     *
+     * @return array{primary: string, background: string, foreground: string, radius: float, font: string, text_size: string}
+     *
+     * @throws ValidationException
+     */
+    public static function validateTheme(mixed $theme): array
+    {
+        if (! is_array($theme)) {
+            throw ValidationException::withMessages(['theme' => __('The theme must be a list of settings.')]);
+        }
+
+        return Validator::make(['theme' => $theme], [
+            'theme' => ['required', 'array'],
+            'theme.primary' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'theme.background' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'theme.foreground' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'theme.radius' => ['required', 'numeric', 'between:0,1.5'],
+            'theme.font' => ['required', Rule::in(self::FONTS)],
+            'theme.text_size' => ['required', Rule::in(self::TEXT_SIZES)],
+        ])->validate()['theme'];
+    }
+
+    /**
+     * The settings a block can have: layout, colours, background, sizes, font, and animation.
+     * Anything else in a block's style is dropped. A colour is #rrggbb, or empty for the default.
+     *
+     * @return array<string, list<mixed>>
+     */
+    public static function styleRules(): array
+    {
+        return [
+            'variant' => ['nullable', 'integer', 'between:0,2'],
+            'bg_color' => ['nullable', 'string', 'regex:/^(#[0-9a-fA-F]{6})?$/'],
+            'bg_image' => ['nullable', 'string', 'max:500', self::safeUrl()],
+            'bg_overlay' => ['nullable', 'integer', 'between:0,80'],
+            'text_color' => ['nullable', 'string', 'regex:/^(#[0-9a-fA-F]{6})?$/'],
+            'padding' => ['nullable', Rule::in(['none', 'sm', 'md', 'lg', 'xl'])],
+            'width' => ['nullable', Rule::in(['narrow', 'default', 'wide', 'full'])],
+            'align' => ['nullable', Rule::in(['left', 'center'])],
+            'heading_size' => ['nullable', Rule::in(['sm', 'md', 'lg', 'xl'])],
+            'font' => ['nullable', Rule::in(['theme', 'serif', 'mono'])],
+            'animation' => ['nullable', Rule::in(['none', 'fade-up', 'fade-in', 'zoom-in', 'slide-right'])],
+        ];
     }
 
     /**

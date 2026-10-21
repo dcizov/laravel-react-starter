@@ -40,6 +40,12 @@ class AppSettings extends Settings
     // An empty list is a deliberately empty page.
     public ?array $landing_published;
 
+    // The page theme being edited, and the theme visitors see. Null means never saved, so the default theme is used.
+    // Stored as the same fields as the blocks: primary, background, foreground, radius, font, and text_size.
+    public ?array $landing_theme_draft;
+
+    public ?array $landing_theme;
+
     public static function group(): string
     {
         return 'app';

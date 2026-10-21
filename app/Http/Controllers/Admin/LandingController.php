@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Settings\AppSettings;
 use App\Support\LandingBlocks;
+use App\Support\LandingPresets;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,15 +23,22 @@ class LandingController extends Controller
     {
         return Inertia::render('admin/landing', [
             'draft' => $this->draftOf($settings),
+            'theme' => $this->themeDraftOf($settings),
             'published' => $settings->landing_published ?? LandingBlocks::defaults(),
             'hasDraft' => $settings->landing_draft !== null,
             'blockTypes' => LandingBlocks::TYPES,
+            'presets' => $this->presets(),
         ]);
     }
 
     public function saveDraft(Request $request, AppSettings $settings): RedirectResponse
     {
-        $settings->landing_draft = LandingBlocks::validate($request->input('blocks'));
+        // Both are checked before anything is saved, so a bad theme does not leave a half-saved draft.
+        $blocks = LandingBlocks::validate($request->input('blocks'));
+        $theme = LandingBlocks::validateTheme($request->input('theme'));
+
+        $settings->landing_draft = $blocks;
+        $settings->landing_theme_draft = $theme;
         $settings->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Draft saved.')]);
@@ -41,6 +49,7 @@ class LandingController extends Controller
     public function publish(AppSettings $settings): RedirectResponse
     {
         $settings->landing_published = $this->draftOf($settings);
+        $settings->landing_theme = $this->themeDraftOf($settings);
         $settings->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Page published.')]);
@@ -51,6 +60,7 @@ class LandingController extends Controller
     public function discard(AppSettings $settings): RedirectResponse
     {
         $settings->landing_draft = $settings->landing_published;
+        $settings->landing_theme_draft = $settings->landing_theme;
         $settings->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Draft replaced with the published page.')]);
@@ -65,6 +75,7 @@ class LandingController extends Controller
     {
         return Inertia::render('welcome', [
             'blocks' => $this->draftOf($settings),
+            'theme' => $this->themeDraftOf($settings),
             'preview' => true,
         ]);
     }
@@ -94,5 +105,33 @@ class LandingController extends Controller
         return $settings->landing_draft
             ?? $settings->landing_published
             ?? LandingBlocks::defaults();
+    }
+
+    /**
+     * The theme draft if there is one, otherwise the published theme, otherwise the default theme.
+     *
+     * @return array<string, mixed>
+     */
+    private function themeDraftOf(AppSettings $settings): array
+    {
+        return $settings->landing_theme_draft
+            ?? $settings->landing_theme
+            ?? LandingBlocks::defaultTheme();
+    }
+
+    /**
+     * The starting pages the editor offers. A preset without its own theme keeps the current one.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function presets(): array
+    {
+        return array_map(fn (array $preset) => [
+            'key' => $preset['key'],
+            'label' => $preset['label'],
+            'description' => $preset['description'],
+            'blocks' => $preset['blocks'],
+            'theme' => $preset['theme'] ?? null,
+        ], LandingPresets::all());
     }
 }

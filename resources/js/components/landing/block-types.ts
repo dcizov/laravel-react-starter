@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-// The shape of every block. Must match App\Support\LandingBlocks on the server, which keeps only these fields.
+// The shape of every block. Must match App\\Support\\LandingBlocks on the server, which keeps only these fields.
 // Optional fields are left out of the saved data when empty, so the editor and renderers treat them as possibly missing.
 export type FeatureItem = { title: string; text?: string; icon?: string };
 export type LogoItem = { name: string };
@@ -68,6 +68,134 @@ export type BlockData = {
 
 export type BlockType = keyof BlockData;
 
+// How a block looks. Every key is optional in the saved data; missing keys use DEFAULT_STYLE.
+// The server accepts only these keys and values (App\\Support\\LandingBlocks::fieldRules).
+export type Padding = 'none' | 'sm' | 'md' | 'lg' | 'xl';
+export type Width = 'narrow' | 'default' | 'wide' | 'full';
+export type Align = 'left' | 'center';
+export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl';
+export type FontChoice = 'theme' | 'serif' | 'mono';
+export type Animation =
+    'none' | 'fade-up' | 'fade-in' | 'zoom-in' | 'slide-right';
+
+export type BlockStyle = Partial<{
+    variant: number; // 0, 1, or 2. Each block type names its layouts in VARIANT_NAMES.
+    bg_color: string; // A #rrggbb colour, or '' for the page background.
+    bg_image: string; // A link to an image, or '' for none.
+    bg_overlay: number; // 0 to 80. How dark the layer over a background image is, in percent.
+    text_color: string; // A #rrggbb colour, or '' for the theme colour.
+    padding: Padding;
+    width: Width;
+    align: Align;
+    heading_size: HeadingSize;
+    font: FontChoice;
+    animation: Animation;
+}>;
+
+export type ResolvedStyle = Required<BlockStyle>;
+
+export const DEFAULT_STYLE: ResolvedStyle = {
+    variant: 0,
+    bg_color: '',
+    bg_image: '',
+    bg_overlay: 40,
+    text_color: '',
+    padding: 'md',
+    width: 'default',
+    align: 'center',
+    heading_size: 'md',
+    font: 'theme',
+    animation: 'fade-up',
+};
+
+// Fills in the defaults for any setting the block does not store.
+export function resolveStyle(block: { style?: BlockStyle }): ResolvedStyle {
+    return { ...DEFAULT_STYLE, ...block.style };
+}
+
+export const PADDING_LABELS: Record<Padding, string> = {
+    none: 'None',
+    sm: 'Small',
+    md: 'Medium',
+    lg: 'Large',
+    xl: 'Extra large',
+};
+
+export const WIDTH_LABELS: Record<Width, string> = {
+    narrow: 'Narrow',
+    default: 'Default',
+    wide: 'Wide',
+    full: 'Full width',
+};
+
+export const HEADING_LABELS: Record<HeadingSize, string> = {
+    sm: 'Small',
+    md: 'Medium',
+    lg: 'Large',
+    xl: 'Extra large',
+};
+
+export const FONT_LABELS: Record<FontChoice, string> = {
+    theme: 'Page font',
+    serif: 'Serif',
+    mono: 'Monospace',
+};
+
+export const ANIMATION_LABELS: Record<Animation, string> = {
+    none: 'None',
+    'fade-up': 'Fade up',
+    'fade-in': 'Fade in',
+    'zoom-in': 'Zoom in',
+    'slide-right': 'Slide in from left',
+};
+
+// The layouts each block type can use. The index is saved as style.variant.
+export const VARIANT_NAMES: Record<BlockType, string[]> = {
+    hero: ['Centered', 'Split with image', 'Editorial'],
+    logos: ['Grid', 'Row', 'Ruled'],
+    features: ['Cards', 'List', 'Columns'],
+    stats: ['Cards', 'Plain', 'Tiles'],
+    testimonials: ['Pairs', 'Featured', 'Wall'],
+    pricing: ['Cards', 'Rows', 'Focus'],
+    faq: ['Accordion', 'Open list', 'Two columns'],
+    cta: ['Banner', 'Outline', 'Split'],
+    text: ['Centered', 'Accent rule', 'Two columns'],
+    image: ['Rounded', 'Full width'],
+    button: ['Centered', 'Left aligned'],
+};
+
+export function variantCount(type: BlockType): number {
+    return VARIANT_NAMES[type].length;
+}
+
+export type LandingBlock = {
+    [K in BlockType]: {
+        id: string;
+        type: K;
+        data: BlockData[K];
+        style?: BlockStyle;
+    };
+}[BlockType];
+
+// Shown in the palette. The label is translated where it is shown.
+export const blockTypes: {
+    type: BlockType;
+    label: string;
+    icon: LucideIcon;
+}[] = [
+    { type: 'hero', label: 'Hero', icon: Sparkles },
+    { type: 'logos', label: 'Logo row', icon: Building2 },
+    { type: 'features', label: 'Features', icon: LayoutGrid },
+    { type: 'stats', label: 'Statistics', icon: ChartColumn },
+    { type: 'testimonials', label: 'Testimonials', icon: Quote },
+    { type: 'pricing', label: 'Pricing', icon: Tag },
+    { type: 'faq', label: 'FAQ', icon: HelpCircle },
+    { type: 'cta', label: 'Call to action', icon: Megaphone },
+    { type: 'text', label: 'Text', icon: Type },
+    { type: 'image', label: 'Image', icon: ImageIcon },
+    { type: 'button', label: 'Button', icon: MousePointerClick },
+];
+
 // The icons a feature can show. The key is what is saved; the server accepts only these keys.
 export const FEATURE_ICONS: Record<string, LucideIcon> = {
     zap: Zap,
@@ -98,29 +226,6 @@ export const FEATURE_ICON_LABELS: Record<string, string> = {
     palette: 'Design',
     settings: 'Settings',
 };
-
-export type LandingBlock = {
-    [K in BlockType]: { id: string; type: K; data: BlockData[K] };
-}[BlockType];
-
-// Shown in the palette. The label is translated where it is shown.
-export const blockTypes: {
-    type: BlockType;
-    label: string;
-    icon: LucideIcon;
-}[] = [
-    { type: 'hero', label: 'Hero', icon: Sparkles },
-    { type: 'logos', label: 'Logo row', icon: Building2 },
-    { type: 'features', label: 'Features', icon: LayoutGrid },
-    { type: 'stats', label: 'Statistics', icon: ChartColumn },
-    { type: 'testimonials', label: 'Testimonials', icon: Quote },
-    { type: 'pricing', label: 'Pricing', icon: Tag },
-    { type: 'faq', label: 'FAQ', icon: HelpCircle },
-    { type: 'cta', label: 'Call to action', icon: Megaphone },
-    { type: 'text', label: 'Text', icon: Type },
-    { type: 'image', label: 'Image', icon: ImageIcon },
-    { type: 'button', label: 'Button', icon: MousePointerClick },
-];
 
 // The starting content of a new block of each type.
 const defaults: { [K in BlockType]: BlockData[K] } = {
@@ -194,7 +299,47 @@ export function createBlock(type: BlockType): LandingBlock {
         id: crypto.randomUUID(),
         type,
         data: structuredClone(defaults[type]),
+        style: { ...DEFAULT_STYLE },
     } as LandingBlock;
+}
+
+// A copy of a block with a new id, for duplicating and for presets.
+export function cloneBlock(block: LandingBlock): LandingBlock {
+    return {
+        ...structuredClone(block),
+        id: crypto.randomUUID(),
+    } as LandingBlock;
+}
+
+// Sets a value at a dotted path such as "items.0.title" and returns a new block. Used by inline editing.
+export function setBlockField(
+    block: LandingBlock,
+    path: string,
+    value: string,
+): LandingBlock {
+    const keys = ['data', ...path.split('.')];
+
+    const update = (node: unknown, index: number): unknown => {
+        const key = keys[index];
+
+        if (key === undefined) {
+            return value;
+        }
+
+        if (Array.isArray(node)) {
+            const copy = [...node];
+            const position = Number(key);
+            copy[position] = update(node[position], index + 1);
+
+            return copy;
+        }
+
+        const object = (node ?? {}) as Record<string, unknown>;
+
+        return { ...object, [key]: update(object[key], index + 1) };
+    };
+
+    return update(block, 0) as LandingBlock;
 }
 
 // Blocks in the app stay within these limits. The server enforces the same numbers.

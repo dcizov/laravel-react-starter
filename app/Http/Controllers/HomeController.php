@@ -24,6 +24,7 @@ class HomeController extends Controller
 
         return Inertia::render('welcome', [
             'blocks' => $settings->landing_published ?? LandingBlocks::defaults(),
+            'theme' => $settings->landing_theme ?? LandingBlocks::defaultTheme(),
             'preview' => false,
         ]);
     }

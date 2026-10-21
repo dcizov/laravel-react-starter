@@ -1,18 +1,22 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { LandingBlock } from '@/components/landing/block-types';
 import { RenderBlock } from '@/components/landing/render-block';
+import type { LandingTheme } from '@/components/landing/theme';
+import { themeStyle } from '@/components/landing/theme';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
 import { dashboard, login, register } from '@/routes';
 
-// The landing page. Its blocks come from the admin's published page, or the built-in default.
+// The landing page. Its blocks and theme come from the admin's published page, or the built-in default.
 // In preview the admin's draft is shown, with a banner so it is not mistaken for the public page.
 export default function Welcome({
     blocks,
+    theme,
     preview,
 }: {
     blocks: LandingBlock[];
+    theme: LandingTheme;
     preview: boolean;
 }) {
     const t = useTrans();
@@ -21,7 +25,10 @@ export default function Welcome({
     return (
         <>
             <Head title={t('Welcome')} />
-            <div className="flex min-h-svh flex-col bg-background text-foreground">
+            <div
+                className="flex min-h-svh flex-col bg-background text-foreground"
+                style={themeStyle(theme)}
+            >
                 {preview && (
                     <div
                         role="status"
@@ -74,7 +81,7 @@ export default function Welcome({
                     )}
                 </header>
 
-                <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-2 px-4 pb-16 md:px-8">
+                <main className="flex w-full flex-1 flex-col pb-16">
                     {blocks.map((block) => (
                         <RenderBlock key={block.id} block={block} />
                     ))}

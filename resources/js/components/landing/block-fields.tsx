@@ -592,7 +592,7 @@ function ItemList({
     );
 }
 
-function TextField({
+export function TextField({
     id,
     label,
     hint,
@@ -646,7 +646,7 @@ function csrfToken(): string {
     return cookie ? decodeURIComponent(cookie.split('=')[1] ?? '') : '';
 }
 
-function ImageField({
+export function ImageField({
     label,
     value = '',
     onChange,

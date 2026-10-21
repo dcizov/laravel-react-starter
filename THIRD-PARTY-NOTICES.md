@@ -1,8 +1,8 @@
 # Third-party notices
 
-## Shadcn Space blocks (MIT)
+## Landing page layouts (inspiration only)
 
-The landing page section layouts in `resources/js/components/landing/marketing-blocks.tsx` are adapted from the free blocks in https://github.com/shadcnspace/shadcnspace (hero/logo cloud/statistics/testimonial/pricing/FAQ/CTA designs). The code is rewritten to use this app's components and the block data, and no images, fonts, or Next.js code are copied.
+The landing page layouts in `resources/js/components/landing/` were written for this app. They follow common patterns seen in free MIT-licensed shadcn/ui templates and block sets, such as Shadcn Space (https://github.com/shadcnspace/shadcnspace), Velora UI, Launch UI, and the leoMirandaa shadcn landing template. No code, images, fonts, or Next.js files are copied from those projects.
 
 ```
 MIT License

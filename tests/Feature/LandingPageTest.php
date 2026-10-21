@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Settings\AppSettings;
 use App\Support\ErrorPages;
 use App\Support\LandingBlocks;
+use App\Support\LandingPresets;
 use App\Support\Rbac;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -26,13 +27,26 @@ function block(string $id, string $type, array $data): array
     return ['id' => $id, 'type' => $type, 'data' => $data];
 }
 
+function landingTheme(array $overrides = []): array
+{
+    return array_merge([
+        'primary' => '#0369a1',
+        'background' => '#f8fbff',
+        'foreground' => '#0f172a',
+        'radius' => 0.75,
+        'font' => 'sans',
+        'text_size' => 'md',
+    ], $overrides);
+}
+
 test('the home page shows the default landing page when it is switched on', function () {
     $this->get('/')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('welcome')
             ->where('preview', false)
-            ->where('blocks.0.type', 'hero'));
+            ->where('blocks.0.type', 'hero')
+            ->where('theme.font', 'sans'));
 });
 
 test('with the landing page switched off, guests go to login and users go to the dashboard', function () {
@@ -58,7 +72,7 @@ test('a draft keeps only the fields each block type allows', function () {
     $admin = landingAdmin();
 
     $this->actingAs($admin)
-        ->put(route('admin.landing.draft.update'), ['blocks' => [
+        ->put(route('admin.landing.draft.update'), ['theme' => landingTheme(), 'blocks' => [
             block('hero-1', 'hero', ['title' => 'Hi', 'text' => 'There', 'onclick' => 'alert(1)']),
         ]])
         ->assertRedirect();
@@ -73,7 +87,7 @@ test('links that are not http, https, or a site path are rejected', function (st
     $admin = landingAdmin();
 
     $this->actingAs($admin)
-        ->put(route('admin.landing.draft.update'), ['blocks' => [
+        ->put(route('admin.landing.draft.update'), ['theme' => landingTheme(), 'blocks' => [
             block('button-1', 'button', ['label' => 'Click', 'url' => $url]),
         ]])
         ->assertSessionHasErrors('blocks.0.data.url');
@@ -85,7 +99,7 @@ test('links that are not http, https, or a site path are rejected', function (st
 
 test('an unknown block type is rejected', function () {
     $this->actingAs(landingAdmin())
-        ->put(route('admin.landing.draft.update'), ['blocks' => [
+        ->put(route('admin.landing.draft.update'), ['theme' => landingTheme(), 'blocks' => [
             block('x-1', 'script', ['body' => 'x']),
         ]])
         ->assertSessionHasErrors('blocks.0.type');
@@ -95,7 +109,7 @@ test('publishing copies the draft to the public page, and discarding resets the 
     $admin = landingAdmin();
 
     $this->actingAs($admin)
-        ->put(route('admin.landing.draft.update'), ['blocks' => [
+        ->put(route('admin.landing.draft.update'), ['theme' => landingTheme(), 'blocks' => [
             block('text-1', 'text', ['heading' => 'New', 'body' => 'Published text']),
         ]]);
 
@@ -104,7 +118,7 @@ test('publishing copies the draft to the public page, and discarding resets the 
     $this->get('/')->assertInertia(fn ($page) => $page->where('blocks.0.data.body', 'Published text'));
 
     $this->actingAs($admin)
-        ->put(route('admin.landing.draft.update'), ['blocks' => []]);
+        ->put(route('admin.landing.draft.update'), ['theme' => landingTheme(), 'blocks' => []]);
 
     $this->actingAs($admin)->post(route('admin.landing.discard'))->assertRedirect();
 
@@ -114,7 +128,7 @@ test('publishing copies the draft to the public page, and discarding resets the 
 test('an empty draft is kept as empty instead of falling back to the published page', function () {
     $admin = landingAdmin();
 
-    $this->actingAs($admin)->put(route('admin.landing.draft.update'), ['blocks' => []]);
+    $this->actingAs($admin)->put(route('admin.landing.draft.update'), ['theme' => landingTheme(), 'blocks' => []]);
 
     expect(app(AppSettings::class)->landing_draft)->toBe([]);
 });
@@ -123,7 +137,7 @@ test('the preview shows the draft and is marked as a preview', function () {
     $admin = landingAdmin();
 
     $this->actingAs($admin)
-        ->put(route('admin.landing.draft.update'), ['blocks' => [
+        ->put(route('admin.landing.draft.update'), ['theme' => landingTheme(), 'blocks' => [
             block('text-2', 'text', ['body' => 'Draft only']),
         ]]);
 
@@ -244,4 +258,116 @@ test('feature icons must be one of the allowed keys, and pricing keeps its badge
 
     expect($draft[0]['data']['items'][0]['icon'])->toBe('zap')
         ->and($draft[1]['data']['items'][0]['badge'])->toBe('Most popular');
+});
+
+test('a block keeps its design settings and drops anything else', function () {
+    $draft = LandingBlocks::validate([
+        [
+            'id' => 'hero-style',
+            'type' => 'hero',
+            'data' => ['title' => 'Hi'],
+            'style' => [
+                'variant' => 1,
+                'bg_color' => '#112233',
+                'bg_image' => '/storage/landing/a.png',
+                'bg_overlay' => 30,
+                'text_color' => '',
+                'padding' => 'lg',
+                'width' => 'wide',
+                'align' => 'left',
+                'heading_size' => 'xl',
+                'font' => 'serif',
+                'animation' => 'zoom-in',
+                'css' => 'position:fixed',
+            ],
+        ],
+    ]);
+
+    expect($draft[0]['style'])->toHaveKeys(['variant', 'bg_color', 'bg_image', 'bg_overlay', 'padding', 'width', 'align', 'heading_size', 'font', 'animation'])
+        ->and($draft[0]['style'])->not->toHaveKey('css');
+});
+
+test('a block without a style is saved without one, so the defaults apply', function () {
+    $draft = LandingBlocks::validate([block('text-9', 'text', ['body' => 'x'])]);
+
+    expect($draft[0])->not->toHaveKey('style');
+});
+
+test('style values must be from the allowed choices', function (string $field, mixed $value) {
+    expect(fn () => LandingBlocks::validate([
+        ['id' => 'x-1', 'type' => 'text', 'data' => ['body' => 'x'], 'style' => [$field => $value]],
+    ]))->toThrow(ValidationException::class);
+})->with([
+    'variant out of range' => ['variant', 3],
+    'colour is not hex' => ['bg_color', 'red'],
+    'text colour injected' => ['text_color', '#fff;background:url(x)'],
+    'unknown padding' => ['padding', 'huge'],
+    'overlay too dark' => ['bg_overlay', 95],
+    'background image is javascript' => ['bg_image', 'javascript:alert(1)'],
+    'unknown animation' => ['animation', 'spin'],
+]);
+
+test('the page theme keeps its fields and rejects bad values', function () {
+    expect(LandingBlocks::validateTheme(landingTheme()))->toEqual(landingTheme());
+
+    expect(fn () => LandingBlocks::validateTheme(landingTheme(['primary' => 'blue'])))->toThrow(ValidationException::class);
+    expect(fn () => LandingBlocks::validateTheme(landingTheme(['radius' => 4])))->toThrow(ValidationException::class);
+    expect(fn () => LandingBlocks::validateTheme(landingTheme(['font' => 'Comic Sans'])))->toThrow(ValidationException::class);
+});
+
+test('a draft with an invalid theme is refused', function () {
+    $this->actingAs(landingAdmin())
+        ->put(route('admin.landing.draft.update'), [
+            'theme' => landingTheme(['primary' => 'nope']),
+            'blocks' => [block('text-4', 'text', ['body' => 'x'])],
+        ])
+        ->assertSessionHasErrors('theme.primary');
+});
+
+test('the theme is drafted, published with the blocks, and replaced with them on discard', function () {
+    $admin = landingAdmin();
+
+    $this->actingAs($admin)->put(route('admin.landing.draft.update'), [
+        'theme' => landingTheme(['primary' => '#ea580c', 'font' => 'serif']),
+        'blocks' => [block('text-3', 'text', ['body' => 'Themed'])],
+    ])->assertRedirect();
+
+    $this->actingAs($admin)->post(route('admin.landing.publish'))->assertRedirect();
+
+    $this->get('/')->assertInertia(fn ($page) => $page
+        ->where('theme.primary', '#ea580c')
+        ->where('theme.font', 'serif'));
+
+    $this->actingAs($admin)->put(route('admin.landing.draft.update'), [
+        'theme' => landingTheme(['primary' => '#000000']),
+        'blocks' => [],
+    ]);
+
+    $this->actingAs($admin)->post(route('admin.landing.discard'))->assertRedirect();
+
+    expect(app(AppSettings::class)->landing_theme_draft)->toEqual(app(AppSettings::class)->landing_theme);
+});
+
+test('every starting page passes the same validation as admin blocks, with unique ids', function () {
+    foreach (LandingPresets::all() as $preset) {
+        $blocks = LandingBlocks::validate($preset['blocks']);
+
+        expect($blocks)->toEqual($preset['blocks'])
+            ->and(array_column($blocks, 'id'))->toEqual(array_unique(array_column($blocks, 'id')));
+
+        if (isset($preset['theme'])) {
+            expect(LandingBlocks::validateTheme($preset['theme']))->toEqual($preset['theme']);
+        }
+    }
+});
+
+test('the visual editor is given the starting pages and their themes', function () {
+    $this->actingAs(landingAdmin())
+        ->get(route('admin.landing.index'))
+        ->assertInertia(fn ($page) => $page
+            ->component('admin/landing')
+            ->has('presets', 3)
+            ->where('presets.0.key', 'starter')
+            ->where('presets.1.theme.primary', '#0369a1')
+            ->has('theme'));
 });
