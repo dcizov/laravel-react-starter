@@ -40,7 +40,7 @@ html[data-font='system'] {
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-@theme {
+@theme inline {
     /* Headings inherit the body font, as in the base-nova style. */
     --font-heading: var(--font-sans);
     --font-sans:

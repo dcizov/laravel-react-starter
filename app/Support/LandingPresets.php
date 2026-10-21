@@ -6,11 +6,13 @@ namespace App\Support;
  * Complete starting pages, like a WordPress pattern or page template. An admin applies one in the visual
  * editor, which replaces the draft. Nothing here reaches visitors until it is published.
  *
- * The layouts follow the usual order of a SaaS marketing page: a sticky navigation bar, a hero with one clear
- * call to action, a logo strip, features, proof, pricing, questions, a closing call to action, and a footer.
+ * The section order follows common SaaS marketing pages: a sticky navigation bar, a hero with one clear
+ * call to action, a logo strip, features, proof (statistics and quotes), pricing, questions, a closing call
+ * to action, and a footer. The copy is written for an imaginary product, so it can be replaced freely.
  * Each preset picks different layouts and a different theme, so they look like three separate sites.
  *
- * Every block in here must pass LandingBlocks::validate(), which the tests check.
+ * Every block in here must pass LandingBlocks::validate(), which the tests check. Keep the item counts and
+ * lengths within the limits in LandingBlocks::fieldRules().
  */
 final class LandingPresets
 {
@@ -23,20 +25,20 @@ final class LandingPresets
             [
                 'key' => 'starter',
                 'label' => __('SaaS'),
-                'description' => __('The default. A product page with a sticky bar, features, pricing, and a closing call to action.'),
+                'description' => __('The default. A product page with a sticky bar, a hero, feature bento, proof, pricing, questions, and a closing call to action.'),
                 'blocks' => self::starter(),
             ],
             [
                 'key' => 'launch',
                 'label' => __('Product launch'),
-                'description' => __('A floating bar, a centred hero, a launch timeline of features, and a two-column price table.'),
+                'description' => __('A floating bar, a split hero, a scrolling logo row, a feature list, focused pricing, and a masonry of quotes.'),
                 'blocks' => self::frame(self::launch(), 1, 2, __('Ship faster with a page that is ready on day one.')),
                 'theme' => self::oceanTheme(),
             ],
             [
                 'key' => 'agency',
                 'label' => __('Agency'),
-                'description' => __('Editorial type, a quiet bar, a short approach, and quotes in a wall.'),
+                'description' => __('Editorial type, a quiet bar, a ruled logo grid, an approach in two columns, and a short list of questions.'),
                 'blocks' => self::frame(self::agency(), 2, 1, __('Design and strategy for companies that care about the details.')),
                 'theme' => self::editorialTheme(),
             ],
@@ -59,70 +61,63 @@ final class LandingPresets
     private static function starterSections(): array
     {
         return [
-            self::block('default-hero', 'hero', [
-                'title' => 'Ship your SaaS on Laravel and React, not on setup',
-                'text' => 'Accounts, roles, an admin area, a task board, and a visual page editor, already wired together and ready to change.',
-                'button_label' => 'Get started',
+            self::block('hero-main', 'hero', [
+                'title' => __('Ship your SaaS on Laravel and React, not on setup.'),
+                'text' => __('Accounts, roles, an admin area, a task board, and a visual page editor, already wired together and ready to change.'),
+                'button_label' => __('Get started'),
                 'button_url' => '/register',
-            ], ['variant' => 0, 'padding' => 'lg', 'text_effect' => 'words']),
-            self::block('default-logos', 'logos', [
-                'title' => 'Built with the tools you already trust',
+            ], ['variant' => 0, 'align' => 'center']),
+            self::block('logos-main', 'logos', [
+                'title' => __('Built with the tools you already trust'),
+                'items' => [['name' => 'Laravel'], ['name' => 'React'], ['name' => 'Inertia.js'], ['name' => 'Tailwind CSS'], ['name' => 'shadcn/ui'], ['name' => 'Spatie Permission']],
+            ], ['variant' => 0]),
+            self::block('features-main', 'features', [
+                'title' => __('Everything you need to launch'),
                 'items' => [
-                    ['name' => 'Laravel'],
-                    ['name' => 'React'],
-                    ['name' => 'Inertia.js'],
-                    ['name' => 'Tailwind CSS'],
-                    ['name' => 'shadcn/ui'],
-                    ['name' => 'Spatie Permission'],
+                    ['title' => __('Accounts'), 'text' => __('Sign up, sign in, reset a password, and edit your profile.'), 'icon' => 'lock'],
+                    ['title' => __('Roles and permissions'), 'text' => __('Decide what each role can see and change.'), 'icon' => 'shield'],
+                    ['title' => __('Admin area'), 'text' => __('Manage users, settings, and the page itself from one place.'), 'icon' => 'settings'],
+                    ['title' => __('Task board'), 'text' => __('A sample feature with drag and drop, badges, and a detail drawer.'), 'icon' => 'layers'],
+                    ['title' => __('Two languages'), 'text' => __('English and German, with right-to-left ready text.'), 'icon' => 'globe'],
+                    ['title' => __('Visual editor'), 'text' => __('Build this page from blocks, then preview and publish it.'), 'icon' => 'palette'],
                 ],
             ], ['variant' => 0]),
-            self::block('default-features', 'features', [
-                'title' => 'Everything you need to launch',
+            self::block('stats-main', 'stats', [
+                'title' => __('At a glance'),
                 'items' => [
-                    ['title' => 'Accounts', 'text' => 'Sign up, sign in, reset a password, and edit your profile.', 'icon' => 'lock'],
-                    ['title' => 'Roles and permissions', 'text' => 'Decide what each role can see and change.', 'icon' => 'shield'],
-                    ['title' => 'Admin area', 'text' => 'Manage users, roles, the audit log, and app settings.', 'icon' => 'settings'],
-                    ['title' => 'Task board', 'text' => 'A sample feature with drag-and-drop ordering saved for each user.', 'icon' => 'layers'],
-                    ['title' => 'Two languages', 'text' => 'English and German, with light and dark mode.', 'icon' => 'globe'],
-                    ['title' => 'Visual editor', 'text' => 'Build this page from blocks, then preview and publish it.', 'icon' => 'palette'],
+                    ['value' => '13', 'label' => __('Languages supported')],
+                    ['value' => '2', 'label' => __('Languages included')],
+                    ['value' => '2', 'label' => __('Built-in roles')],
+                ],
+            ], ['variant' => 2]),
+            self::block('testimonials-main', 'testimonials', [
+                'title' => __('Teams ship faster with it'),
+                'items' => [
+                    ['quote' => __('We went from idea to a live page in one afternoon.'), 'name' => 'Mara Schmidt', 'role' => __('Founder, Example Co.')],
+                    ['quote' => __('The roles and audit log were already there. That saved us weeks.'), 'name' => 'Tom Becker', 'role' => __('CTO, Northwind')],
+                    ['quote' => __('Clean code, sensible defaults, and nothing we had to unlearn.'), 'name' => 'Lena Hoffmann', 'role' => __('Engineering lead, Globex')],
+                ],
+            ], ['variant' => 1]),
+            self::block('pricing-main', 'pricing', [
+                'title' => __('Simple pricing'),
+                'items' => [
+                    ['name' => __('Starter'), 'price' => '€0', 'period' => __('/month'), 'description' => __('Try it out.'), 'features' => __('Up to 3 users')."\n".__('Community support'), 'button_label' => __('Start free'), 'button_url' => '/register'],
+                    ['name' => __('Team'), 'badge' => __('Most popular'), 'price' => '€29', 'period' => __('/month'), 'description' => __('For a growing team.'), 'features' => __('Unlimited users')."\n".__('Roles and permissions')."\n".__('Email support'), 'button_label' => __('Choose Team'), 'button_url' => '/register'],
+                    ['name' => __('Business'), 'price' => '€99', 'period' => __('/month'), 'description' => __('For larger organisations.'), 'features' => __('Everything in Team')."\n".__('Priority support'), 'button_label' => __('Contact sales'), 'button_url' => '/register'],
                 ],
             ], ['variant' => 0]),
-            self::block('default-stats', 'stats', [
-                'title' => 'At a glance',
+            self::block('faq-main', 'faq', [
+                'title' => __('Questions'),
                 'items' => [
-                    ['value' => '13', 'label' => 'Laravel major version'],
-                    ['value' => '2', 'label' => 'Languages included'],
-                    ['value' => '2', 'label' => 'Built-in roles: admin and user'],
+                    ['question' => __('How do I change what visitors see?'), 'answer' => __('Open the Visual editor, change the blocks, and save a draft. Preview shows the draft, and Publish makes it live.')],
+                    ['question' => __('Can I use my own logo?'), 'answer' => __('Yes. Upload it in the settings, and the navigation bar and footer show it next to the app name.')],
+                    ['question' => __('Is the page translated?'), 'answer' => __('The interface is. Your own text is kept as you write it, so translate the blocks yourself.')],
                 ],
             ], ['variant' => 0]),
-            self::block('default-testimonials', 'testimonials', [
-                'title' => 'Teams ship faster with it',
-                'items' => [
-                    ['quote' => 'We went from idea to a live page in one afternoon.', 'name' => 'Maria Schmidt', 'role' => 'Founder, Example GmbH'],
-                    ['quote' => 'The roles and audit log were already there. That saved us weeks.', 'name' => 'Tom Becker', 'role' => 'Engineering lead'],
-                    ['quote' => 'Clean code, sensible defaults, and nothing we had to unpick.', 'name' => 'Lena Hoffmann', 'role' => 'CTO'],
-                ],
-            ], ['variant' => 0]),
-            self::block('default-pricing', 'pricing', [
-                'title' => 'Simple pricing',
-                'items' => [
-                    ['name' => 'Starter', 'price' => '€0', 'period' => '/month', 'description' => 'To try it out.', 'features' => "Up to 3 users\nCommunity support", 'button_label' => 'Start free', 'button_url' => '/register'],
-                    ['name' => 'Team', 'badge' => 'Most popular', 'price' => '€29', 'period' => '/month', 'description' => 'For a growing team.', 'features' => "Unlimited users\nRoles and permissions\nEmail support", 'button_label' => 'Choose Team', 'button_url' => '/register'],
-                    ['name' => 'Business', 'price' => '€99', 'period' => '/month', 'description' => 'For larger organisations.', 'features' => "Everything in Team\nPriority support", 'button_label' => 'Contact sales', 'button_url' => '/register'],
-                ],
-            ], ['variant' => 0]),
-            self::block('default-faq', 'faq', [
-                'title' => 'Questions',
-                'items' => [
-                    ['question' => 'How do I change what visitors see?', 'answer' => 'Open the Visual editor, change the blocks, and save a draft. Preview shows the draft, and Publish makes it live.'],
-                    ['question' => 'Can I turn this page off?', 'answer' => 'Yes. With the landing page switched off, visitors go straight to sign in, or to the dashboard when they are signed in.'],
-                    ['question' => 'Can I add more sections?', 'answer' => 'Yes, up to the limit for each block type. Add a block from the palette and drag it into place.'],
-                ],
-            ], ['variant' => 0]),
-            self::block('default-cta', 'cta', [
-                'title' => 'Ready to build?',
-                'text' => 'Create an account, or sign in to go to your dashboard.',
-                'button_label' => 'Create an account',
+            self::block('cta-main', 'cta', [
+                'title' => __('Ready to build?'),
+                'text' => __('Create an account, or sign in to go to your dashboard.'),
+                'button_label' => __('Create an account'),
                 'button_url' => '/register',
             ], ['variant' => 0]),
         ];
@@ -134,50 +129,51 @@ final class LandingPresets
     private static function launch(): array
     {
         return [
-            self::block('launch-hero', 'hero', [
-                'title' => 'Launch your product in days, not months',
-                'text' => 'A polished site with sign-up, a dashboard, and a pricing page, already in place for the first visitors.',
-                'button_label' => 'Start free trial',
+            self::block('hero-launch', 'hero', [
+                'title' => __('Launch on Monday, not next quarter.'),
+                'text' => __('Everything a product needs on day one, already in place: accounts, a page, and a dashboard that is ready to grow.'),
+                'button_label' => __('Start now'),
                 'button_url' => '/register',
-            ], ['variant' => 0, 'padding' => 'lg', 'text_effect' => 'words']),
-            self::block('launch-logos', 'logos', [
-                'title' => 'Trusted by teams at',
-                'items' => [['name' => 'Acme'], ['name' => 'Northwind'], ['name' => 'Globex'], ['name' => 'Initech']],
             ], ['variant' => 1]),
-            self::block('launch-features', 'features', [
-                'title' => 'Everything to launch',
+            self::block('logos-launch', 'logos', [
+                'title' => __('Trusted by early teams'),
+                'items' => [['name' => 'Northwind'], ['name' => 'Globex'], ['name' => 'Initech'], ['name' => 'Umbrella'], ['name' => 'Hooli'], ['name' => 'Stark']],
+            ], ['variant' => 1]),
+            self::block('features-launch', 'features', [
+                'title' => __('What you get on day one'),
                 'items' => [
-                    ['title' => 'Set up in minutes', 'text' => 'Sign-up, accounts, and an admin area are ready on the first run.', 'icon' => 'rocket'],
-                    ['title' => 'Secure by default', 'text' => 'Roles and permissions decide who can see and change what.', 'icon' => 'shield'],
-                    ['title' => 'Built to grow', 'text' => 'Add pages, blocks, and features without rewriting the basics.', 'icon' => 'layers'],
+                    ['title' => __('Ready in minutes'), 'text' => __('Install, set a name and a logo, and you have a working product.'), 'icon' => 'rocket'],
+                    ['title' => __('Secure by default'), 'text' => __('Sign-in, password reset, and roles are built in, not bolted on.'), 'icon' => 'shield'],
+                    ['title' => __('Measure what matters'), 'text' => __('A dashboard with the numbers you check every morning.'), 'icon' => 'chart'],
                 ],
             ], ['variant' => 1]),
-            self::block('launch-testimonials', 'testimonials', [
-                'title' => 'Teams are shipping faster',
+            self::block('stats-launch', 'stats', [
                 'items' => [
-                    ['quote' => 'We went from idea to a live page in one afternoon.', 'name' => 'Maria Schmidt', 'role' => 'Founder, Example GmbH'],
-                    ['quote' => 'The roles and audit log were already there. That saved us weeks.', 'name' => 'Tom Becker', 'role' => 'Engineering lead'],
+                    ['value' => '1', 'label' => __('Day to launch')],
+                    ['value' => '3', 'label' => __('Ready-made pages')],
+                    ['value' => '0', 'label' => __('Lines of setup')],
                 ],
             ], ['variant' => 1]),
-            self::block('launch-pricing', 'pricing', [
-                'title' => 'Simple pricing',
+            self::block('pricing-launch', 'pricing', [
+                'title' => __('Pick a plan for launch week'),
                 'items' => [
-                    ['name' => 'Starter', 'price' => '€0', 'period' => '/month', 'description' => 'To try it out.', 'features' => "Up to 3 users\nCommunity support", 'button_label' => 'Start free', 'button_url' => '/register'],
-                    ['name' => 'Team', 'badge' => 'Most popular', 'price' => '€29', 'period' => '/month', 'description' => 'For a growing team.', 'features' => "Unlimited users\nRoles and permissions\nEmail support", 'button_label' => 'Choose Team', 'button_url' => '/register'],
-                    ['name' => 'Business', 'price' => '€99', 'period' => '/month', 'description' => 'For larger organisations.', 'features' => "Everything in Team\nPriority support", 'button_label' => 'Contact sales', 'button_url' => '/register'],
-                ],
-            ], ['variant' => 1]),
-            self::block('launch-faq', 'faq', [
-                'title' => 'Questions',
-                'items' => [
-                    ['question' => 'Can I change the colours?', 'answer' => 'Yes. The theme sets the primary colour, background, text colour, corner radius, font, and text size.'],
-                    ['question' => 'Can I cancel at any time?', 'answer' => 'Yes. There is no contract, and you keep access until the end of the billing period.'],
+                    ['name' => __('Launch'), 'price' => '€0', 'period' => __('/month'), 'description' => __('For the first 100 users.'), 'features' => __('Your own domain')."\n".__('Basic analytics'), 'button_label' => __('Start free'), 'button_url' => '/register'],
+                    ['name' => __('Growth'), 'badge' => __('Recommended'), 'price' => '€49', 'period' => __('/month'), 'description' => __('For the team that is scaling.'), 'features' => __('Unlimited users')."\n".__('Custom roles')."\n".__('Priority email support'), 'button_label' => __('Choose Growth'), 'button_url' => '/register'],
                 ],
             ], ['variant' => 2]),
-            self::block('launch-cta', 'cta', [
-                'title' => 'Ship it this week',
-                'text' => 'Start on the free plan and upgrade when your team grows.',
-                'button_label' => 'Start free trial',
+            self::block('testimonials-launch', 'testimonials', [
+                'title' => __('What early users say'),
+                'items' => [
+                    ['quote' => __('It felt like we had a team of engineers setting it up for us.'), 'name' => 'Priya Nair', 'role' => __('Product, Hooli')],
+                    ['quote' => __('The editor let our marketing team ship the page without a ticket.'), 'name' => 'Jonas Weber', 'role' => __('Marketing, Stark')],
+                    ['quote' => __('Every screen looks finished. That is rare on day one.'), 'name' => 'Aiko Tanaka', 'role' => __('Designer, Umbrella')],
+                    ['quote' => __('We kept the defaults and changed only the words.'), 'name' => 'Sam Okafor', 'role' => __('Founder, Initech')],
+                ],
+            ], ['variant' => 2]),
+            self::block('cta-launch', 'cta', [
+                'title' => __('Your launch page is one click away.'),
+                'text' => __('Apply this layout, edit the words, then publish.'),
+                'button_label' => __('Start now'),
                 'button_url' => '/register',
             ], ['variant' => 1]),
         ];
@@ -189,44 +185,46 @@ final class LandingPresets
     private static function agency(): array
     {
         return [
-            self::block('agency-hero', 'hero', [
-                'title' => 'We design and build digital products people remember',
-                'text' => 'A small team for brands that want a site that looks considered and works hard.',
-                'button_label' => 'Start a project',
+            self::block('hero-agency', 'hero', [
+                'title' => __('We make products that look as careful as they work.'),
+                'text' => __('A small team for companies that want a site that looks considered and works hard.'),
+                'button_label' => __('Talk to us'),
                 'button_url' => '/register',
-            ], ['variant' => 2, 'padding' => 'xl', 'text_effect' => 'words']),
-            self::block('agency-text', 'text', [
-                'heading' => 'Our approach',
-                'body' => 'We start with the question behind the product, then shape the story, the layout, and the build around it. Every decision is one we can explain.',
+            ], ['variant' => 2]),
+            self::block('logos-agency', 'logos', [
+                'title' => __('Selected clients'),
+                'items' => [['name' => 'Northwind'], ['name' => 'Globex'], ['name' => 'Initech'], ['name' => 'Umbrella'], ['name' => 'Hooli'], ['name' => 'Stark']],
+            ], ['variant' => 2]),
+            self::block('text-agency', 'text', [
+                'heading' => __('Our approach'),
+                'body' => __('We begin with the questions a product must answer, then design the simplest structure that answers them. Strategy, design, and build happen in one team, so nothing is lost between handovers.'),
+            ], ['variant' => 2]),
+            self::block('features-agency', 'features', [
+                'title' => __('How we work'),
+                'items' => [
+                    ['title' => __('Discovery'), 'text' => __('Two weeks of interviews and a plain-language brief.'), 'icon' => 'sparkles'],
+                    ['title' => __('Design'), 'text' => __('Layouts and type, tested with the people who will use them.'), 'icon' => 'palette'],
+                    ['title' => __('Build'), 'text' => __('Clean code and a page your team can edit without us.'), 'icon' => 'check'],
+                ],
+            ], ['variant' => 2]),
+            self::block('testimonials-agency', 'testimonials', [
+                'title' => __('In their words'),
+                'items' => [
+                    ['quote' => __('They asked better questions than our own board did.'), 'name' => 'Clara Dunn', 'role' => __('CEO, Globex')],
+                    ['quote' => __('Careful work, delivered on the date they promised.'), 'name' => 'Ben Adler', 'role' => __('Director, Initech')],
+                ],
             ], ['variant' => 1]),
-            self::block('agency-features', 'features', [
-                'title' => 'What we do',
+            self::block('faq-agency', 'faq', [
+                'title' => __('Common questions'),
                 'items' => [
-                    ['title' => 'Strategy', 'text' => 'Positioning, messages, and a plan you can measure.'],
-                    ['title' => 'Design', 'text' => 'Identity, pages, and the details that make them feel right.'],
-                    ['title' => 'Build', 'text' => 'Fast, accessible sites that are easy to change afterwards.'],
+                    ['question' => __('Do you work with small teams?'), 'answer' => __('Yes. Most of our clients have fewer than fifty people.')],
+                    ['question' => __('Who owns the work?'), 'answer' => __('You do. Every file and every line of code is handed over.')],
                 ],
-            ], ['variant' => 2]),
-            self::block('agency-stats', 'stats', [
-                'title' => 'Results',
-                'items' => [
-                    ['value' => '40+', 'label' => 'Projects launched'],
-                    ['value' => '2×', 'label' => 'Average increase in enquiries'],
-                    ['value' => '98%', 'label' => 'Clients who came back'],
-                ],
-            ], ['variant' => 2]),
-            self::block('agency-testimonials', 'testimonials', [
-                'title' => 'In their words',
-                'items' => [
-                    ['quote' => 'They listened first, then delivered something better than our brief.', 'name' => 'Lena Hoffmann', 'role' => 'Marketing director'],
-                    ['quote' => 'Calm, clear, and on time. Exactly what we needed.', 'name' => 'Jonas Weber', 'role' => 'Co-founder'],
-                    ['quote' => 'Our new site doubled the number of enquiries in the first month.', 'name' => 'Sara Klein', 'role' => 'Owner'],
-                ],
-            ], ['variant' => 2]),
-            self::block('agency-cta', 'cta', [
-                'title' => 'Have a project in mind?',
-                'text' => 'Tell us what you are working on. We reply within two working days.',
-                'button_label' => 'Start a project',
+            ], ['variant' => 1]),
+            self::block('cta-agency', 'cta', [
+                'title' => __('Tell us what you are building.'),
+                'text' => __('A short call is enough to see whether we are a good fit.'),
+                'button_label' => __('Book a call'),
                 'button_url' => '/register',
             ], ['variant' => 2]),
         ];
@@ -258,7 +256,8 @@ final class LandingPresets
 
     /**
      * Adds a navigation bar above and a footer below the sections. The bar links to the sections that exist on
-     * the page, so none of them point at a missing anchor.
+     * the page, so none of them point at a missing anchor. The footer repeats those links and adds an account
+     * column. Its copyright line is left empty, so the app name and the current year are used.
      *
      * @param  list<array{id: string, type: string, data: array<string, mixed>, style?: array<string, mixed>}>  $sections
      * @return list<array{id: string, type: string, data: array<string, mixed>, style?: array<string, mixed>}>

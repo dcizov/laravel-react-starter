@@ -9,6 +9,7 @@ import {
     WIDTH_CLASSES,
 } from '@/components/landing/block-style';
 import type {
+    BlockData,
     LandingBlock,
     ResolvedStyle,
 } from '@/components/landing/block-types';
@@ -108,130 +109,57 @@ export function RenderBlock({ block }: { block: LandingBlock }) {
     );
 }
 
+// The primary action of a block, shared by the hero, the call to action, and the text blocks.
+function Actions({
+    href,
+    label,
+    labelPath,
+    inverse = false,
+}: {
+    href?: string;
+    label?: string;
+    labelPath: string;
+    inverse?: boolean;
+}) {
+    if (!href || !label) {
+        return null;
+    }
+
+    return (
+        <div className="flex flex-wrap items-center gap-3">
+            <LinkButton
+                size="lg"
+                href={href}
+                label={label}
+                labelPath={labelPath}
+                variant={inverse ? 'secondary' : 'default'}
+            />
+        </div>
+    );
+}
+
+// A soft glow behind the hero. It is decoration only and never blocks clicks.
+function Backdrop() {
+    return (
+        <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-16 left-1/2 -z-10 size-[28rem] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl"
+        />
+    );
+}
+
 function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
     const centered = style.align === 'center';
 
     switch (block.type) {
-        case 'hero': {
-            const { data } = block;
-            const actions =
-                data.button_label && data.button_url ? (
-                    <LinkButton
-                        size="lg"
-                        href={data.button_url}
-                        labelPath="button_label"
-                        label={data.button_label}
-                    />
-                ) : null;
-            const copy = (
-                <>
-                    <EditableText
-                        as="h2"
-                        path="title"
-                        value={data.title}
-                        required
-                        max={120}
-                        className={TITLE_HERO}
-                    />
-                    <EditableText
-                        as="p"
-                        path="text"
-                        value={data.text}
-                        multiline
-                        max={300}
-                        className="max-w-2xl text-lg text-pretty text-muted-foreground"
-                    />
-                    {actions}
-                </>
-            );
-
-            if (style.variant === 1) {
-                return (
-                    <div className="grid w-full items-center gap-10 md:grid-cols-2">
-                        <div
-                            className={cn(
-                                'flex flex-col gap-6',
-                                centered
-                                    ? 'items-center text-center'
-                                    : 'items-start text-left',
-                            )}
-                        >
-                            {copy}
-                        </div>
-                        {data.image ? (
-                            <img
-                                src={data.image}
-                                alt=""
-                                className="w-full rounded-2xl border object-cover shadow-xl"
-                            />
-                        ) : (
-                            <div
-                                aria-hidden="true"
-                                className="aspect-4/3 w-full rounded-2xl border bg-muted"
-                            />
-                        )}
-                    </div>
-                );
-            }
-
-            if (style.variant === 2) {
-                return (
-                    <div className="grid w-full gap-10 border-t pt-10 text-left md:grid-cols-[1.4fr_1fr] md:items-end">
-                        <div className="flex flex-col items-start gap-6">
-                            <EditableText
-                                as="h2"
-                                path="title"
-                                value={data.title}
-                                required
-                                max={120}
-                                className={TITLE_HERO}
-                            />
-                        </div>
-                        <div className="flex flex-col items-start gap-6">
-                            <EditableText
-                                as="p"
-                                path="text"
-                                value={data.text}
-                                multiline
-                                max={300}
-                                className="text-lg text-pretty text-muted-foreground"
-                            />
-                            {actions}
-                        </div>
-                        {data.image && (
-                            <img
-                                src={data.image}
-                                alt=""
-                                className="w-full rounded-2xl border object-cover md:col-span-2"
-                            />
-                        )}
-                    </div>
-                );
-            }
-
+        case 'hero':
             return (
-                <div className="relative isolate w-full overflow-hidden rounded-3xl border bg-card px-6 py-16 text-center sm:px-12 sm:py-24">
-                    <div
-                        aria-hidden="true"
-                        className="pointer-events-none absolute -top-40 left-1/2 -z-10 size-[36rem] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl"
-                    />
-                    <div
-                        aria-hidden="true"
-                        className="pointer-events-none absolute -right-24 -bottom-32 -z-10 size-96 rounded-full bg-primary/10 blur-3xl"
-                    />
-                    <div className="mx-auto flex max-w-3xl flex-col items-center gap-6">
-                        {copy}
-                    </div>
-                    {data.image && (
-                        <img
-                            src={data.image}
-                            alt=""
-                            className="mx-auto mt-14 w-full max-w-4xl rounded-2xl border object-cover shadow-2xl"
-                        />
-                    )}
-                </div>
+                <HeroBlock
+                    data={block.data}
+                    variant={style.variant}
+                    centered={centered}
+                />
             );
-        }
 
         case 'logos':
             return <LogosBlock data={block.data} variant={style.variant} />;
@@ -319,50 +247,166 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
     }
 }
 
-function FeaturesBlock({
+// Hero: a headline, a short lead, the main action, and a product picture.
+// Centered is the default. Split puts the picture beside the copy. Editorial sets the copy on a ruled grid.
+function HeroBlock({
     data,
     variant,
     centered,
 }: {
-    data: Extract<LandingBlock, { type: 'features' }>['data'];
+    data: BlockData['hero'];
     variant: number;
     centered: boolean;
 }) {
+    const lead = (
+        <EditableText
+            as="p"
+            path="text"
+            value={data.text}
+            multiline
+            max={300}
+            className="max-w-2xl text-lg text-pretty text-muted-foreground sm:text-xl"
+        />
+    );
     const title = (
         <EditableText
             as="h2"
             path="title"
             value={data.title}
+            required
             max={120}
-            className={cn(TITLE_SECTION, 'w-full')}
+            className={TITLE_HERO}
+        />
+    );
+    const actions = (
+        <Actions
+            href={data.button_url}
+            label={data.button_label}
+            labelPath="button_label"
         />
     );
 
-    const icon = (index: number, className: string) => {
-        const item = data.items[index];
-        const Icon =
-            FEATURE_ICONS[item?.icon ?? ''] ??
-            FEATURE_ICONS.sparkles ??
-            Sparkles;
+    if (variant === 1) {
+        // Split: copy on one side, the picture (or a frame where the picture will go) on the other.
+        return (
+            <div className="relative grid w-full items-center gap-10 md:grid-cols-2">
+                <div
+                    className={cn(
+                        'flex flex-col gap-6',
+                        centered
+                            ? 'items-center text-center md:items-start md:text-left'
+                            : 'items-start text-left',
+                    )}
+                >
+                    {title}
+                    {lead}
+                    {actions}
+                </div>
+                {data.image ? (
+                    <img
+                        src={data.image}
+                        alt=""
+                        className="w-full rounded-2xl border object-cover shadow-xl"
+                    />
+                ) : (
+                    <div
+                        aria-hidden="true"
+                        className="relative flex aspect-4/3 w-full items-end overflow-hidden rounded-2xl border bg-muted p-6"
+                    >
+                        <div className="grid w-full gap-3">
+                            <span className="h-3 w-2/3 rounded-full bg-foreground/15" />
+                            <span className="h-3 w-1/2 rounded-full bg-foreground/10" />
+                            <span className="h-24 w-full rounded-xl border bg-background" />
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
 
-        return <Icon className={className} aria-hidden="true" />;
+    if (variant === 2) {
+        // Editorial: a ruled top edge, the headline on the left, the lead and action on the right.
+        return (
+            <div className="relative grid w-full gap-8 border-t pt-10 md:grid-cols-5">
+                <div className="md:col-span-3">{title}</div>
+                <div className="flex flex-col items-start gap-6 md:col-span-2 md:pt-3">
+                    {lead}
+                    {actions}
+                </div>
+                {data.image && (
+                    <img
+                        src={data.image}
+                        alt=""
+                        className="col-span-full w-full rounded-2xl border object-cover"
+                    />
+                )}
+            </div>
+        );
+    }
+
+    // Centered: one column, the default for a product page.
+    return (
+        <div className="relative flex w-full flex-col items-center gap-6 py-6 text-center">
+            <Backdrop />
+            {title}
+            {lead}
+            {actions}
+            {data.image && (
+                <img
+                    src={data.image}
+                    alt=""
+                    className="mt-6 w-full max-w-4xl rounded-2xl border object-cover shadow-2xl"
+                />
+            )}
+        </div>
+    );
+}
+
+// Features: each item has an icon, a title and a short line.
+// Bento puts the first item in a wide tile. List is a numbered column. Columns is a plain grid.
+function FeaturesBlock({
+    data,
+    variant,
+    centered,
+}: {
+    data: BlockData['features'];
+    variant: number;
+    centered: boolean;
+}) {
+    const heading = (
+        <EditableText
+            as="h2"
+            path="title"
+            value={data.title}
+            max={120}
+            className={cn(
+                TITLE_SECTION,
+                centered ? 'text-center' : 'text-left',
+            )}
+        />
+    );
+
+    const icon = (icon: string | undefined) => {
+        const Icon = (icon && FEATURE_ICONS[icon]) || Sparkles;
+
+        return <Icon className="size-5" aria-hidden="true" />;
     };
 
-    // Feature items have no id in the saved data, so the position is the path and the key.
     if (variant === 1) {
+        // List: numbered rows separated by hairlines.
         return (
             <div className="flex w-full flex-col gap-10">
-                {title}
-                <ul className="flex w-full flex-col divide-y rounded-2xl border bg-card">
+                {heading}
+                <ol className="mx-auto flex w-full max-w-3xl flex-col divide-y">
                     {data.items.map((item, index) => (
                         <li
                             // eslint-disable-next-line @eslint-react/no-array-index-key
                             key={index}
-                            className="flex items-start gap-5 p-6 text-left"
+                            className="flex items-start gap-5 py-6"
                         >
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                {icon(index, 'size-5')}
-                            </div>
+                            <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                                {String(index + 1).padStart(2, '0')}
+                            </span>
                             <div className="flex flex-col gap-1">
                                 <EditableText
                                     as="h3"
@@ -370,7 +414,7 @@ function FeaturesBlock({
                                     value={item.title}
                                     required
                                     max={80}
-                                    className="font-medium"
+                                    className="text-lg font-medium"
                                 />
                                 <EditableText
                                     as="p"
@@ -378,9 +422,47 @@ function FeaturesBlock({
                                     value={item.text}
                                     multiline
                                     max={200}
-                                    className="text-sm text-muted-foreground"
+                                    className="text-pretty text-muted-foreground"
                                 />
                             </div>
+                        </li>
+                    ))}
+                </ol>
+            </div>
+        );
+    }
+
+    if (variant === 2) {
+        // Columns: no boxes, a hairline above each item and an icon in a square.
+        return (
+            <div className="flex w-full flex-col gap-10">
+                {heading}
+                <ul className="grid w-full gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-4 border-t pt-6"
+                        >
+                            <span className="flex size-10 items-center justify-center rounded-lg border bg-background text-foreground">
+                                {icon(item.icon)}
+                            </span>
+                            <EditableText
+                                as="h3"
+                                path={`items.${index}.title`}
+                                value={item.title}
+                                required
+                                max={80}
+                                className="text-lg font-medium"
+                            />
+                            <EditableText
+                                as="p"
+                                path={`items.${index}.text`}
+                                value={item.text}
+                                multiline
+                                max={200}
+                                className="text-pretty text-muted-foreground"
+                            />
                         </li>
                     ))}
                 </ul>
@@ -388,20 +470,24 @@ function FeaturesBlock({
         );
     }
 
-    if (variant === 2) {
-        return (
-            <div className="flex w-full flex-col gap-10">
-                {title}
-                <div className="grid w-full gap-10 md:grid-cols-3">
-                    {data.items.map((item, index) => (
-                        <div
-                            // eslint-disable-next-line @eslint-react/no-array-index-key
-                            key={index}
-                            className={cn(
-                                'flex flex-col gap-4 border-t-2 border-primary pt-6 text-left',
-                            )}
-                        >
-                            {icon(index, 'size-6 text-primary')}
+    // Bento: the first feature is a wide tile, the rest are a grid of muted cards.
+    return (
+        <div className="flex w-full flex-col gap-10">
+            {heading}
+            <ul className="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {data.items.map((item, index) => (
+                    <li
+                        // eslint-disable-next-line @eslint-react/no-array-index-key
+                        key={index}
+                        className={cn(
+                            'flex flex-col items-start gap-4 rounded-2xl border bg-card p-6 text-left',
+                            bentoSpan(index, data.items.length),
+                        )}
+                    >
+                        <span className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                            {icon(item.icon)}
+                        </span>
+                        <div className="flex flex-col gap-2">
                             <EditableText
                                 as="h3"
                                 path={`items.${index}.title`}
@@ -416,105 +502,90 @@ function FeaturesBlock({
                                 value={item.text}
                                 multiline
                                 max={200}
-                                className="text-sm text-muted-foreground"
+                                className="text-pretty text-muted-foreground"
                             />
                         </div>
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="flex w-full flex-col gap-10">
-            {title}
-            <div className="grid w-full gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {data.items.map((item, index) => (
-                    <div
-                        // eslint-disable-next-line @eslint-react/no-array-index-key
-                        key={index}
-                        className={cn(
-                            'flex flex-col gap-4 rounded-2xl border bg-card p-6 transition-colors hover:border-primary/40',
-                            centered ? 'text-center' : 'text-left',
-                        )}
-                    >
-                        <div
-                            className={cn(
-                                'flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary',
-                                centered && 'mx-auto',
-                            )}
-                        >
-                            {icon(index, 'size-5')}
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                            <EditableText
-                                as="h3"
-                                path={`items.${index}.title`}
-                                value={item.title}
-                                required
-                                max={80}
-                                className="font-medium"
-                            />
-                            <EditableText
-                                as="p"
-                                path={`items.${index}.text`}
-                                value={item.text}
-                                multiline
-                                max={200}
-                                className="text-sm text-muted-foreground"
-                            />
-                        </div>
-                    </div>
+                    </li>
                 ))}
-            </div>
+            </ul>
         </div>
     );
 }
 
+// The bento grid is 2 columns on small screens and 3 on large ones. The first card is wide, and the last card
+// stretches to fill its row, so no card is left alone on a row.
+function bentoSpan(index: number, count: number): string {
+    if (index === 0) {
+        return 'sm:col-span-2 lg:col-span-2';
+    }
+
+    if (index !== count - 1 || count < 3) {
+        return '';
+    }
+
+    const smLeft = (count - 1) % 2; // cards after the first, on the 2-column grid
+    const lgLeft = (count - 2) % 3; // cards after the first row, on the 3-column grid
+    const sm = smLeft === 1 ? 'sm:col-span-2' : '';
+    const lg =
+        lgLeft === 1 ? 'lg:col-span-3' : lgLeft === 2 ? 'lg:col-span-2' : '';
+
+    return cn(sm, lg);
+}
+
+// Text: a heading and a body. The variants change the rhythm, not the words.
 function TextBlock({
     data,
     variant,
     centered,
 }: {
-    data: Extract<LandingBlock, { type: 'text' }>['data'];
+    data: BlockData['text'];
     variant: number;
     centered: boolean;
 }) {
-    const heading = (
-        <EditableText
-            as="h2"
-            path="heading"
-            value={data.heading}
-            max={120}
-            className="text-2xl font-semibold tracking-tight"
-        />
-    );
-    const body = (
-        <EditableText
-            as="p"
-            path="body"
-            value={data.body}
-            multiline
-            required
-            max={2000}
-            className="text-lg leading-relaxed whitespace-pre-line text-muted-foreground"
-        />
-    );
-
     if (variant === 1) {
+        // Accent rule: a primary bar beside the copy, left aligned.
         return (
-            <div className="flex w-full max-w-2xl flex-col gap-4 border-l-4 border-primary pl-6 text-left">
-                {heading}
-                {body}
+            <div className="grid w-full gap-6 border-l-4 border-primary pl-6 md:pl-10">
+                <EditableText
+                    as="h2"
+                    path="heading"
+                    value={data.heading}
+                    max={120}
+                    className={cn(TITLE_SECTION, 'text-left')}
+                />
+                <EditableText
+                    as="p"
+                    path="body"
+                    value={data.body}
+                    multiline
+                    required
+                    max={2000}
+                    className="max-w-3xl text-lg leading-relaxed text-pretty text-muted-foreground"
+                />
             </div>
         );
     }
 
     if (variant === 2) {
+        // Two columns: the heading on the left, the body on the right.
         return (
-            <div className="grid w-full gap-8 text-left md:grid-cols-[1fr_1.4fr] md:items-start">
-                {heading}
-                {body}
+            <div className="grid w-full gap-6 md:grid-cols-2 md:gap-12">
+                <EditableText
+                    as="h2"
+                    path="heading"
+                    value={data.heading}
+                    max={120}
+                    className={cn(TITLE_SECTION, 'text-left')}
+                />
+                <EditableText
+                    as="p"
+                    path="body"
+                    value={data.body}
+                    multiline
+                    required
+                    max={2000}
+                    className="text-lg leading-relaxed text-pretty text-muted-foreground"
+                />
             </div>
         );
     }
@@ -522,88 +593,100 @@ function TextBlock({
     return (
         <div
             className={cn(
-                'mx-auto flex w-full max-w-2xl flex-col gap-4',
-                centered ? 'text-center' : 'text-left',
+                'flex w-full max-w-3xl flex-col gap-6',
+                centered
+                    ? 'mx-auto items-center text-center'
+                    : 'items-start text-left',
             )}
         >
-            {heading}
-            {body}
+            <EditableText
+                as="h2"
+                path="heading"
+                value={data.heading}
+                max={120}
+                className={TITLE_SECTION}
+            />
+            <EditableText
+                as="p"
+                path="body"
+                value={data.body}
+                multiline
+                required
+                max={2000}
+                className="text-lg leading-relaxed text-pretty text-muted-foreground"
+            />
         </div>
     );
 }
 
+// Call to action: a closing line and one action. Banner is a filled panel, Outline is a bordered card,
+// Split puts the copy and the action side by side.
 function CtaBlock({
     data,
     variant,
 }: {
-    data: Extract<LandingBlock, { type: 'cta' }>['data'];
+    data: BlockData['cta'];
     variant: number;
 }) {
-    const button =
-        data.button_label && data.button_url ? (
-            <LinkButton
-                size="lg"
-                variant={variant === 0 ? 'secondary' : 'default'}
-                href={data.button_url}
-                labelPath="button_label"
-                label={data.button_label}
-            />
-        ) : null;
-
-    if (variant === 1) {
-        return (
-            <div className="flex w-full flex-col items-center gap-6 rounded-3xl border bg-card px-6 py-16 text-center sm:px-12">
-                <EditableText
-                    as="h2"
-                    path="title"
-                    value={data.title}
-                    required
-                    max={120}
-                    className={TITLE_SECTION}
-                />
-                {data.text && (
-                    <EditableText
-                        as="p"
-                        path="text"
-                        value={data.text}
-                        multiline
-                        max={300}
-                        className="max-w-xl text-pretty text-muted-foreground"
-                    />
-                )}
-                {button}
-            </div>
-        );
-    }
-
     if (variant === 2) {
         return (
-            <div className="flex w-full flex-col items-start gap-6 rounded-3xl bg-muted p-8 text-left sm:flex-row sm:items-center sm:justify-between sm:p-12">
-                <div className="flex flex-col gap-2">
+            <div className="flex w-full flex-col items-start justify-between gap-6 rounded-3xl border bg-card p-8 sm:p-12 md:flex-row md:items-center">
+                <div className="flex max-w-xl flex-col gap-3">
                     <EditableText
                         as="h2"
                         path="title"
                         value={data.title}
                         required
                         max={120}
-                        className="text-2xl font-semibold tracking-tight sm:text-3xl"
+                        className="text-3xl font-medium tracking-tight text-balance sm:text-4xl"
                     />
-                    {data.text && (
-                        <EditableText
-                            as="p"
-                            path="text"
-                            value={data.text}
-                            multiline
-                            max={300}
-                            className="text-muted-foreground"
-                        />
-                    )}
+                    <EditableText
+                        as="p"
+                        path="text"
+                        value={data.text}
+                        multiline
+                        max={300}
+                        className="text-pretty text-muted-foreground"
+                    />
                 </div>
-                {button}
+                <Actions
+                    href={data.button_url}
+                    label={data.button_label}
+                    labelPath="button_label"
+                />
             </div>
         );
     }
 
+    if (variant === 1) {
+        return (
+            <div className="relative flex w-full flex-col items-center gap-6 rounded-3xl border bg-background px-6 py-16 text-center sm:px-12">
+                <EditableText
+                    as="h2"
+                    path="title"
+                    value={data.title}
+                    required
+                    max={120}
+                    className="max-w-2xl text-3xl font-medium tracking-tight text-balance sm:text-4xl"
+                />
+                <EditableText
+                    as="p"
+                    path="text"
+                    value={data.text}
+                    multiline
+                    max={300}
+                    className="max-w-xl text-pretty text-muted-foreground"
+                />
+                <Actions
+                    href={data.button_url}
+                    label={data.button_label}
+                    labelPath="button_label"
+                />
+            </div>
+        );
+    }
+
+    // Banner: a filled panel with a soft highlight, the default closing block.
     return (
         <div className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground sm:px-12">
             <div
@@ -616,19 +699,22 @@ function CtaBlock({
                 value={data.title}
                 required
                 max={120}
-                className={cn(TITLE_SECTION, 'max-w-2xl')}
+                className="max-w-2xl text-3xl font-medium tracking-tight text-balance sm:text-4xl"
             />
-            {data.text && (
-                <EditableText
-                    as="p"
-                    path="text"
-                    value={data.text}
-                    multiline
-                    max={300}
-                    className="max-w-xl text-pretty text-primary-foreground/80"
-                />
-            )}
-            {button}
+            <EditableText
+                as="p"
+                path="text"
+                value={data.text}
+                multiline
+                max={300}
+                className="max-w-xl text-pretty text-primary-foreground/80"
+            />
+            <Actions
+                href={data.button_url}
+                label={data.button_label}
+                labelPath="button_label"
+                inverse
+            />
         </div>
     );
 }
