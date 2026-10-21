@@ -11,7 +11,7 @@ export type LandingTheme = {
     text_size: 'sm' | 'md' | 'lg';
 };
 
-export const DEFAULT_THEME: LandingTheme = {
+const DEFAULT_THEME: LandingTheme = {
     primary: '#171717',
     background: '#ffffff',
     foreground: '#0a0a0a',
@@ -100,7 +100,7 @@ const TEXT_SIZES: Record<LandingTheme['text_size'], string> = {
 };
 
 // The colour for text on top of the primary colour. Picks white or near-black by brightness.
-export function readableOn(hex: string): string {
+function readableOn(hex: string): string {
     const value = hex.replace('#', '');
     const channels = [0, 2, 4].map((start) =>
         parseInt(value.slice(start, start + 2), 16),
@@ -113,7 +113,7 @@ export function readableOn(hex: string): string {
 
 // The CSS variables for the page. Set on the page wrapper, so every shadcn component inside uses them.
 // Muted and border colours are mixed from the background and text colours, so they follow the theme.
-export function themeVariables(theme: LandingTheme): Record<string, string> {
+function themeVariables(theme: LandingTheme): Record<string, string> {
     return {
         '--background': theme.background,
         '--foreground': theme.foreground,

@@ -469,13 +469,6 @@ export function BlockFields({
         case 'navbar':
             return (
                 <FieldGroup>
-                    <TextField
-                        id="brand"
-                        label={t('Brand name')}
-                        value={block.data.brand}
-                        max={40}
-                        onChange={(value) => set({ brand: value })}
-                    />
                     <ItemList
                         idPrefix={block.id}
                         items={block.data.items}
@@ -527,13 +520,6 @@ export function BlockFields({
 
             return (
                 <FieldGroup>
-                    <TextField
-                        id="brand"
-                        label={t('Brand name')}
-                        value={block.data.brand}
-                        max={40}
-                        onChange={(value) => set({ brand: value })}
-                    />
                     <TextField
                         id="text"
                         label={t('Text')}
@@ -621,6 +607,9 @@ export function BlockFields({
                     <TextField
                         id="copyright"
                         label={t('Copyright line')}
+                        hint={t(
+                            'Leave empty to show © the current year and the app name.',
+                        )}
                         value={block.data.copyright}
                         max={160}
                         onChange={(value) => set({ copyright: value })}

@@ -255,7 +255,6 @@ final class LandingBlocks
                 'items.*.answer' => ['nullable', 'string', 'max:1000'],
             ],
             'navbar' => [
-                'brand' => ['required', 'string', 'max:40'],
                 'items' => ['present', 'array', 'max:6'],
                 'items.*.label' => ['required', 'string', 'max:40'],
                 'items.*.url' => ['required', 'string', 'max:500', self::safeUrl()],
@@ -263,7 +262,6 @@ final class LandingBlocks
                 'button_url' => ['nullable', 'string', 'max:500', self::safeUrl()],
             ],
             'footer' => [
-                'brand' => ['nullable', 'string', 'max:40'],
                 'text' => ['nullable', 'string', 'max:300'],
                 'columns' => ['present', 'array', 'max:4'],
                 'columns.*.title' => ['required', 'string', 'max:40'],

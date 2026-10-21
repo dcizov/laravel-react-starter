@@ -69,13 +69,11 @@ export type BlockData = {
         button_url?: string;
     };
     navbar: {
-        brand: string;
         items: NavLinkItem[];
         button_label?: string;
         button_url?: string;
     };
     footer: {
-        brand?: string;
         text?: string;
         columns: FooterColumn[];
         copyright?: string;
@@ -321,7 +319,6 @@ const defaults: { [K in BlockType]: BlockData[K] } = {
     image: { src: '', alt: '' },
     button: { label: 'Button', url: '' },
     navbar: {
-        brand: 'Brand',
         items: [
             { label: 'Features', url: '#features' },
             { label: 'Pricing', url: '#pricing' },
@@ -331,7 +328,6 @@ const defaults: { [K in BlockType]: BlockData[K] } = {
         button_url: '/register',
     },
     footer: {
-        brand: 'Brand',
         text: 'A short line about what you do.',
         columns: [
             {

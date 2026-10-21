@@ -1,17 +1,26 @@
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { useTrans } from '@/hooks/use-trans';
+import { dashboard } from '@/routes';
 
-// Avatar button in the top bar. Its menu is the same one the sidebar shows.
-export function ProfileDropdown() {
+// Avatar button for the top bar and the landing page navigation. Its menu is the same one the sidebar shows.
+// dashboardLink adds a link to the dashboard under the name, for pages that are not the dashboard.
+export function ProfileDropdown({
+    dashboardLink = false,
+}: {
+    dashboardLink?: boolean;
+}) {
     const t = useTrans();
     const getInitials = useInitials();
     const { auth } = usePage().props;
@@ -44,7 +53,19 @@ export function ProfileDropdown() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-64 min-w-56" align="end">
-                <UserMenuContent user={user} />
+                <UserMenuContent user={user}>
+                    {dashboardLink && (
+                        <>
+                            <DropdownMenuItem
+                                render={<Link href={dashboard()} />}
+                            >
+                                <LayoutDashboard />
+                                {t('Dashboard')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                        </>
+                    )}
+                </UserMenuContent>
             </DropdownMenuContent>
         </DropdownMenu>
     );

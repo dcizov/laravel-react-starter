@@ -1,37 +1,33 @@
-// Sign-in state for the navigation bar on the public page: an avatar menu for signed-in visitors,
-// and a Log in link for guests. The visual editor does not provide the context, so it shows nothing here.
-import { Link } from '@inertiajs/react';
-import { LayoutDashboard } from 'lucide-react';
-import { createContext, use } from 'react';
+// Sign-in controls for the navigation bar. Signed-in visitors get the same profile menu as the app header,
+// with a dashboard link under their name. Guests get a Log in link. The visual editor shows neither,
+// so the canvas stays simple.
+import { Link, usePage } from '@inertiajs/react';
+import { use } from 'react';
 import { LandingEditContext } from '@/components/landing/landing-edit';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { UserMenuContent } from '@/components/user-menu-content';
-import { useInitials } from '@/hooks/use-initials';
+import { ProfileDropdown } from '@/components/profile-dropdown';
 import { useTrans } from '@/hooks/use-trans';
-import type { User } from '@/types';
 import { dashboard, login } from '@/routes';
 
-export const AccountContext = createContext<{ user: User | null } | null>(null);
+// Whether the visitor is signed in on the public page. The editor is never treated as signed in for the
+// navigation bar, so its call to action stays editable.
+export function useSignedInOnPublicPage(): boolean {
+    const edit = use(LandingEditContext);
+    const { auth } = usePage().props;
 
-// Desktop: an avatar button with the profile menu and a dashboard link. Guests see a Log in link.
+    return !edit && Boolean(auth.user);
+}
+
+// Desktop: the profile menu for signed-in visitors, or a Log in link for guests.
 export function AccountMenu() {
     const edit = use(LandingEditContext);
-    const account = use(AccountContext);
+    const { auth } = usePage().props;
     const t = useTrans();
-    const getInitials = useInitials();
 
-    if (edit || !account) {
+    if (edit) {
         return null;
     }
 
-    if (!account.user) {
+    if (!auth.user) {
         return (
             <Link
                 href={login()}
@@ -42,50 +38,20 @@ export function AccountMenu() {
         );
     }
 
-    const user = account.user;
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger
-                render={
-                    <button
-                        type="button"
-                        aria-label={t('Account menu')}
-                        className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                }
-            >
-                <Avatar className="size-8">
-                    <AvatarImage
-                        src={user.avatar_url ?? undefined}
-                        alt={user.name}
-                    />
-                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 rounded-lg">
-                <DropdownMenuItem render={<Link href={dashboard()} />}>
-                    <LayoutDashboard />
-                    {t('Dashboard')}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <UserMenuContent user={user} />
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
+    return <ProfileDropdown dashboardLink />;
 }
 
-// The same choice as a plain link list, for the mobile menu.
+// The same choice as plain links, for the mobile menu.
 export function AccountLinks() {
     const edit = use(LandingEditContext);
-    const account = use(AccountContext);
+    const { auth } = usePage().props;
     const t = useTrans();
 
-    if (edit || !account) {
+    if (edit) {
         return null;
     }
 
-    return account.user ? (
+    return auth.user ? (
         <Link href={dashboard()} className="text-sm font-medium">
             {t('Dashboard')}
         </Link>

@@ -378,7 +378,6 @@ test('the visual editor is given the starting pages and their themes', function 
 test('a navigation bar keeps its links and button, and drops anything else', function () {
     $draft = LandingBlocks::validate([
         block('nav-1', 'navbar', [
-            'brand' => 'Acme',
             'items' => [
                 ['label' => 'Features', 'url' => '#features', 'x' => 'drop'],
                 ['label' => 'Log in', 'url' => '/login'],
@@ -390,30 +389,34 @@ test('a navigation bar keeps its links and button, and drops anything else', fun
         ]),
     ]);
 
-    expect($draft[0]['data'])->toHaveKeys(['brand', 'items', 'button_label', 'button_url'])
+    expect($draft[0]['data'])->toHaveKeys(['items', 'button_label', 'button_url'])
         ->and($draft[0]['data'])->not->toHaveKey('html')
         ->and($draft[0]['data']['items'][0])->toEqual(['label' => 'Features', 'url' => '#features'])
         ->and($draft[0]['data']['items'][2]['url'])->toBe('https://example.com/docs');
 });
 
-test('a navigation bar rejects unsafe links, a missing brand, and too many links', function () {
+test('a navigation bar rejects unsafe links and too many links', function () {
     expect(fn () => LandingBlocks::validate([
-        block('nav-2', 'navbar', ['brand' => 'Acme', 'items' => [['label' => 'Bad', 'url' => 'javascript:alert(1)']]]),
+        block('nav-2', 'navbar', ['items' => [['label' => 'Bad', 'url' => 'javascript:alert(1)']]]),
     ]))->toThrow(ValidationException::class);
 
     expect(fn () => LandingBlocks::validate([
-        block('nav-3', 'navbar', ['items' => []]),
+        block('nav-4', 'navbar', ['items' => array_fill(0, 7, ['label' => 'x', 'url' => '/'])]),
     ]))->toThrow(ValidationException::class);
+});
 
-    expect(fn () => LandingBlocks::validate([
-        block('nav-4', 'navbar', ['brand' => 'Acme', 'items' => array_fill(0, 7, ['label' => 'x', 'url' => '/'])]),
-    ]))->toThrow(ValidationException::class);
+test('the guest language switch stores the chosen locale in the session', function () {
+    $this->post(route('language.guest'), ['locale' => 'de'])
+        ->assertRedirect()
+        ->assertSessionHas('locale', 'de');
+
+    $this->post(route('language.guest'), ['locale' => 'xx'])
+        ->assertSessionHasErrors('locale');
 });
 
 test('a footer keeps its columns and links, and rejects unsafe links and too many columns', function () {
     $draft = LandingBlocks::validate([
         block('footer-1', 'footer', [
-            'brand' => 'Acme',
             'text' => 'Short line.',
             'columns' => [
                 ['title' => 'Product', 'links' => [['label' => 'Pricing', 'url' => '#pricing']]],

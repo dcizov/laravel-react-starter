@@ -1,5 +1,4 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { AccountContext } from '@/components/landing/account-menu';
 import type { LandingBlock } from '@/components/landing/block-types';
 import { RenderBlock } from '@/components/landing/render-block';
 import type { LandingTheme } from '@/components/landing/theme';
@@ -94,11 +93,9 @@ export default function Welcome({
                             'pb-16',
                     )}
                 >
-                    <AccountContext value={{ user: auth.user ?? null }}>
-                        {blocks.map((block) => (
-                            <RenderBlock key={block.id} block={block} />
-                        ))}
-                    </AccountContext>
+                    {blocks.map((block) => (
+                        <RenderBlock key={block.id} block={block} />
+                    ))}
                 </main>
             </div>
         </>

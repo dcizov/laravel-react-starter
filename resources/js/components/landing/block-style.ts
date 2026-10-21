@@ -26,7 +26,7 @@ export const WIDTH_CLASSES: Record<Width, string> = {
 };
 
 // The heading size is a multiplier, set on the block as --lp-scale (see HEADING_SCALE).
-export const HEADING_SCALE: Record<HeadingSize, number> = {
+const HEADING_SCALE: Record<HeadingSize, number> = {
     sm: 0.8,
     md: 1,
     lg: 1.2,
@@ -45,7 +45,7 @@ const FONT_STACKS: Record<Exclude<FontChoice, 'theme'>, string> = {
 };
 
 // Makes a link safe to use inside url("..."). Quotes and brackets are percent-encoded.
-export function cssUrl(url: string): string {
+function cssUrl(url: string): string {
     const encoded = encodeURI(url).replace(
         /[()'"]/g,
         (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,

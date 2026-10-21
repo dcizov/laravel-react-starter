@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { BadgeCheck, LogOut, Palette, Settings, UserRound } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { ShortcutHint } from '@/components/shortcut-hint';
 import {
     DropdownMenuGroup,
@@ -19,10 +20,12 @@ import { logout } from '@/routes';
 
 type Props = {
     user: User;
+    // Rendered under the name and email, above the links. Used for the dashboard link on the landing page.
+    children?: ReactNode;
 };
 
 // The profile menu. The header and the sidebar both render this, so they always match.
-export function UserMenuContent({ user }: Props) {
+export function UserMenuContent({ user, children }: Props) {
     const cleanup = useMobileNavigation();
     const t = useTrans();
 
@@ -40,6 +43,8 @@ export function UserMenuContent({ user }: Props) {
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
+
+            {children}
 
             <DropdownMenuGroup>
                 <DropdownMenuItem

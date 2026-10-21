@@ -1,9 +1,16 @@
 // Navigation bar and footer for the landing page. Three layouts each, picked by the block's variant.
+// The name and logo are the app's own (from Settings), so they match the dashboard header.
 // On the public page the mobile menu is a native <details>, so it works without script.
 // In the visual editor the desktop layout is always shown, so every link stays editable at any width.
+import { usePage } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
 import { use } from 'react';
-import { AccountLinks, AccountMenu } from '@/components/landing/account-menu';
+import { AppLogoMark } from '@/components/app-logo';
+import {
+    AccountLinks,
+    AccountMenu,
+    useSignedInOnPublicPage,
+} from '@/components/landing/account-menu';
 import type { BlockData, NavLinkItem } from '@/components/landing/block-types';
 import {
     EditableText,
@@ -54,23 +61,30 @@ function SiteLink({
     );
 }
 
-// Keeps the editor and the public page on the same markup for the brand name.
-function Brand({ value, className }: { value?: string; className?: string }) {
+// The app's logo and name, the same as the dashboard header. Not editable: change them in Settings.
+function Brand({ className }: { className?: string }) {
+    const { name } = usePage().props;
+
     return (
-        <EditableText
-            as="span"
-            path="brand"
-            value={value}
-            required
-            max={40}
-            className={cn('font-semibold tracking-tight', className)}
-        />
+        <div className="flex shrink-0 items-center gap-2.5">
+            <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary text-primary-foreground">
+                <AppLogoMark className="size-5 fill-current" />
+            </span>
+            <span
+                className={cn(
+                    'font-semibold tracking-tight whitespace-nowrap',
+                    className,
+                )}
+            >
+                {name}
+            </span>
+        </div>
     );
 }
 
-// The navigation bar. The logo and the links sit on the left; the theme switch, the language switch,
-// the account menu, and the button sit on the right. On the public page the bar is sticky and blurred
-// (see BlockFrame in render-block.tsx). Narrow screens get a menu panel under the bar.
+// The navigation bar. The logo and the links sit on the left. On the right: language, theme, then the
+// profile menu (or Log in for guests). A call to action is shown unless a signed-in visitor is on the public page.
+// The horizontal padding comes from the block frame, so the bar lines up with the rest of the page.
 export function NavbarBlock({
     data,
     variant,
@@ -80,9 +94,9 @@ export function NavbarBlock({
 }) {
     const edit = use(LandingEditContext);
     const t = useTrans();
+    const signedIn = useSignedInOnPublicPage();
     const floating = variant === 1;
     const minimal = variant === 2;
-    const initial = (data.brand || '?').trim().charAt(0).toUpperCase();
 
     const links = data.items.map((link, index) => (
         <SiteLink
@@ -95,7 +109,7 @@ export function NavbarBlock({
     ));
 
     const button =
-        !minimal && data.button_label && data.button_url ? (
+        !minimal && !signedIn && data.button_label && data.button_url ? (
             <LinkButton
                 size="default"
                 href={data.button_url}
@@ -104,15 +118,11 @@ export function NavbarBlock({
             />
         ) : null;
 
-    const brand = (
-        <div className="flex shrink-0 items-center gap-2.5">
-            <span
-                aria-hidden="true"
-                className="flex size-7 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground"
-            >
-                {initial}
-            </span>
-            <Brand value={data.brand} className="text-base" />
+    const tools = (
+        <div className="flex shrink-0 items-center gap-1">
+            <LanguageSwitcher />
+            <ThemeSwitch />
+            <AccountMenu />
         </div>
     );
 
@@ -120,37 +130,33 @@ export function NavbarBlock({
         <div className="relative w-full">
             <div
                 className={cn(
-                    'items-center gap-6 px-4 py-3 md:px-8',
+                    'items-center gap-6 py-3',
                     floating &&
                         'mx-auto my-3 max-w-5xl rounded-full border bg-background/80 py-2 pr-3 pl-5 shadow-sm backdrop-blur-md',
                     edit ? 'flex' : 'hidden md:flex',
                 )}
             >
-                {brand}
+                <Brand />
                 <nav className="flex min-w-0 items-center gap-5 overflow-x-auto">
                     {links}
                 </nav>
                 <div className="ml-auto flex shrink-0 items-center gap-3">
                     {button}
-                    <div className="flex items-center gap-1">
-                        <ThemeSwitch />
-                        <LanguageSwitcher />
-                        <AccountMenu />
-                    </div>
+                    {tools}
                 </div>
             </div>
             {!edit && (
                 <div
                     className={cn(
-                        'flex items-center justify-between gap-2 px-4 py-3 md:hidden',
+                        'flex items-center justify-between gap-2 py-3 md:hidden',
                         floating &&
                             'mx-auto my-3 max-w-5xl rounded-full border bg-background/80 pl-5 backdrop-blur-md',
                     )}
                 >
-                    {brand}
+                    <Brand />
                     <div className="flex items-center gap-1">
-                        <ThemeSwitch />
                         <LanguageSwitcher />
+                        <ThemeSwitch />
                         <details className="group">
                             <summary
                                 aria-label={t('Menu')}
@@ -180,6 +186,15 @@ export function NavbarBlock({
     );
 }
 
+// The copyright line. When the admin leaves it empty, it is built from the app's name and the current year.
+function copyrightLine(
+    name: string,
+    custom: string | undefined,
+    rights: string,
+) {
+    return custom || `© ${new Date().getFullYear()} ${name}. ${rights}`;
+}
+
 export function FooterBlock({
     data,
     variant,
@@ -187,18 +202,24 @@ export function FooterBlock({
     data: BlockData['footer'];
     variant: number;
 }) {
+    const { name } = usePage().props;
+    const t = useTrans();
     const centred = variant === 1;
     const bar = variant === 2;
 
-    const copyright = data.copyright ? (
+    const copyright = (
         <EditableText
             as="p"
             path="copyright"
-            value={data.copyright}
+            value={copyrightLine(
+                name,
+                data.copyright,
+                t('All rights reserved.'),
+            )}
             max={160}
             className="text-sm text-muted-foreground"
         />
-    ) : null;
+    );
 
     const brandBlock = (
         <div
@@ -207,9 +228,7 @@ export function FooterBlock({
                 centred ? 'items-center text-center' : 'items-start text-left',
             )}
         >
-            {data.brand !== undefined && (
-                <Brand value={data.brand} className="text-lg" />
-            )}
+            <Brand className="text-lg" />
             {data.text && (
                 <EditableText
                     as="p"
@@ -227,7 +246,7 @@ export function FooterBlock({
         return (
             <div className="flex w-full flex-col gap-6 border-t pt-6 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-col gap-2">
-                    {data.brand !== undefined && <Brand value={data.brand} />}
+                    <Brand />
                     {copyright}
                 </div>
                 <nav className="flex flex-wrap gap-x-6 gap-y-3">
@@ -297,11 +316,9 @@ export function FooterBlock({
                     ))}
                 </div>
             </div>
-            {copyright && (
-                <div className={cn('border-t pt-6', centred && 'text-center')}>
-                    {copyright}
-                </div>
-            )}
+            <div className={cn('border-t pt-6', centred && 'text-center')}>
+                {copyright}
+            </div>
         </div>
     );
 }

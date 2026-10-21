@@ -30,14 +30,14 @@ final class LandingPresets
                 'key' => 'launch',
                 'label' => __('Product launch'),
                 'description' => __('A floating bar, a centred hero, a launch timeline of features, and a two-column price table.'),
-                'blocks' => self::frame(self::launch(), 'Acme', 1, 2, __('Ship faster with a page that is ready on day one.')),
+                'blocks' => self::frame(self::launch(), 1, 2, __('Ship faster with a page that is ready on day one.')),
                 'theme' => self::oceanTheme(),
             ],
             [
                 'key' => 'agency',
                 'label' => __('Agency'),
                 'description' => __('Editorial type, a quiet bar, a short approach, and quotes in a wall.'),
-                'blocks' => self::frame(self::agency(), 'Studio North', 2, 1, __('Design and strategy for companies that care about the details.')),
+                'blocks' => self::frame(self::agency(), 2, 1, __('Design and strategy for companies that care about the details.')),
                 'theme' => self::editorialTheme(),
             ],
         ];
@@ -50,7 +50,7 @@ final class LandingPresets
      */
     public static function starter(): array
     {
-        return self::frame(self::starterSections(), 'Laravel Starter', 0, 0, __('A starter kit for Laravel and React.'));
+        return self::frame(self::starterSections(), 0, 0, __('A starter kit for Laravel and React.'));
     }
 
     /**
@@ -263,7 +263,7 @@ final class LandingPresets
      * @param  list<array{id: string, type: string, data: array<string, mixed>, style?: array<string, mixed>}>  $sections
      * @return list<array{id: string, type: string, data: array<string, mixed>, style?: array<string, mixed>}>
      */
-    private static function frame(array $sections, string $brand, int $navVariant, int $footerVariant, string $tagline): array
+    private static function frame(array $sections, int $navVariant, int $footerVariant, string $tagline): array
     {
         $present = array_column($sections, 'type');
         $names = [
@@ -285,14 +285,12 @@ final class LandingPresets
         $links = array_slice($links, 0, 5);
 
         $navbar = self::block('nav-main', 'navbar', [
-            'brand' => $brand,
             'items' => $links,
             'button_label' => __('Get started'),
             'button_url' => '/register',
         ], ['variant' => $navVariant]);
 
         $footer = self::block('footer-main', 'footer', [
-            'brand' => $brand,
             'text' => $tagline,
             'columns' => [
                 ['title' => __('Page'), 'links' => $links],
@@ -301,7 +299,6 @@ final class LandingPresets
                     ['label' => __('Register'), 'url' => '/register'],
                 ]],
             ],
-            'copyright' => '© '.date('Y').' '.$brand.'. '.__('All rights reserved.'),
         ], ['variant' => $footerVariant]);
 
         return [$navbar, ...$sections, $footer];
