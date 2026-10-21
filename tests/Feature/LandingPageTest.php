@@ -295,12 +295,29 @@ test('a block without a style is saved without one, so the defaults apply', func
     expect($draft[0])->not->toHaveKey('style');
 });
 
+test('a layout must exist for its block type', function (string $type, array $data, int $variant, bool $valid) {
+    $check = fn () => LandingBlocks::validate([
+        ['id' => 'x-1', 'type' => $type, 'data' => $data, 'style' => ['variant' => $variant]],
+    ]);
+
+    if ($valid) {
+        expect($check)->not->toThrow(ValidationException::class);
+    } else {
+        expect($check)->toThrow(ValidationException::class);
+    }
+})->with([
+    'text has five layouts' => ['text', ['body' => 'x'], 4, true],
+    'image has four layouts' => ['image', ['src' => 'https://example.com/a.png'], 3, true],
+    'image has no fifth layout' => ['image', ['src' => 'https://example.com/a.png'], 4, false],
+    'button has no fifth layout' => ['button', ['label' => 'Go', 'url' => '/register'], 4, false],
+]);
+
 test('style values must be from the allowed choices', function (string $field, mixed $value) {
     expect(fn () => LandingBlocks::validate([
         ['id' => 'x-1', 'type' => 'text', 'data' => ['body' => 'x'], 'style' => [$field => $value]],
     ]))->toThrow(ValidationException::class);
 })->with([
-    'variant out of range' => ['variant', 3],
+    'variant out of range' => ['variant', 5],
     'colour is not hex' => ['bg_color', 'red'],
     'text colour injected' => ['text_color', '#fff;background:url(x)'],
     'unknown padding' => ['padding', 'huge'],

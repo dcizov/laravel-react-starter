@@ -24,6 +24,17 @@ final class LandingBlocks
     public const MAX_BLOCKS = 40;
 
     // The page theme choices. Must match theme.ts on the client.
+    /**
+     * How many layouts each block type has. Mirrors VARIANT_NAMES in resources/js/components/landing/block-types.ts.
+     *
+     * @var array<string, int>
+     */
+    public const VARIANT_COUNTS = [
+        'navbar' => 5, 'footer' => 5, 'hero' => 5, 'logos' => 5, 'features' => 5,
+        'stats' => 5, 'testimonials' => 5, 'pricing' => 5, 'faq' => 5, 'cta' => 5,
+        'text' => 5, 'image' => 4, 'button' => 4,
+    ];
+
     public const FONTS = ['sans', 'serif', 'mono'];
 
     public const TEXT_SIZES = ['sm', 'md', 'lg'];
@@ -96,6 +107,9 @@ final class LandingBlocks
                 foreach (self::fieldRules($type) as $field => $fieldRules) {
                     $rules["blocks.$index.data.$field"] = $fieldRules;
                 }
+
+                // Each type has its own layouts, so the variant is checked against that type's count.
+                $rules["blocks.$index.style.variant"] = ['nullable', 'integer', 'between:0,'.(self::VARIANT_COUNTS[$type] - 1)];
             }
         }
 
