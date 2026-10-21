@@ -393,7 +393,8 @@ export function NavbarExtra({
     if (variant === 3) {
         return (
             <div className="flex w-full flex-col gap-3 py-3">
-                <div className="flex items-center justify-between gap-2">
+                {/* Wraps on narrow screens, so the brand name is not cut short. */}
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                     <Brand />
                     <div className="flex items-center gap-2">
                         {tools}
