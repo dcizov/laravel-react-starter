@@ -7,6 +7,7 @@ import { labels, priorities, statuses } from '@/components/tasks/data';
 import type { Task } from '@/components/tasks/data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,6 +21,9 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTrans } from '@/hooks/use-trans';
+
+// The Badge base style sets icons to size-3 with !important. This variant wins over it.
+const BADGE_ICON = '[&>svg]:size-3.5!';
 
 type TaskActions = {
     onEdit: (task: Task) => void;
@@ -40,6 +44,33 @@ export function useTaskColumns({
 
     return React.useMemo<ColumnDef<DataTableFeatures, Task>[]>(
         () => [
+            {
+                id: 'select',
+                header: ({ table }) => (
+                    <Checkbox
+                        checked={table.getIsAllPageRowsSelected()}
+                        indeterminate={
+                            !table.getIsAllPageRowsSelected() &&
+                            table.getIsSomePageRowsSelected()
+                        }
+                        onCheckedChange={(value) =>
+                            table.toggleAllPageRowsSelected(!!value)
+                        }
+                        aria-label={t('Select all')}
+                        className="translate-y-[2px]"
+                    />
+                ),
+                cell: ({ row }) => (
+                    <Checkbox
+                        checked={row.getIsSelected()}
+                        onCheckedChange={(value) => row.toggleSelected(!!value)}
+                        aria-label={t('Select row')}
+                        className="translate-y-[2px]"
+                    />
+                ),
+                enableSorting: false,
+                enableHiding: false,
+            },
             {
                 accessorKey: 'code',
                 header: ({ column }) => (
@@ -117,10 +148,10 @@ export function useTaskColumns({
                         <div className="w-[120px]">
                             <Badge
                                 variant="outline"
-                                className="px-1.5 text-muted-foreground"
+                                className={`px-1.5 text-muted-foreground ${BADGE_ICON}`}
                             >
                                 {status.icon && (
-                                    <status.icon className={status.iconClass} />
+                                    <status.icon className="shrink-0" />
                                 )}
                                 {t(status.label)}
                             </Badge>
@@ -151,10 +182,10 @@ export function useTaskColumns({
                     return (
                         <Badge
                             variant="outline"
-                            className="px-1.5 text-muted-foreground"
+                            className={`px-1.5 text-muted-foreground ${BADGE_ICON}`}
                         >
                             {priority.icon && (
-                                <priority.icon className={priority.iconClass} />
+                                <priority.icon className="shrink-0" />
                             )}
                             {t(priority.label)}
                         </Badge>

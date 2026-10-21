@@ -40,14 +40,20 @@ html[data-font='system'] {
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-@theme inline {
-    /* Headings inherit the body font, as in the base-nova style. */
-    --font-heading: var(--font-sans);
+/*
+ * Not part of @theme inline: inline would copy the font value into the
+ * utility class at build time, so the data-font overrides above would not apply.
+ */
+@theme {
     --font-sans:
         'Instrument Sans Variable', 'Instrument Sans', ui-sans-serif, system-ui,
         sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+    /* Headings inherit the body font, as in the base-nova style. */
+    --font-heading: var(--font-sans);
+}
 
+@theme inline {
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);

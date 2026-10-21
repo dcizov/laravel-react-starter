@@ -1,4 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
+import { BackToTop, scrollBehavior } from '@/components/landing/back-to-top';
 import type { LandingBlock } from '@/components/landing/block-types';
 import { RenderBlock } from '@/components/landing/render-block';
 import type { LandingTheme } from '@/components/landing/theme';
@@ -27,6 +29,20 @@ export default function Welcome({
     const { resolvedAppearance } = useAppearance();
     // A navigation bar block has its own place for sign-in links, so the default header is left out.
     const hasNavbar = blocks.some((block) => block.type === 'navbar');
+
+    // Links to sections such as #features scroll smoothly. Only this page is affected, so the
+    // rest of the app keeps the browser default.
+    useEffect(() => {
+        const root = document.documentElement;
+        const previous = root.style.scrollBehavior;
+
+        root.style.scrollBehavior =
+            scrollBehavior() === 'smooth' ? 'smooth' : 'auto';
+
+        return () => {
+            root.style.scrollBehavior = previous;
+        };
+    }, []);
 
     return (
         <>
@@ -100,6 +116,8 @@ export default function Welcome({
                         <RenderBlock key={block.id} block={block} />
                     ))}
                 </main>
+
+                <BackToTop />
             </div>
         </>
     );

@@ -22,7 +22,7 @@ class DisplayController extends Controller
     public function update(DisplaySettingsUpdateRequest $request): RedirectResponse
     {
         $request->user()->update([
-            'display_items' => array_values(array_unique($request->validated('items'))),
+            'hidden_display_items' => DisplaySettings::hiddenFor($request->validated('items')),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Display settings updated.')]);

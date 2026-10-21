@@ -46,7 +46,14 @@ export function DataTableRowDetail({
             >
                 {children}
             </DrawerTrigger>
-            <DrawerContent>
+            {/* On desktop the drawer floats inside the window, rounded on every corner. */}
+            <DrawerContent
+                className={
+                    isMobile
+                        ? undefined
+                        : 'inset-y-2 right-2 h-auto rounded-xl border shadow-lg data-[swipe-direction=right]:right-2 data-[swipe-direction=right]:rounded-xl'
+                }
+            >
                 <DrawerHeader className="gap-1">
                     <DrawerTitle>{detail.title}</DrawerTitle>
                     {detail.description && (

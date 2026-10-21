@@ -37,7 +37,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'timezone', 'locale', 'date_of_birth', 'display_items', 'notification_settings', 'avatar_path', 'header_path', 'bio', 'job_title', 'company', 'location', 'website', 'sidebar_variant', 'font'])]
+#[Fillable(['name', 'email', 'password', 'timezone', 'locale', 'date_of_birth', 'hidden_display_items', 'notification_settings', 'avatar_path', 'header_path', 'bio', 'job_title', 'company', 'location', 'website', 'sidebar_variant', 'font'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
@@ -117,7 +117,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'date_of_birth' => 'date',
-            'display_items' => 'array',
+            'hidden_display_items' => 'array',
             'notification_settings' => 'array',
         ];
     }

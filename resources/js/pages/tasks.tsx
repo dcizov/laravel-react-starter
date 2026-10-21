@@ -176,6 +176,7 @@ export default function Tasks({
                         getRowId={(row) => String(row.id)}
                         pageSizes={pageSizes}
                         enableRowDragging
+                        enableRowSelection
                         onRowOrderChange={(ids) => {
                             // Saved for this user only. The server sends the tasks back in this order.
                             router.put(

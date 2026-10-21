@@ -29,15 +29,34 @@ final class DisplaySettings
     ];
 
     /**
-     * The items the user has chosen, or all items when they have not chosen.
-     * Saved values that are no longer valid are ignored.
+     * The items to show: every item except the ones the user has hidden.
+     * Items added after the user saved their choice are shown by default.
      *
      * @return list<string>
      */
     public static function forUser(?User $user): array
     {
-        $saved = array_values(array_intersect(self::ITEMS, $user?->display_items ?? []));
+        $hidden = array_intersect(self::ITEMS, $user?->hidden_display_items ?? []);
+        $visible = array_values(array_diff(self::ITEMS, $hidden));
 
-        return $saved === [] ? self::ITEMS : $saved;
+        return $visible === [] ? self::ITEMS : $visible;
+    }
+
+    /**
+     * Convert the items the user chose to show into the items to store as hidden.
+     * An empty choice is not stored as hidden, so every item stays visible.
+     *
+     * @param  list<string>  $visible
+     * @return list<string>
+     */
+    public static function hiddenFor(array $visible): array
+    {
+        $visible = array_values(array_unique($visible));
+
+        if ($visible === []) {
+            return [];
+        }
+
+        return array_values(array_diff(self::ITEMS, $visible));
     }
 }
