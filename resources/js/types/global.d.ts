@@ -19,8 +19,8 @@ declare module '@inertiajs/core' {
             translations: Record<string, string>;
             timezone: string;
             displayItems: string[];
-            // Whether the public landing page is on. The visual editor is only shown when it is.
-            landingEnabled: boolean;
+            // The features switched on for this installation (see config/features.php), by slug.
+            features: string[];
             // Set while an administrator is signed in as this user.
             impersonating: { name: string } | null;
             sidebarVariant: 'inset' | 'floating';

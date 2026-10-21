@@ -34,6 +34,10 @@ final class Rbac
 
     public const PERMISSION_LANDING_MANAGE = 'landing.manage';
 
+    public const PERMISSION_NEWSLETTER_MANAGE = 'newsletter.manage';
+
+    public const PERMISSION_INTEGRATIONS_MANAGE = 'integrations.manage';
+
     /**
      * Every permission the application checks.
      *
@@ -52,6 +56,8 @@ final class Rbac
         self::PERMISSION_PERMISSIONS_MANAGE,
         self::PERMISSION_SETTINGS_MANAGE,
         self::PERMISSION_LANDING_MANAGE,
+        self::PERMISSION_NEWSLETTER_MANAGE,
+        self::PERMISSION_INTEGRATIONS_MANAGE,
     ];
 
     /**

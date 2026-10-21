@@ -3,8 +3,8 @@
 use App\Models\User;
 use App\Settings\AppSettings;
 use App\Support\ErrorPages;
-use App\Support\LandingBlocks;
-use App\Support\LandingPresets;
+use App\Features\Landing\LandingBlocks;
+use App\Features\Landing\LandingPresets;
 use App\Support\Rbac;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -51,9 +51,7 @@ test('the home page shows the default landing page when it is switched on', func
 });
 
 test('with the landing page switched off, guests go to login and users go to the dashboard', function () {
-    $settings = app(AppSettings::class);
-    $settings->landing_enabled = false;
-    $settings->save();
+    config(['features.enabled' => ['newsletter']]);
 
     $this->get('/')->assertRedirect(route('login'));
 
@@ -177,14 +175,12 @@ test('the admin settings save the error-page and landing switches', function () 
             'app_name' => 'Test',
             'default_role' => Rbac::DEFAULT_ROLE,
             'custom_error_pages' => false,
-            'landing_enabled' => false,
         ])
         ->assertRedirect();
 
     $settings = app(AppSettings::class);
 
     expect($settings->custom_error_pages)->toBeFalse()
-        ->and($settings->landing_enabled)->toBeFalse()
         ->and(ErrorPages::enabled())->toBeFalse();
 });
 
@@ -228,24 +224,21 @@ test('the default page uses the section types, with a navigation bar and then a 
         ->and($types[1])->toBe('hero');
 });
 
-test('the visual editor is only offered while the landing page is switched on', function () {
+test('the enabled features are shared with every page', function () {
     $user = User::factory()->create();
     $user->assignRole(Rbac::DEFAULT_ROLE);
-    $settings = app(AppSettings::class);
 
-    $settings->landing_enabled = false;
-    $settings->save();
+    config(['features.enabled' => ['newsletter']]);
 
     $this->actingAs($user)
         ->get(route('dashboard'))
-        ->assertInertia(fn ($page) => $page->where('landingEnabled', false));
+        ->assertInertia(fn ($page) => $page->where('features', ['newsletter']));
 
-    $settings->landing_enabled = true;
-    $settings->save();
+    config(['features.enabled' => ['landing']]);
 
     $this->actingAs($user)
         ->get(route('dashboard'))
-        ->assertInertia(fn ($page) => $page->where('landingEnabled', true));
+        ->assertInertia(fn ($page) => $page->where('features', ['landing']));
 });
 
 test('feature icons must be one of the allowed keys, and pricing keeps its badge', function () {

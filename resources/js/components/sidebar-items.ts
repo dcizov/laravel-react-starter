@@ -5,6 +5,8 @@ import {
     ListChecks,
     FolderGit2,
     LayoutGrid,
+    Mail,
+    Plug,
     ScrollText,
     Settings,
     ShieldCheck,
@@ -14,7 +16,9 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { index as indexAuditLog } from '@/routes/admin/audit-log';
+import { index as indexAdminIntegrations } from '@/routes/admin/integrations';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
+import { index as indexAdminNewsletter } from '@/routes/admin/newsletter';
 import { index as indexAdminPermissions } from '@/routes/admin/permissions';
 import { index as indexAdminRoles } from '@/routes/admin/roles';
 import { index as indexAdminUsers } from '@/routes/admin/users';
@@ -29,8 +33,8 @@ export type SidebarLink = NavItem & {
     icon: LucideIcon;
     // The Gate ability the user needs to see the link. Links without one are open to everyone.
     permission?: string;
-    // Only shown while the public landing page is switched on in admin settings.
-    needsLandingPage?: boolean;
+    // The feature this link belongs to (see config/features.php). Hidden while the feature is switched off.
+    feature?: string;
 };
 
 export type SidebarEntry = SidebarLink;
@@ -122,7 +126,23 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 href: indexAdminLanding(),
                 icon: LayoutTemplate,
                 permission: 'landing.manage',
-                needsLandingPage: true,
+                feature: 'landing',
+            },
+            {
+                id: 'admin-newsletter',
+                title: 'Newsletter',
+                href: indexAdminNewsletter(),
+                icon: Mail,
+                permission: 'newsletter.manage',
+                feature: 'newsletter',
+            },
+            {
+                id: 'admin-integrations',
+                title: 'Integrations',
+                href: indexAdminIntegrations(),
+                icon: Plug,
+                permission: 'integrations.manage',
+                feature: 'integrations',
             },
         ],
     },
@@ -156,12 +176,12 @@ export const displayGroups = sidebarGroups.map((group) => ({
 export function visibleSidebarGroups(
     displayItems: string[],
     permissions: string[],
-    landingEnabled: boolean,
+    features: string[],
 ): SidebarGroupDef[] {
     const allowed = (link: SidebarLink) =>
         displayItems.includes(link.id) &&
         (!link.permission || permissions.includes(link.permission)) &&
-        (!link.needsLandingPage || landingEnabled);
+        (!link.feature || features.includes(link.feature));
 
     return sidebarGroups
         .map((group): SidebarGroupDef => ({

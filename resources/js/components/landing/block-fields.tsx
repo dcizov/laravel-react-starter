@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { storeImage } from '@/actions/App/Http/Controllers/Admin/LandingController';
+import { storeImage } from '@/actions/App/Features/Landing/Http/Controllers/Admin/LandingController';
 import {
     FEATURE_ICON_LABELS,
     FEATURE_ICONS,

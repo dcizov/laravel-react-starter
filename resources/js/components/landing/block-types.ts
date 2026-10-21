@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-// The shape of every block. Must match App\\Support\\LandingBlocks on the server, which keeps only these fields.
+// The shape of every block. Must match App\\Features\\Landing\\LandingBlocks on the server, which keeps only these fields.
 // Optional fields are left out of the saved data when empty, so the editor and renderers treat them as possibly missing.
 type FeatureItem = { title: string; text?: string; icon?: string };
 type LogoItem = { name: string };
@@ -83,7 +83,7 @@ export type BlockData = {
 export type BlockType = keyof BlockData;
 
 // How a block looks. Every key is optional in the saved data; missing keys use DEFAULT_STYLE.
-// The server accepts only these keys and values (App\\Support\\LandingBlocks::fieldRules).
+// The server accepts only these keys and values (App\\Features\\Landing\\LandingBlocks::fieldRules).
 export type Padding = 'none' | 'sm' | 'md' | 'lg' | 'xl';
 export type Width = 'narrow' | 'default' | 'wide' | 'full';
 export type Align = 'left' | 'center';

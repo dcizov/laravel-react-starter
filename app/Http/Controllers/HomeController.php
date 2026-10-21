@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Features\FeatureRegistry;
+use App\Features\Landing\LandingBlocks;
 use App\Settings\AppSettings;
-use App\Support\LandingBlocks;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,9 +15,9 @@ use Inertia\Response;
  */
 class HomeController extends Controller
 {
-    public function show(Request $request, AppSettings $settings): Response|RedirectResponse
+    public function show(Request $request, AppSettings $settings, FeatureRegistry $features): Response|RedirectResponse
     {
-        if (! $settings->landing_enabled) {
+        if (! $features->isEnabled('landing')) {
             return $request->user()
                 ? to_route('dashboard')
                 : to_route('login');

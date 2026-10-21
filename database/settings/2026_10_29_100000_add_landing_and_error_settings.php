@@ -12,7 +12,7 @@ return new class extends SettingsMigration
         // The landing page is on by default, so the home URL keeps its current behaviour.
         $this->migrator->add('app.landing_enabled', true);
 
-        // Null means "never saved", so the built-in default blocks are used. See App\Support\LandingBlocks::defaults().
+        // Null means "never saved", so the built-in default blocks are used. See App\Features\Landing\LandingBlocks::defaults().
         $this->migrator->add('app.landing_draft', null);
         $this->migrator->add('app.landing_published', null);
     }

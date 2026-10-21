@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 // The page theme. Colours and sizes are set once for the whole landing page, the way tweakcn edits a
-// shadcn theme. The server stores the same fields (App\\Support\\LandingBlocks::validateTheme).
+// shadcn theme. The server stores the same fields (App\\Features\\Landing\\LandingBlocks::validateTheme).
 export type LandingTheme = {
     primary: string; // #rrggbb
     background: string; // #rrggbb

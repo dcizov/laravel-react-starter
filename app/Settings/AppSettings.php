@@ -26,11 +26,6 @@ class AppSettings extends Settings
      */
     public bool $custom_error_pages;
 
-    /**
-     * Show the landing page at the home URL. When off, guests go to login and users to the dashboard.
-     */
-    public bool $landing_enabled;
-
     // The landing page blocks being edited. Null means never saved, so the published page is used.
     // Plain comments, not a docblock: Spatie reads @var tags to pick the cast, and it cannot parse
     // array shapes such as array{id: string}.

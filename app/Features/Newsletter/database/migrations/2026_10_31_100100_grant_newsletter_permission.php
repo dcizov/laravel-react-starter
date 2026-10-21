@@ -5,8 +5,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-// Adds landing.manage to the existing admin role only. See the earlier grant migration for why the full
-// Rbac::sync() is not used.
+// Adds newsletter.manage to the existing admin role only, as the landing grant does. Runs when the feature is enabled.
 return new class extends Migration
 {
     public function up(): void
@@ -17,7 +16,7 @@ return new class extends Migration
             return;
         }
 
-        $role->givePermissionTo(Permission::findOrCreate('landing.manage', 'web'));
+        $role->givePermissionTo(Permission::findOrCreate('newsletter.manage', 'web'));
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

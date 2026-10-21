@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace App\Features\Landing;
 
 /**
  * Complete starting pages, like a WordPress pattern or page template. An admin applies one in the visual

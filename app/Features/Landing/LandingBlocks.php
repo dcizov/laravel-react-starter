@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace App\Features\Landing;
 
 use Closure;
 use Illuminate\Support\Facades\Validator;

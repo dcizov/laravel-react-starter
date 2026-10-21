@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Features\Landing\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Settings\AppSettings;
-use App\Support\LandingBlocks;
-use App\Support\LandingPresets;
+use App\Features\Landing\LandingBlocks;
+use App\Features\Landing\LandingPresets;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

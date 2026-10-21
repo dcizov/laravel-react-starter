@@ -45,7 +45,7 @@ import {
     preview,
     publish,
     saveDraft,
-} from '@/actions/App/Http/Controllers/Admin/LandingController';
+} from '@/actions/App/Features/Landing/Http/Controllers/Admin/LandingController';
 import { BlockDesign } from '@/components/landing/block-design';
 import { BlockFields } from '@/components/landing/block-fields';
 import { BlockMockup } from '@/components/landing/block-mockup';

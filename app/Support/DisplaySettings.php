@@ -20,6 +20,8 @@ final class DisplaySettings
         'admin-users',
         'audit-log',
         'admin-landing',
+        'admin-newsletter',
+        'admin-integrations',
         'tasks',
         'settings',
         'repository',
