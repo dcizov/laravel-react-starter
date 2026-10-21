@@ -335,3 +335,173 @@ export function FooterBlock({
         </div>
     );
 }
+
+// Navigation bar, two more layouts. Two rows puts the links on a second row under the logo.
+// Split puts the links in the middle, between the logo and the actions. On phones the links are hidden in Split.
+export function NavbarExtra({
+    data,
+    variant,
+}: {
+    data: BlockData['navbar'];
+    variant: number;
+}) {
+    const signedIn = useSignedInOnPublicPage();
+    const links = data.items.map((link, index) => (
+        <SiteLink
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            key={index}
+            link={link}
+            path={`items.${index}`}
+            className="text-sm text-muted-foreground hover:text-foreground"
+        />
+    ));
+    const tools = (
+        <>
+            <LanguageSwitcher />
+            <ThemeSwitch />
+        </>
+    );
+    const cta = !signedIn && data.button_label !== undefined && (
+        <LinkButton
+            href={data.button_url ?? '/register'}
+            label={data.button_label}
+            labelPath="button_label"
+        />
+    );
+
+    if (variant === 3) {
+        return (
+            <div className="flex w-full flex-col gap-3 py-3">
+                <div className="flex items-center justify-between gap-2">
+                    <Brand />
+                    <div className="flex items-center gap-2">
+                        {tools}
+                        {cta}
+                    </div>
+                </div>
+                <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t pt-3">
+                    {links}
+                </nav>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4 py-3">
+            <Brand />
+            <nav className="hidden items-center gap-6 @2xl:flex">{links}</nav>
+            <div className="flex items-center justify-end gap-2">
+                {tools}
+                {cta}
+            </div>
+        </div>
+    );
+}
+
+// Footer, two more layouts. Big sets the brand large above the link columns. Centred stacks everything in the middle.
+export function FooterExtra({
+    data,
+    variant,
+}: {
+    data: BlockData['footer'];
+    variant: number;
+}) {
+    const { name } = usePage().props;
+    const t = useTrans();
+    const copyright = (
+        <EditableText
+            as="p"
+            path="copyright"
+            value={copyrightLine(
+                name,
+                data.copyright,
+                t('All rights reserved.'),
+            )}
+            max={160}
+            className="text-sm text-muted-foreground"
+        />
+    );
+
+    if (variant === 3) {
+        return (
+            <div className="flex w-full flex-col gap-10 border-t pt-10">
+                <div className="flex flex-col gap-4">
+                    <Brand className="text-3xl" />
+                    {data.text && (
+                        <EditableText
+                            as="p"
+                            path="text"
+                            value={data.text}
+                            multiline
+                            max={300}
+                            className="max-w-md text-sm text-pretty text-muted-foreground"
+                        />
+                    )}
+                </div>
+                <div className="grid gap-8 @xl:grid-cols-2 @4xl:grid-cols-4">
+                    {data.columns.map((column, ci) => (
+                        <div
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={ci}
+                            className="flex flex-col gap-3"
+                        >
+                            <EditableText
+                                as="p"
+                                path={`columns.${ci}.title`}
+                                value={column.title}
+                                required
+                                max={60}
+                                className="text-sm font-medium"
+                            />
+                            <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+                                {column.links.map((link, li) => (
+                                    <li
+                                        // eslint-disable-next-line @eslint-react/no-array-index-key
+                                        key={li}
+                                    >
+                                        <SiteLink
+                                            link={link}
+                                            path={`columns.${ci}.links.${li}`}
+                                            className="hover:text-foreground"
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+                {copyright}
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex w-full flex-col items-center gap-6 border-t pt-10 text-center">
+            <Brand className="text-lg" />
+            {data.text && (
+                <EditableText
+                    as="p"
+                    path="text"
+                    value={data.text}
+                    multiline
+                    max={300}
+                    className="max-w-md text-sm text-pretty text-muted-foreground"
+                />
+            )}
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                {data.columns.flatMap((column, ci) =>
+                    column.links.map((link, li) => (
+                        <SiteLink
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={`${ci}-${li}`}
+                            link={link}
+                            path={`columns.${ci}.links.${li}`}
+                            className="hover:text-foreground"
+                        />
+                    )),
+                )}
+            </div>
+            {copyright}
+        </div>
+    );
+}

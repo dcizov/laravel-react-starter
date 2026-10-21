@@ -79,16 +79,16 @@ final class LandingPresets
                     ['title' => __('Roles and permissions'), 'text' => __('Decide what each role can see and change.'), 'icon' => 'shield'],
                     ['title' => __('Admin area'), 'text' => __('Manage users, settings, and the page itself from one place.'), 'icon' => 'settings'],
                     ['title' => __('Task board'), 'text' => __('A sample feature with drag and drop, badges, and a detail drawer.'), 'icon' => 'layers'],
-                    ['title' => __('Two languages'), 'text' => __('English and German, with right-to-left ready text.'), 'icon' => 'globe'],
+                    ['title' => __('Localization'), 'text' => __('Every label and message can be translated, and users choose their language.'), 'icon' => 'globe'],
                     ['title' => __('Visual editor'), 'text' => __('Build this page from blocks, then preview and publish it.'), 'icon' => 'palette'],
                 ],
             ], ['variant' => 0]),
             self::block('stats-main', 'stats', [
                 'title' => __('At a glance'),
                 'items' => [
-                    ['value' => '13', 'label' => __('Languages supported')],
-                    ['value' => '2', 'label' => __('Languages included')],
-                    ['value' => '2', 'label' => __('Built-in roles')],
+                    ['value' => '1', 'label' => __('Visual editor for every page')],
+                    ['value' => '3', 'label' => __('Page presets to start from')],
+                    ['value' => '1', 'label' => __('Admin for users and roles')],
                 ],
             ], ['variant' => 2]),
             self::block('testimonials-main', 'testimonials', [

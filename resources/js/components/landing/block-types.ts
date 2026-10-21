@@ -94,7 +94,7 @@ export type Animation =
 export type TextEffect = 'none' | 'words';
 
 export type BlockStyle = Partial<{
-    variant: number; // 0, 1, or 2. Each block type names its layouts in VARIANT_NAMES.
+    variant: number; // 0 to 4. Each block type names its layouts in VARIANT_NAMES.
     bg_color: string; // A #rrggbb colour, or '' for the page background.
     bg_image: string; // A link to an image, or '' for none.
     bg_overlay: number; // 0 to 80. How dark the layer over a background image is, in percent.
@@ -173,19 +173,19 @@ export const TEXT_EFFECT_LABELS: Record<TextEffect, string> = {
 };
 
 export const VARIANT_NAMES: Record<BlockType, string[]> = {
-    navbar: ['Bar', 'Floating', 'Minimal'],
-    footer: ['Columns', 'Stacked', 'Bar'],
-    hero: ['Centered', 'Split with image', 'Editorial'],
-    logos: ['Grid', 'Row', 'Ruled'],
-    features: ['Cards', 'List', 'Columns'],
-    stats: ['Cards', 'Plain', 'Tiles'],
-    testimonials: ['Pairs', 'Featured', 'Wall'],
-    pricing: ['Cards', 'Rows', 'Focus'],
-    faq: ['Accordion', 'Open list', 'Two columns'],
-    cta: ['Banner', 'Outline', 'Split'],
-    text: ['Centered', 'Accent rule', 'Two columns'],
-    image: ['Rounded', 'Full width'],
-    button: ['Centered', 'Left aligned'],
+    navbar: ['Bar', 'Floating', 'Minimal', 'Two rows', 'Split'],
+    footer: ['Columns', 'Stacked', 'Bar', 'Big', 'Centred'],
+    hero: ['Centered', 'Split with image', 'Editorial', 'Framed', 'Compact'],
+    logos: ['Grid', 'Row', 'Ruled', 'Cards', 'Wordmarks'],
+    features: ['Cards', 'List', 'Columns', 'Rows', 'Tiles'],
+    stats: ['Cards', 'Plain', 'Tiles', 'Bordered', 'Large'],
+    testimonials: ['Pairs', 'Featured', 'Wall', 'Single', 'Columns'],
+    pricing: ['Cards', 'Rows', 'Focus', 'Compact', 'Minimal'],
+    faq: ['Accordion', 'Open list', 'Two columns', 'Cards', 'Split'],
+    cta: ['Banner', 'Outline', 'Split', 'Gradient', 'Minimal'],
+    text: ['Centered', 'Accent rule', 'Two columns', 'Pull quote', 'Sidebar'],
+    image: ['Rounded', 'Full width', 'Framed', 'Caption'],
+    button: ['Centered', 'Left aligned', 'Full width', 'Compact'],
 };
 
 export function variantCount(type: BlockType): number {

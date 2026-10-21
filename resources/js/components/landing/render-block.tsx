@@ -27,7 +27,12 @@ import {
     StatsBlock,
     TestimonialsBlock,
 } from '@/components/landing/marketing-blocks';
-import { FooterBlock, NavbarBlock } from '@/components/landing/site-blocks';
+import {
+    FooterBlock,
+    FooterExtra,
+    NavbarBlock,
+    NavbarExtra,
+} from '@/components/landing/site-blocks';
 import { cn } from '@/lib/utils';
 
 // Draws one block. Used on the public page, the preview, and the editor canvas, so they always match.
@@ -182,26 +187,48 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
                 />
             );
 
-        case 'image':
-            return block.data.src ? (
+        case 'image': {
+            if (!block.data.src) {
+                return null;
+            }
+
+            const picture = (
+                <img
+                    src={block.data.src}
+                    alt={block.data.alt}
+                    className={cn(
+                        'mx-auto w-full object-cover',
+                        style.variant === 1
+                            ? 'rounded-none border-y'
+                            : 'max-w-4xl rounded-2xl border shadow-sm',
+                    )}
+                />
+            );
+
+            return (
                 <figure
                     className={cn(
                         'w-full',
                         style.variant === 1 && '-mx-4 @2xl:-mx-8',
                     )}
                 >
-                    <img
-                        src={block.data.src}
-                        alt={block.data.alt}
-                        className={cn(
-                            'mx-auto w-full object-cover',
-                            style.variant === 1
-                                ? 'rounded-none border-y'
-                                : 'max-w-4xl rounded-2xl border shadow-sm',
-                        )}
-                    />
+                    {style.variant === 2 ? (
+                        // Framed: the picture sits on a muted panel with a little padding.
+                        <div className="mx-auto max-w-4xl rounded-3xl border bg-muted p-4 @2xl:p-8">
+                            {picture}
+                        </div>
+                    ) : (
+                        picture
+                    )}
+                    {style.variant === 3 && block.data.alt && (
+                        // Caption: the alt text is shown under the picture as well.
+                        <figcaption className="mt-3 text-center text-sm text-muted-foreground">
+                            {block.data.alt}
+                        </figcaption>
+                    )}
                 </figure>
-            ) : null;
+            );
+        }
 
         case 'stats':
             return <StatsBlock data={block.data} variant={style.variant} />;
@@ -221,23 +248,34 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
             return <CtaBlock data={block.data} variant={style.variant} />;
 
         case 'navbar':
-            return <NavbarBlock data={block.data} variant={style.variant} />;
+            return style.variant >= 3 ? (
+                <NavbarExtra data={block.data} variant={style.variant} />
+            ) : (
+                <NavbarBlock data={block.data} variant={style.variant} />
+            );
 
         case 'footer':
-            return <FooterBlock data={block.data} variant={style.variant} />;
+            return style.variant >= 3 ? (
+                <FooterExtra data={block.data} variant={style.variant} />
+            ) : (
+                <FooterBlock data={block.data} variant={style.variant} />
+            );
 
         case 'button':
             return block.data.label && block.data.url ? (
                 <div
                     className={cn(
                         'flex',
-                        style.variant === 1
-                            ? 'justify-start'
-                            : 'justify-center',
+                        style.variant === 1 && 'justify-start',
+                        style.variant === 2 && 'w-full',
+                        style.variant !== 1 &&
+                            style.variant !== 2 &&
+                            'justify-center',
                     )}
                 >
                     <LinkButton
-                        size="lg"
+                        size={style.variant === 3 ? 'default' : 'lg'}
+                        className={cn(style.variant === 2 && 'w-full')}
                         href={block.data.url}
                         labelPath="label"
                         label={block.data.label}
@@ -340,6 +378,39 @@ function HeroBlock({
                         className="col-span-full w-full rounded-2xl border object-cover"
                     />
                 )}
+            </div>
+        );
+    }
+
+    if (variant === 3) {
+        // Framed: the whole hero sits in one bordered card, the copy centred, the picture inside the card.
+        return (
+            <div className="relative grid w-full gap-10 overflow-hidden rounded-3xl border bg-card p-8 text-center @xl:p-14">
+                <div className="relative flex flex-col items-center gap-6">
+                    {title}
+                    {lead}
+                    {actions}
+                </div>
+                {data.image && (
+                    <img
+                        src={data.image}
+                        alt=""
+                        className="relative w-full rounded-2xl border object-cover shadow-lg"
+                    />
+                )}
+            </div>
+        );
+    }
+
+    if (variant === 4) {
+        // Compact: left aligned, the headline on top, the lead and the action on one row beneath it.
+        return (
+            <div className="relative flex w-full flex-col gap-6 border-b pb-8 text-left">
+                {title}
+                <div className="flex flex-col gap-6 @2xl:flex-row @2xl:items-end @2xl:justify-between">
+                    {lead}
+                    {actions}
+                </div>
             </div>
         );
     }
@@ -462,6 +533,84 @@ function FeaturesBlock({
                                 multiline
                                 max={200}
                                 className="text-pretty text-muted-foreground"
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
+    if (variant === 3) {
+        // Rows: two columns of cells on one hairline grid, the icon beside each title.
+        return (
+            <div className="flex w-full flex-col gap-10">
+                {heading}
+                <ul className="grid w-full overflow-hidden rounded-2xl border @xl:grid-cols-2">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex items-start gap-4 border-b p-6 @xl:even:border-l"
+                        >
+                            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                {icon(item.icon)}
+                            </span>
+                            <div className="flex flex-col gap-1">
+                                <EditableText
+                                    as="h3"
+                                    path={`items.${index}.title`}
+                                    value={item.title}
+                                    required
+                                    max={80}
+                                    className="font-medium"
+                                />
+                                <EditableText
+                                    as="p"
+                                    path={`items.${index}.text`}
+                                    value={item.text}
+                                    multiline
+                                    max={200}
+                                    className="text-sm text-pretty text-muted-foreground"
+                                />
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
+    if (variant === 4) {
+        // Tiles: a grid of muted tiles, each with a number and no icon.
+        return (
+            <div className="flex w-full flex-col gap-10">
+                {heading}
+                <ul className="grid w-full gap-3 @xl:grid-cols-2 @4xl:grid-cols-4">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-3 rounded-xl bg-muted p-5"
+                        >
+                            <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                                {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <EditableText
+                                as="h3"
+                                path={`items.${index}.title`}
+                                value={item.title}
+                                required
+                                max={80}
+                                className="font-medium"
+                            />
+                            <EditableText
+                                as="p"
+                                path={`items.${index}.text`}
+                                value={item.text}
+                                multiline
+                                max={200}
+                                className="text-sm text-pretty text-muted-foreground"
                             />
                         </li>
                     ))}
@@ -594,6 +743,60 @@ function TextBlock({
         );
     }
 
+    if (variant === 3) {
+        // Pull quote: the body set large and centred, with a primary quote mark above it.
+        return (
+            <figure className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 text-center">
+                <span
+                    aria-hidden="true"
+                    className="font-serif text-6xl leading-none text-primary"
+                >
+                    “
+                </span>
+                <EditableText
+                    as="p"
+                    path="body"
+                    value={data.body}
+                    multiline
+                    max={600}
+                    className="text-2xl leading-snug font-medium text-balance @xl:text-3xl"
+                />
+                {data.heading && (
+                    <EditableText
+                        as="figcaption"
+                        path="heading"
+                        value={data.heading}
+                        max={120}
+                        className="text-sm text-muted-foreground"
+                    />
+                )}
+            </figure>
+        );
+    }
+
+    if (variant === 4) {
+        // Sidebar: the heading in a narrow column, the body beside it.
+        return (
+            <div className="grid w-full gap-6 border-t pt-8 @2xl:grid-cols-[1fr_2fr] @2xl:gap-12">
+                <EditableText
+                    as="h2"
+                    path="heading"
+                    value={data.heading}
+                    max={120}
+                    className={cn(TITLE_SECTION, 'text-left')}
+                />
+                <EditableText
+                    as="p"
+                    path="body"
+                    value={data.body}
+                    multiline
+                    max={2000}
+                    className="text-lg leading-relaxed text-pretty text-muted-foreground"
+                />
+            </div>
+        );
+    }
+
     return (
         <div
             className={cn(
@@ -681,6 +884,68 @@ function CtaBlock({
                     max={300}
                     className="max-w-xl text-pretty text-muted-foreground"
                 />
+                <Actions
+                    href={data.button_url}
+                    label={data.button_label}
+                    labelPath="button_label"
+                />
+            </div>
+        );
+    }
+
+    if (variant === 3) {
+        // Gradient: a bordered panel with a soft primary wash, the copy and the action side by side.
+        return (
+            <div className="flex w-full flex-col items-start justify-between gap-6 overflow-hidden rounded-3xl border bg-linear-to-br from-primary/15 via-background to-background p-8 @xl:p-12 @2xl:flex-row @2xl:items-center">
+                <div className="flex max-w-xl flex-col gap-3">
+                    <EditableText
+                        as="h2"
+                        path="title"
+                        value={data.title}
+                        required
+                        max={120}
+                        className="text-3xl font-medium tracking-tight text-balance @xl:text-4xl"
+                    />
+                    <EditableText
+                        as="p"
+                        path="text"
+                        value={data.text}
+                        multiline
+                        max={300}
+                        className="text-pretty text-muted-foreground"
+                    />
+                </div>
+                <Actions
+                    href={data.button_url}
+                    label={data.button_label}
+                    labelPath="button_label"
+                />
+            </div>
+        );
+    }
+
+    if (variant === 4) {
+        // Minimal: a ruled line above and below, the copy and the action in one row. No box.
+        return (
+            <div className="flex w-full flex-col items-start justify-between gap-6 border-y py-10 @2xl:flex-row @2xl:items-center">
+                <div className="flex flex-col gap-2">
+                    <EditableText
+                        as="h2"
+                        path="title"
+                        value={data.title}
+                        required
+                        max={120}
+                        className="text-2xl font-medium tracking-tight text-balance @xl:text-3xl"
+                    />
+                    <EditableText
+                        as="p"
+                        path="text"
+                        value={data.text}
+                        multiline
+                        max={300}
+                        className="text-pretty text-muted-foreground"
+                    />
+                </div>
                 <Actions
                     href={data.button_url}
                     label={data.button_label}

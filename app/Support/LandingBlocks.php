@@ -169,7 +169,8 @@ final class LandingBlocks
     public static function styleRules(): array
     {
         return [
-            'variant' => ['nullable', 'integer', 'between:0,2'],
+            // 0 to 4. Each block type names its layouts in VARIANT_NAMES; an index a type does not have shows its default layout.
+            'variant' => ['nullable', 'integer', 'between:0,4'],
             'bg_color' => ['nullable', 'string', 'regex:/^(#[0-9a-fA-F]{6})?$/'],
             'bg_image' => ['nullable', 'string', 'max:500', self::safeUrl()],
             'bg_overlay' => ['nullable', 'integer', 'between:0,80'],

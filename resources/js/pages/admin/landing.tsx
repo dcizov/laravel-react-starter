@@ -21,6 +21,8 @@ import { Head, router } from '@inertiajs/react';
 import {
     ArrowDown,
     ArrowUp,
+    ChevronDown,
+    ChevronRight,
     Copy,
     GripVertical,
     Monitor,
@@ -456,6 +458,25 @@ export default function LandingEditor({
         }
     };
 
+    // Sections the editor shows folded to their header. Folding only changes the editor, not the page.
+    const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+    const toggleCollapsed = (id: string) =>
+        setCollapsed((previous) => {
+            const next = new Set(previous);
+
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+
+            return next;
+        });
+    const setAllCollapsed = (value: boolean) =>
+        setCollapsed(
+            value ? new Set(blocks.map((block) => block.id)) : new Set(),
+        );
+
     const selectedLabel = selected
         ? (paletteTypes.find((item) => item.type === selected.type)?.label ??
           selected.type)
@@ -604,6 +625,10 @@ export default function LandingEditor({
                             blocks={blocks}
                             theme={theme}
                             device={device}
+                            collapsed={collapsed}
+                            onToggleCollapsed={toggleCollapsed}
+                            onCollapseAll={() => setAllCollapsed(true)}
+                            onExpandAll={() => setAllCollapsed(false)}
                             selectedId={selectedId}
                             onSelect={(id) => {
                                 setSelectedId(id);
@@ -820,6 +845,10 @@ function Canvas({
     blocks,
     theme,
     device,
+    collapsed,
+    onToggleCollapsed,
+    onCollapseAll,
+    onExpandAll,
     selectedId,
     onSelect,
     onMove,
@@ -830,6 +859,10 @@ function Canvas({
     blocks: LandingBlock[];
     theme: LandingTheme;
     device: Device;
+    collapsed: Set<string>;
+    onToggleCollapsed: (id: string) => void;
+    onCollapseAll: () => void;
+    onExpandAll: () => void;
     selectedId: string | null;
     onSelect: (id: string) => void;
     onMove: (id: string, delta: number) => void;
@@ -842,13 +875,35 @@ function Canvas({
     const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
     return (
-        <div className="flex min-w-0 flex-col items-center gap-2">
-            <div className="text-xs text-muted-foreground">
-                {device === 'desktop'
-                    ? t('Desktop')
-                    : device === 'tablet'
-                      ? t('Tablet, 768 px')
-                      : t('Mobile, 390 px')}
+        <div className="flex min-w-0 flex-col items-center gap-2 lg:max-h-[calc(100svh-11rem)] lg:overflow-y-auto lg:pr-1">
+            <div className="sticky top-0 z-10 flex w-full items-center justify-between gap-2 bg-background/95 pb-1 backdrop-blur-sm">
+                <div className="text-xs text-muted-foreground">
+                    {device === 'desktop'
+                        ? t('Desktop')
+                        : device === 'tablet'
+                          ? t('Tablet, 768 px')
+                          : t('Mobile, 390 px')}
+                </div>
+                <div className="flex items-center gap-1">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={onCollapseAll}
+                        disabled={blocks.length === 0}
+                    >
+                        {t('Collapse all')}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={onExpandAll}
+                        disabled={collapsed.size === 0}
+                    >
+                        {t('Expand all')}
+                    </Button>
+                </div>
             </div>
             <div
                 className="w-full transition-[max-width] duration-300"
@@ -880,6 +935,8 @@ function Canvas({
                                 index={index}
                                 total={blocks.length}
                                 selected={block.id === selectedId}
+                                collapsed={collapsed.has(block.id)}
+                                onToggle={() => onToggleCollapsed(block.id)}
                                 onSelect={() => onSelect(block.id)}
                                 onMove={(delta) => onMove(block.id, delta)}
                                 onRemove={() => onRemove(block.id)}
@@ -901,6 +958,8 @@ function SortableBlock({
     index,
     total,
     selected,
+    collapsed,
+    onToggle,
     onSelect,
     onMove,
     onRemove,
@@ -911,6 +970,8 @@ function SortableBlock({
     index: number;
     total: number;
     selected: boolean;
+    collapsed: boolean;
+    onToggle: () => void;
     onSelect: () => void;
     onMove: (delta: number) => void;
     onRemove: () => void;
@@ -944,6 +1005,24 @@ function SortableBlock({
             )}
         >
             <div className="flex items-center justify-between gap-2 border-b px-2 py-1">
+                <button
+                    type="button"
+                    aria-expanded={!collapsed}
+                    aria-label={
+                        collapsed ? t('Expand section') : t('Collapse section')
+                    }
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onToggle();
+                    }}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                    {collapsed ? (
+                        <ChevronRight className="size-4" aria-hidden="true" />
+                    ) : (
+                        <ChevronDown className="size-4" aria-hidden="true" />
+                    )}
+                </button>
                 <button
                     type="button"
                     className="flex cursor-grab items-center gap-1 text-xs text-muted-foreground"
@@ -1009,7 +1088,12 @@ function SortableBlock({
                 </div>
             </div>
             {/* Links inside the preview do not open while editing. Text stays editable (see EditableText). */}
-            <div className="pointer-events-none overflow-hidden">
+            <div
+                className={cn(
+                    'pointer-events-none overflow-hidden',
+                    collapsed && 'hidden',
+                )}
+            >
                 <LandingEditContext value={binding}>
                     <RenderBlock block={block} />
                 </LandingEditContext>

@@ -124,6 +124,57 @@ export function LogosBlock({
         );
     }
 
+    if (variant === 3) {
+        // Cards: each name in its own bordered tile.
+        return (
+            <div className="flex w-full flex-col items-center gap-8">
+                {title}
+                <ul className="grid w-full grid-cols-2 gap-3 @xl:grid-cols-3 @4xl:grid-cols-6">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex h-16 items-center justify-center rounded-xl border bg-card px-4 text-sm font-semibold text-muted-foreground"
+                        >
+                            <EditableText
+                                as="span"
+                                path={`items.${index}.name`}
+                                value={item.name}
+                                required
+                                max={60}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
+    if (variant === 4) {
+        // Wordmarks: small spaced capitals between two hairlines.
+        return (
+            <div className="flex w-full flex-col items-center gap-6 border-y py-8">
+                {title}
+                <ul className="flex w-full flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium tracking-[0.25em] text-muted-foreground uppercase">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                        >
+                            <EditableText
+                                as="span"
+                                path={`items.${index}.name`}
+                                value={item.name}
+                                required
+                                max={60}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
     // Default: a centred strip that wraps on small screens.
     return (
         <div className="flex w-full flex-col items-center gap-8">
@@ -261,6 +312,76 @@ export function StatsBlock({
                         </div>
                     ))}
                 </dl>
+            </div>
+        );
+    }
+
+    if (variant === 3) {
+        // Bordered: one strip of cells with hairline dividers.
+        return (
+            <div className="flex w-full flex-col gap-8">
+                <SectionTitle path="title" value={data.title} />
+                <div className="grid w-full divide-y overflow-hidden rounded-2xl border @xl:grid-cols-3 @xl:divide-x @xl:divide-y-0">
+                    {data.items.map((item, index) => (
+                        <div
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col items-center gap-2 p-8 text-center"
+                        >
+                            <EditableText
+                                as="span"
+                                path={`items.${index}.value`}
+                                value={item.value}
+                                required
+                                max={20}
+                                className="text-4xl font-semibold tracking-tight tabular-nums"
+                            />
+                            <EditableText
+                                as="span"
+                                path={`items.${index}.label`}
+                                value={item.label}
+                                required
+                                max={80}
+                                className="text-sm text-muted-foreground"
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (variant === 4) {
+        // Large: big figures on a left rule, no boxes.
+        return (
+            <div className="flex w-full flex-col gap-10">
+                <SectionTitle path="title" value={data.title} />
+                <ul className="grid w-full gap-10 @2xl:grid-cols-3">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-2 border-l-2 border-primary pl-6"
+                        >
+                            <EditableText
+                                as="span"
+                                path={`items.${index}.value`}
+                                value={item.value}
+                                required
+                                max={20}
+                                className="text-6xl font-semibold tracking-tight tabular-nums"
+                            />
+                            <EditableText
+                                as="span"
+                                path={`items.${index}.label`}
+                                value={item.label}
+                                required
+                                max={80}
+                                className="text-muted-foreground"
+                            />
+                        </li>
+                    ))}
+                </ul>
             </div>
         );
     }
@@ -420,6 +541,92 @@ export function TestimonialsBlock({
                         />
                     ))}
                 </div>
+            </div>
+        );
+    }
+
+    if (variant === 3 && data.items.length > 0) {
+        // Single: the first quote set large and centred.
+        const first = data.items[0];
+
+        return (
+            <div className="flex w-full flex-col items-center gap-10 text-center">
+                {title}
+                <figure className="flex max-w-3xl flex-col items-center gap-6">
+                    <EditableText
+                        as="p"
+                        path="items.0.quote"
+                        value={first.quote}
+                        required
+                        max={400}
+                        className="text-2xl leading-snug font-medium text-balance @xl:text-3xl"
+                    />
+                    <figcaption className="flex flex-col items-center gap-1 text-sm">
+                        <EditableText
+                            as="span"
+                            path="items.0.name"
+                            value={first.name}
+                            required
+                            max={80}
+                            className="font-medium"
+                        />
+                        {first.role !== undefined && (
+                            <EditableText
+                                as="span"
+                                path="items.0.role"
+                                value={first.role}
+                                max={120}
+                                className="text-muted-foreground"
+                            />
+                        )}
+                    </figcaption>
+                </figure>
+            </div>
+        );
+    }
+
+    if (variant === 4) {
+        // Columns: three quotes side by side, each under a rule.
+        return (
+            <div className="flex w-full flex-col gap-10">
+                {title}
+                <ul className="grid w-full gap-8 @2xl:grid-cols-3">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-4 border-t pt-6"
+                        >
+                            <EditableText
+                                as="p"
+                                path={`items.${index}.quote`}
+                                value={item.quote}
+                                required
+                                max={400}
+                                className="text-pretty"
+                            />
+                            <div className="flex flex-col text-sm">
+                                <EditableText
+                                    as="span"
+                                    path={`items.${index}.name`}
+                                    value={item.name}
+                                    required
+                                    max={80}
+                                    className="font-medium"
+                                />
+                                {item.role !== undefined && (
+                                    <EditableText
+                                        as="span"
+                                        path={`items.${index}.role`}
+                                        value={item.role}
+                                        max={120}
+                                        className="text-muted-foreground"
+                                    />
+                                )}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
             </div>
         );
     }
@@ -671,6 +878,86 @@ export function PricingBlock({
         );
     }
 
+    if (variant === 3) {
+        // Compact: each plan is a row with its price, features and action side by side.
+        return (
+            <div className="flex w-full flex-col gap-10">
+                {title}
+                <ul className="flex w-full flex-col divide-y overflow-hidden rounded-2xl border">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-4 p-6 @2xl:flex-row @2xl:items-center @2xl:justify-between @2xl:gap-8"
+                        >
+                            <div className="flex flex-col gap-1 @2xl:w-48">
+                                <EditableText
+                                    as="span"
+                                    path={`items.${index}.name`}
+                                    value={item.name}
+                                    required
+                                    max={40}
+                                    className="font-semibold"
+                                />
+                                <EditableText
+                                    as="span"
+                                    path={`items.${index}.price`}
+                                    value={item.price}
+                                    required
+                                    max={20}
+                                    className="text-2xl font-semibold tabular-nums"
+                                />
+                            </div>
+                            <PlanFeatures text={item.features} />
+                            <LinkButton
+                                href={item.button_url ?? '#'}
+                                label={item.button_label ?? ''}
+                                labelPath={`items.${index}.button_label`}
+                                variant="outline"
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
+    if (variant === 4) {
+        // Minimal: plain columns with no boxes, the price large and the features as a list.
+        return (
+            <div className="flex w-full flex-col gap-10">
+                {title}
+                <ul className="grid w-full gap-10 @2xl:grid-cols-3">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-4"
+                        >
+                            <EditableText
+                                as="span"
+                                path={`items.${index}.name`}
+                                value={item.name}
+                                required
+                                max={40}
+                                className="font-semibold"
+                            />
+                            <EditableText
+                                as="span"
+                                path={`items.${index}.price`}
+                                value={item.price}
+                                required
+                                max={20}
+                                className="text-4xl font-semibold tabular-nums"
+                            />
+                            <PlanFeatures text={item.features} />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
     // Cards: the classic row of plans.
     return (
         <div className="flex w-full flex-col gap-10">
@@ -814,6 +1101,82 @@ export function FaqBlock({
                         />
                     ))}
                 </div>
+            </div>
+        );
+    }
+
+    if (variant === 3) {
+        // Cards: each question and answer in its own bordered card, two to a row.
+        return (
+            <div className="flex w-full flex-col gap-10">
+                {title}
+                <ul className="grid w-full gap-4 @2xl:grid-cols-2">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-3 rounded-2xl border bg-card p-6"
+                        >
+                            <EditableText
+                                as="h3"
+                                path={`items.${index}.question`}
+                                value={item.question}
+                                required
+                                max={200}
+                                className="font-medium"
+                            />
+                            <EditableText
+                                as="p"
+                                path={`items.${index}.answer`}
+                                value={item.answer}
+                                multiline
+                                max={600}
+                                className="text-sm text-pretty text-muted-foreground"
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
+    if (variant === 4) {
+        // Split: the heading in a column on the left, the questions in a ruled list on the right.
+        return (
+            <div className="grid w-full gap-10 @2xl:grid-cols-[1fr_2fr] @2xl:gap-16">
+                <EditableText
+                    as="h2"
+                    path="title"
+                    value={data.title}
+                    max={120}
+                    className="text-3xl font-medium tracking-tight text-balance @2xl:sticky @2xl:top-24 @2xl:self-start"
+                />
+                <ul className="flex flex-col divide-y">
+                    {data.items.map((item, index) => (
+                        <li
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={index}
+                            className="flex flex-col gap-2 py-5"
+                        >
+                            <EditableText
+                                as="h3"
+                                path={`items.${index}.question`}
+                                value={item.question}
+                                required
+                                max={200}
+                                className="font-medium"
+                            />
+                            <EditableText
+                                as="p"
+                                path={`items.${index}.answer`}
+                                value={item.answer}
+                                multiline
+                                max={600}
+                                className="text-pretty text-muted-foreground"
+                            />
+                        </li>
+                    ))}
+                </ul>
             </div>
         );
     }
