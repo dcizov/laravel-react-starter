@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
  * A category or tag. Each term belongs to one content type, and entries of that type can use it.
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Term extends Model
 {
     use BelongsToSite;
+
+    /** @use HasFactory<TermFactory> */
     use HasFactory;
 
     public const CATEGORY = 'category';
@@ -41,12 +44,17 @@ class Term extends Model
 
     /**
      * Terms of one content type. Each type has its own categories and tags.
+     *
+     * @param  Builder<static>  $query
      */
     public function scopeForType(Builder $query, string $contentType): void
     {
         $query->where('content_type', $contentType);
     }
 
+    /**
+     * @return BelongsToMany<ContentEntry, $this, Pivot>
+     */
     public function entries(): BelongsToMany
     {
         return $this->belongsToMany(ContentEntry::class, 'cms_entry_terms', 'term_id', 'entry_id');

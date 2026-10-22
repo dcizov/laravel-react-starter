@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Comment extends Model
 {
+    /** @use HasFactory<CommentFactory> */
     use HasFactory;
 
     public const PENDING = 'pending';
@@ -41,11 +42,17 @@ class Comment extends Model
         'status',
     ];
 
+    /**
+     * @param  Builder<static>  $query
+     */
     public function scopeApproved(Builder $query): void
     {
         $query->where('status', self::APPROVED);
     }
 
+    /**
+     * @return BelongsTo<ContentEntry, $this>
+     */
     public function entry(): BelongsTo
     {
         return $this->belongsTo(ContentEntry::class, 'entry_id');

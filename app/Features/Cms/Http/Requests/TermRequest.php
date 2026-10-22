@@ -24,7 +24,7 @@ class TermRequest extends FormRequest
 
         // Slugs are unique per site, content type and taxonomy, so two types can both have a "news" category.
         // A term keeps its content type once created, so its current type is the one to check against.
-        $contentType = $term?->content_type ?? (string) $this->input('content_type');
+        $contentType = $term !== null ? $term->content_type : (string) $this->input('content_type');
 
         $slugUnique = Rule::unique('cms_terms', 'slug')
             ->where('site_id', app(CurrentSite::class)->id())

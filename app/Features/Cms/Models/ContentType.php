@@ -6,6 +6,7 @@ use App\Features\Cms\Support\SafeUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * A kind of content: pages, blog posts, or a custom post type an admin defines.
@@ -73,6 +74,9 @@ class ContentType extends Model
         ];
     }
 
+    /**
+     * @return HasMany<ContentEntry, $this>
+     */
     public function entries(): HasMany
     {
         return $this->hasMany(ContentEntry::class, 'content_type', 'key');
@@ -106,6 +110,9 @@ class ContentType extends Model
         return $rules;
     }
 
+    /**
+     * @return list<string|Unique>
+     */
     public static function keyRules(?int $ignoreId = null): array
     {
         $unique = Rule::unique('cms_content_types', 'key');

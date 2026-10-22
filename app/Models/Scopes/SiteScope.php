@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Scope;
 /**
  * Limits every query to the current site. A query can opt out with withoutGlobalScope(SiteScope::class), for
  * the admin screens that count across sites.
+ *
+ * @implements Scope<Model>
  */
 class SiteScope implements Scope
 {

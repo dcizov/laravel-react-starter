@@ -58,11 +58,17 @@ class ContentEntryRevision extends Model
         'created_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<ContentEntry, $this>
+     */
     public function entry(): BelongsTo
     {
         return $this->belongsTo(ContentEntry::class, 'entry_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

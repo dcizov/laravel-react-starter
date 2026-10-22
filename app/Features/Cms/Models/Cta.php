@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 class Cta extends Model
 {
     use BelongsToSite;
+
+    /** @use HasFactory<CtaFactory> */
     use HasFactory;
 
     protected $table = 'cms_ctas';

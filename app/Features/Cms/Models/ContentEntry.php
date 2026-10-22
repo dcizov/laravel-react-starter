@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -35,6 +36,8 @@ use Illuminate\Support\Carbon;
 class ContentEntry extends Model
 {
     use BelongsToSite;
+
+    /** @use HasFactory<ContentEntryFactory> */
     use HasFactory;
 
     // Trashed entries are kept (see the trash in the admin). They are removed for good only on request.
@@ -74,6 +77,8 @@ class ContentEntry extends Model
 
     /**
      * Published and due. A published entry with no date counts as published now.
+     *
+     * @param  Builder<static>  $query
      */
     public function scopeLive(Builder $query): void
     {
@@ -81,21 +86,33 @@ class ContentEntry extends Model
             ->where(fn (Builder $inner) => $inner->whereNull('published_at')->orWhere('published_at', '<=', now()));
     }
 
+    /**
+     * @return BelongsTo<ContentType, $this>
+     */
     public function contentType(): BelongsTo
     {
         return $this->belongsTo(ContentType::class, 'content_type', 'key');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
+    /**
+     * @return HasMany<Comment, $this>
+     */
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'entry_id');
     }
 
+    /**
+     * @return BelongsToMany<Term, $this, Pivot>
+     */
     public function terms(): BelongsToMany
     {
         return $this->belongsToMany(Term::class, 'cms_entry_terms', 'entry_id', 'term_id');
@@ -103,6 +120,8 @@ class ContentEntry extends Model
 
     /**
      * Earlier versions of this entry, newest first.
+     *
+     * @return HasMany<ContentEntryRevision, $this>
      */
     public function revisions(): HasMany
     {

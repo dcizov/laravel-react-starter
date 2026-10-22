@@ -61,6 +61,8 @@ class ContentEntryRequest extends FormRequest
 
     /**
      * Publishing and unpublishing need content.publish. Authors can still edit a live entry; its status stays as it is.
+     *
+     * @return list<\Closure(Validator): void>
      */
     public function after(): array
     {
