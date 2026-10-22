@@ -10,13 +10,14 @@ const SHOW_AFTER_PX = 400;
 // A fixed button that scrolls the landing page back to the top.
 export function BackToTop() {
     const t = useTrans();
-    // Read the position at first render, so a reloaded page scrolled down shows the button.
-    const [visible, setVisible] = useState(
-        () => window.scrollY > SHOW_AFTER_PX,
-    );
+    // Hidden on the server, where there is no window. The effect reads the position once the page is in the browser,
+    // so a reloaded page scrolled down still shows the button.
+    const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         const update = () => setVisible(window.scrollY > SHOW_AFTER_PX);
+
+        update();
 
         window.addEventListener('scroll', update, { passive: true });
 
