@@ -25,7 +25,7 @@ class IntegrationController extends Controller
         $integrations = array_map(function (array $integration) use ($connections) {
             /** @var IntegrationConnection|null $connection */
             $connection = $connections->get($integration['key']);
-            $credentials = $connection?->credentials ?? [];
+            $credentials = $connection === null ? [] : $connection->credentials;
             $isOAuth = $integration['auth'] === 'oauth';
 
             return [
@@ -64,7 +64,7 @@ class IntegrationController extends Controller
         abort_unless($definition['auth'] === 'token', 404);
 
         $connection = IntegrationConnection::query()->firstWhere('integration_key', $integration);
-        $saved = $connection?->credentials ?? [];
+        $saved = $connection === null ? [] : $connection->credentials;
 
         $rules = [];
 
@@ -91,7 +91,7 @@ class IntegrationController extends Controller
             ['integration_key' => $integration],
             [
                 'credentials' => $credentials,
-                'connected_at' => $connection?->connected_at ?? now(),
+                'connected_at' => $connection === null ? now() : ($connection->connected_at ?? now()),
             ],
         );
 

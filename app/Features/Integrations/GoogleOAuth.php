@@ -35,6 +35,8 @@ final class GoogleOAuth
 
     /**
      * The Google sign-in page for one integration. The state value protects against forged callbacks.
+     *
+     * @param  list<string>  $scopes
      */
     public function authorizationUrl(array $scopes, string $state): string
     {
@@ -89,6 +91,9 @@ final class GoogleOAuth
         return Str::random(40);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     private function post(string $url, array $data): ?Response
     {
         try {

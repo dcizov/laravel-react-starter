@@ -68,7 +68,7 @@ class GoogleOAuthController extends Controller
             ['integration_key' => $definition['key']],
             [
                 'credentials' => ['refresh_token' => $refreshToken],
-                'connected_at' => $connection?->connected_at ?? now(),
+                'connected_at' => $connection === null ? now() : ($connection->connected_at ?? now()),
             ],
         );
 
