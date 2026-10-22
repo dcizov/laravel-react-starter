@@ -75,6 +75,18 @@ export default [
         },
     },
     {
+        // Node scripts run outside the browser, so the globals they use are declared here. Only the globals the
+        // scripts use are listed.
+        files: ['scripts/**/*.mjs'],
+        languageOptions: {
+            globals: {
+                URL: 'readonly',
+                console: 'readonly',
+                process: 'readonly',
+            },
+        },
+    },
+    {
         ignores: [
             'vendor',
             'node_modules',
