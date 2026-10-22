@@ -81,8 +81,15 @@ test('the admin list can be searched and a subscriber can be deleted', function 
     NewsletterSubscriber::query()->create(['email' => 'one@example.com', 'status' => 'subscribed', 'token' => 'token-one']);
     $other = NewsletterSubscriber::query()->create(['email' => 'two@example.com', 'status' => 'subscribed', 'token' => 'token-two']);
 
+    // Without a search, both subscribers are listed.
     $this->actingAs($admin)
-        ->get(route('admin.newsletter.index', ['search' => 'two@']))
+        ->get(route('admin.newsletter.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->has('subscribers.data', 2));
+
+    // The list reads the search from the q parameter, which is what the shared table sends.
+    $this->actingAs($admin)
+        ->get(route('admin.newsletter.index', ['q' => 'two@']))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('admin/newsletter')
