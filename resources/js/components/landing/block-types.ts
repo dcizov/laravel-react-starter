@@ -109,7 +109,11 @@ export type Align = 'left' | 'center';
 export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl';
 export type FontChoice = 'theme' | 'serif' | 'mono';
 export type Animation =
-    'none' | 'fade-up' | 'fade-in' | 'zoom-in' | 'slide-right';
+    | 'none'
+    | 'fade-up'
+    | 'fade-in'
+    | 'zoom-in'
+    | 'slide-right';
 export type TextEffect = 'none' | 'words';
 
 export type BlockStyle = Partial<{

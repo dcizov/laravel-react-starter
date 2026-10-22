@@ -3,7 +3,12 @@
 export type Taxonomy = 'category' | 'tag';
 
 export type FieldType =
-    'text' | 'textarea' | 'url' | 'number' | 'date' | 'boolean';
+    | 'text'
+    | 'textarea'
+    | 'url'
+    | 'number'
+    | 'date'
+    | 'boolean';
 
 export type CustomFieldDef = {
     key: string;

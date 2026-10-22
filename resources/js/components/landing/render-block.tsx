@@ -221,12 +221,13 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
                     ) : (
                         picture
                     )}
-                    {style.variant === 3 && block.data.alt && (
-                        // Caption: the alt text is shown under the picture as well.
-                        <figcaption className="mt-3 text-center text-sm text-muted-foreground">
-                            {block.data.alt}
-                        </figcaption>
-                    )}
+                    {style.variant === 3 &&
+                        block.data.alt && (
+                            // Caption: the alt text is shown under the picture as well.
+                            <figcaption className="mt-3 text-center text-sm text-muted-foreground">
+                                {block.data.alt}
+                            </figcaption>
+                        )}
                 </figure>
             );
         }

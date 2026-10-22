@@ -11,6 +11,11 @@ import {
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useTrans } from '@/hooks/use-trans';
 
+// A link's href is either a URL string or a route object with a url, as Inertia and Wayfinder provide.
+function hrefUrl(href: SidebarLink['href']): string {
+    return typeof href === 'string' ? href : href.url;
+}
+
 export function NavGroup({
     title,
     items,
@@ -54,17 +59,14 @@ function LinkButton({
     className?: string;
 }) {
     const t = useTrans();
-    const external = /^https?:\/\//.test(String(item.href));
+    const url = hrefUrl(item.href);
+    const external = /^https?:\/\//.test(url);
 
     return (
         <SidebarMenuButton
             render={
                 external ? (
-                    <a
-                        href={String(item.href)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    />
+                    <a href={url} target="_blank" rel="noopener noreferrer" />
                 ) : (
                     <Link href={item.href} prefetch />
                 )

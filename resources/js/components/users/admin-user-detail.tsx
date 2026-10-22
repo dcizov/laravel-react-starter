@@ -16,7 +16,12 @@ import { useTrans } from '@/hooks/use-trans';
 
 // The actions a drawer can start. The page decides whether each one asks first.
 export type AdminUserAction =
-    'verify' | 'reset' | 'suspend' | 'reinstate' | 'impersonate' | 'delete';
+    | 'verify'
+    | 'reset'
+    | 'suspend'
+    | 'reinstate'
+    | 'impersonate'
+    | 'delete';
 
 type DetailOptions = {
     roles: string[];
