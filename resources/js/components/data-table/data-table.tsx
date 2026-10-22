@@ -294,9 +294,14 @@ export function DataTable<TData extends RowData>({
     const [searchDraft, setSearchDraft] = React.useState(server?.search ?? '');
     const serverSearch = server?.search ?? '';
 
-    React.useEffect(() => {
+    // When the server's search changes, the draft follows it. This runs during render rather than in an effect, so the
+    // input never shows the old draft for a frame before it updates.
+    const [syncedSearch, setSyncedSearch] = React.useState(serverSearch);
+
+    if (serverSearch !== syncedSearch) {
+        setSyncedSearch(serverSearch);
         setSearchDraft(serverSearch);
-    }, [serverSearch]);
+    }
 
     React.useEffect(() => {
         if (!server || searchDraft === serverSearch) {
