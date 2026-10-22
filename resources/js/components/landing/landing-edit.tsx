@@ -1,11 +1,3 @@
-import {
-    animate,
-    domAnimation,
-    LazyMotion,
-    m,
-    useInView,
-    useReducedMotion,
-} from 'motion/react';
 import { createContext, use, useEffect, useRef, useState } from 'react';
 import type {
     ClipboardEvent,
@@ -14,6 +6,10 @@ import type {
     ReactNode,
 } from 'react';
 import type { Animation, TextEffect } from '@/components/landing/block-types';
+import {
+    usePrefersReducedMotion,
+    useInViewOnce,
+} from '@/components/landing/motion-hooks';
 import { cn } from '@/lib/utils';
 
 // Only the visual editor provides this. On the public page it is null, so text is plain and nothing is editable.
@@ -149,45 +145,47 @@ function WordReveal({
     className?: string;
     text: string;
 }) {
-    const reduce = useReducedMotion();
+    const reduce = usePrefersReducedMotion();
+    const ref = useRef<HTMLHeadingElement>(null);
+    const seen = useInViewOnce(ref, { enabled: !reduce });
 
     if (reduce) {
-        return <Tag className={className}>{text}</Tag>;
+        return (
+            <Tag ref={ref} className={className}>
+                {text}
+            </Tag>
+        );
     }
 
     const words = text.split(' ');
 
     return (
-        <LazyMotion features={domAnimation}>
-            <Tag className={className}>
-                <span className="sr-only">{text}</span>
-                <span aria-hidden="true">
-                    {words.map((word, index) => (
-                        <m.span
-                            // Words can repeat, so the position is part of the key.
-                            // eslint-disable-next-line @eslint-react/no-array-index-key
-                            key={`${index}-${word}`}
-                            className="inline-block"
-                            initial={{ opacity: 0, filter: 'blur(8px)', y: 6 }}
-                            whileInView={{
-                                opacity: 1,
-                                filter: 'blur(0px)',
-                                y: 0,
-                            }}
-                            viewport={{ once: true }}
-                            transition={{
-                                duration: 0.5,
-                                delay: index * 0.07,
-                                ease: 'easeOut',
-                            }}
-                        >
-                            {word}
-                            {index < words.length - 1 ? '\u00A0' : ''}
-                        </m.span>
-                    ))}
-                </span>
-            </Tag>
-        </LazyMotion>
+        <Tag ref={ref} className={className}>
+            <span className="sr-only">{text}</span>
+            <span aria-hidden="true">
+                {words.map((word, index) => (
+                    <span
+                        // Words can repeat, so the position is part of the key.
+                        // eslint-disable-next-line @eslint-react/no-array-index-key
+                        key={`${index}-${word}`}
+                        className="inline-block transition-[opacity,transform,filter] duration-500 ease-out"
+                        style={{
+                            transitionDelay: `${index * 70}ms`,
+                            ...(seen
+                                ? {}
+                                : {
+                                      opacity: 0,
+                                      filter: 'blur(8px)',
+                                      transform: 'translateY(6px)',
+                                  }),
+                        }}
+                    >
+                        {word}
+                        {index < words.length - 1 ? '\u00A0' : ''}
+                    </span>
+                ))}
+            </span>
+        </Tag>
     );
 }
 
@@ -200,9 +198,9 @@ export function AnimatedNumber({
     value: string;
     className?: string;
 }) {
-    const reduce = useReducedMotion();
+    const reduce = usePrefersReducedMotion();
     const ref = useRef<HTMLParagraphElement>(null);
-    const inView = useInView(ref, { once: true, amount: 0.6 });
+    const inView = useInViewOnce(ref, { amount: 0.6 });
     const [text, setText] = useState(value);
 
     useEffect(() => {
@@ -228,14 +226,26 @@ export function AnimatedNumber({
                   })
                 : n.toFixed(decimals);
 
-        const controls = animate(0, target, {
-            duration: 1.4,
-            ease: 'easeOut',
-            onUpdate: (latest) => setText(prefix + format(latest) + suffix),
-            onComplete: () => setText(value),
-        });
+        const duration = 1400;
+        const start = performance.now();
+        let frame = 0;
 
-        return () => controls.stop();
+        const tick = (now: number) => {
+            const progress = Math.min((now - start) / duration, 1);
+            // Ease out: fast at first, then slowing towards the final value.
+            const eased = 1 - (1 - progress) ** 3;
+
+            if (progress < 1) {
+                setText(prefix + format(target * eased) + suffix);
+                frame = requestAnimationFrame(tick);
+            } else {
+                setText(value);
+            }
+        };
+
+        frame = requestAnimationFrame(tick);
+
+        return () => cancelAnimationFrame(frame);
     }, [inView, reduce, value]);
 
     return (
@@ -245,7 +255,7 @@ export function AnimatedNumber({
     );
 }
 
-// Fades, slides, or zooms a block in the first time it scrolls into view (motion's whileInView).
+// Fades, slides, or zooms a block in the first time it scrolls into view.
 // Off in the editor, so the canvas always shows the real content, and off for reduced motion.
 const REVEAL_FROM: Record<
     Exclude<Animation, 'none'>,
@@ -266,24 +276,33 @@ export function Reveal({
     className?: string;
     children: ReactNode;
 }) {
-    const reduce = useReducedMotion();
+    const reduce = usePrefersReducedMotion();
     const edit = use(LandingEditContext);
+    const ref = useRef<HTMLDivElement>(null);
+    const enabled = animation !== 'none' && !reduce && !edit;
+    const seen = useInViewOnce(ref, { amount: 0.12, enabled });
 
-    if (animation === 'none' || reduce || edit) {
-        return <div className={className}>{children}</div>;
-    }
+    const from = animation === 'none' ? null : REVEAL_FROM[animation];
+    const hiddenFrom = enabled && !seen ? from : null;
 
     return (
-        <LazyMotion features={domAnimation}>
-            <m.div
-                className={className}
-                initial={REVEAL_FROM[animation]}
-                whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0.12 }}
-                transition={{ duration: 0.7, ease: 'easeOut' }}
-            >
-                {children}
-            </m.div>
-        </LazyMotion>
+        <div
+            ref={ref}
+            className={cn(
+                className,
+                enabled &&
+                    'transition-[opacity,transform] duration-700 ease-out',
+            )}
+            style={
+                hiddenFrom
+                    ? {
+                          opacity: hiddenFrom.opacity,
+                          transform: `translate3d(${hiddenFrom.x ?? 0}px, ${hiddenFrom.y ?? 0}px, 0) scale(${hiddenFrom.scale ?? 1})`,
+                      }
+                    : undefined
+            }
+        >
+            {children}
+        </div>
     );
 }
