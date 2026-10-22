@@ -2,7 +2,14 @@ import { Head } from '@inertiajs/react';
 import type { SeoData } from '@/types/cms';
 
 // The page's search and sharing tags, from the server's SEO decision (see App\Support\Seo\SeoHead).
-export default function SeoMeta({ seo }: { seo: SeoData }) {
+// feedUrl, when given, adds the feed's autodiscovery link, so browsers and feed readers find it.
+export default function SeoMeta({
+    seo,
+    feedUrl,
+}: {
+    seo: SeoData;
+    feedUrl?: string;
+}) {
     return (
         <Head title={seo.title}>
             {seo.description && (
@@ -10,6 +17,14 @@ export default function SeoMeta({ seo }: { seo: SeoData }) {
             )}
             {seo.noindex && <meta name="robots" content="noindex, nofollow" />}
             {seo.canonical && <link rel="canonical" href={seo.canonical} />}
+            {feedUrl && (
+                <link
+                    rel="alternate"
+                    type="application/rss+xml"
+                    title={seo.site_name ?? seo.title}
+                    href={feedUrl}
+                />
+            )}
             <meta property="og:title" content={seo.title} />
             {seo.description && (
                 <meta property="og:description" content={seo.description} />

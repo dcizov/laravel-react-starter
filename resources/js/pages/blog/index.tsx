@@ -33,7 +33,7 @@ export default function BlogIndex({
 
     return (
         <PublicLayout>
-            <SeoMeta seo={seo} />
+            <SeoMeta seo={seo} feedUrl={feedUrl} />
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <h1 className="text-2xl font-semibold tracking-tight">
                     {t('Blog')}

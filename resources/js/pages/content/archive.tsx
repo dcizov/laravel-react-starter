@@ -64,38 +64,50 @@ export function EntryList({
     return (
         <ul className="flex flex-col divide-y">
             {entries.data.map((entry) => (
-                <li key={entry.id} className="flex flex-col gap-1 py-5">
-                    <p className="flex flex-wrap gap-x-2 text-sm text-muted-foreground">
-                        {entry.publishedAt && (
-                            <time>
-                                {new Date(entry.publishedAt).toLocaleDateString(
-                                    'de-DE',
-                                )}
-                            </time>
-                        )}
-                        {entry.author && (
-                            <span>
-                                {entry.author.url ? (
-                                    <Link
-                                        href={entry.author.url}
-                                        className="hover:underline"
-                                    >
-                                        {entry.author.name}
-                                    </Link>
-                                ) : (
-                                    entry.author.name
-                                )}
-                            </span>
-                        )}
-                    </p>
-                    <h2 className="text-xl font-semibold">
-                        <Link href={entry.url} className="hover:underline">
-                            {entry.title}
-                        </Link>
-                    </h2>
-                    {entry.excerpt && (
-                        <p className="text-muted-foreground">{entry.excerpt}</p>
+                <li key={entry.id} className="flex gap-5 py-5">
+                    {entry.featuredImage && (
+                        <img
+                            src={entry.featuredImage}
+                            alt=""
+                            loading="lazy"
+                            className="hidden h-24 w-36 shrink-0 rounded-lg border object-cover sm:block"
+                        />
                     )}
+                    <div className="flex min-w-0 flex-col gap-1">
+                        <p className="flex flex-wrap gap-x-2 text-sm text-muted-foreground">
+                            {entry.publishedAt && (
+                                <time>
+                                    {new Date(
+                                        entry.publishedAt,
+                                    ).toLocaleDateString('de-DE')}
+                                </time>
+                            )}
+                            {entry.author && (
+                                <span>
+                                    {entry.author.url ? (
+                                        <Link
+                                            href={entry.author.url}
+                                            className="hover:underline"
+                                        >
+                                            {entry.author.name}
+                                        </Link>
+                                    ) : (
+                                        entry.author.name
+                                    )}
+                                </span>
+                            )}
+                        </p>
+                        <h2 className="text-xl font-semibold">
+                            <Link href={entry.url} className="hover:underline">
+                                {entry.title}
+                            </Link>
+                        </h2>
+                        {entry.excerpt && (
+                            <p className="text-muted-foreground">
+                                {entry.excerpt}
+                            </p>
+                        )}
+                    </div>
                 </li>
             ))}
         </ul>

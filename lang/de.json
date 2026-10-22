@@ -1069,5 +1069,12 @@
     "All posts": "Alle Beiträge",
     "RSS feed": "RSS-Feed",
     "Search posts": "Beiträge durchsuchen",
-    "No posts match your search.": "Keine Beiträge passen zu deiner Suche."
+    "No posts match your search.": "Keine Beiträge passen zu deiner Suche.",
+    "Marketing": "Marketing",
+    "Administration": "Verwaltung",
+    "Share this post": "Diesen Beitrag teilen",
+    "Share on X": "Auf X teilen",
+    "Share on LinkedIn": "Auf LinkedIn teilen",
+    "Share by email": "Per E-Mail teilen",
+    ":minutes min read": "Lesezeit: :minutes Min."
 }
