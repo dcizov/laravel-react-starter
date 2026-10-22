@@ -73,8 +73,30 @@ final class AddonServiceProvider extends ServiceProvider
         if ($this->app->routesAreCached()) {
             AddonRouteLoader::acknowledge($router, $registry);
         } else {
-            AddonRouteLoader::load($router, $registry->installed());
+            AddonRouteLoader::load($router, $this->routeEntries($registry));
         }
+    }
+
+    /**
+     * The addons whose routes are registered at boot: the installed ones. In the console, the addons in the addon
+     * folders too, so php artisan wayfinder:generate writes the helpers for an addon whether it is installed or not.
+     * The addon.active middleware still answers 404 to a request for an addon that is not active.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function routeEntries(AddonRegistry $registry): array
+    {
+        $entries = $registry->installed();
+
+        if (! $this->app->runningInConsole()) {
+            return $entries;
+        }
+
+        foreach ($this->app->make(AddonDiscovery::class)->discover()->manifests as $slug => $manifest) {
+            $entries[(string) $slug] ??= $manifest->toArray();
+        }
+
+        return $entries;
     }
 
     /**
