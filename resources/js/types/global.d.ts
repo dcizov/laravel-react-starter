@@ -26,6 +26,26 @@ declare module '@inertiajs/core' {
             sidebarVariant: 'inset' | 'floating';
             locales: { value: string; label: string }[];
             font: 'instrument-sans' | 'inter' | 'manrope' | 'system';
+            // The site this request works on. basePath is /s/{slug} for a site reached by path, otherwise empty.
+            site: {
+                id: number;
+                name: string;
+                slug: string;
+                locale: string;
+                isDefault: boolean;
+                basePath: string;
+                mode: 'default' | 'domain' | 'path' | 'admin';
+            };
+            // Every site, for the admin's site switcher. Null outside the admin pages.
+            sites:
+                | {
+                      id: number;
+                      name: string;
+                      slug: string;
+                      domain: string | null;
+                      isDefault: boolean;
+                  }[]
+                | null;
             [key: string]: unknown;
         };
     }

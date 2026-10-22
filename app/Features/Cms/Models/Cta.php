@@ -2,9 +2,10 @@
 
 namespace App\Features\Cms\Models;
 
+use App\Features\Cms\Factories\CtaFactory;
+use App\Models\Concerns\BelongsToSite;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Features\Cms\Factories\CtaFactory;
 
 /**
  * A reusable call to action. Blocks on pages, posts and the landing page refer to it by id, so an edit here
@@ -19,6 +20,7 @@ use App\Features\Cms\Factories\CtaFactory;
  */
 class Cta extends Model
 {
+    use BelongsToSite;
     use HasFactory;
 
     protected $table = 'cms_ctas';

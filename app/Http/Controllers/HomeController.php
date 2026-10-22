@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Features\FeatureRegistry;
 use App\Features\Landing\LandingBlocks;
 use App\Features\Landing\LandingContent;
-use App\Support\Seo\SeoHead;
 use App\Settings\AppSettings;
+use App\Support\Seo\SeoHead;
+use App\Support\Sites\CurrentSite;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,6 +20,19 @@ class HomeController extends Controller
 {
     public function show(Request $request, AppSettings $settings, FeatureRegistry $features): Response|RedirectResponse
     {
+        $current = app(CurrentSite::class);
+
+        // The landing page is the default site's. Any other site shows the page it chose as its home, or the blog.
+        if (! $current->isDefault()) {
+            if ($current->site()->homeSlug() !== null) {
+                return to_route('pages.show', $current->site()->homeSlug());
+            }
+
+            abort_unless($features->isEnabled('blog'), 404);
+
+            return to_route('blog.index');
+        }
+
         if (! $features->isEnabled('landing')) {
             return $request->user()
                 ? to_route('dashboard')

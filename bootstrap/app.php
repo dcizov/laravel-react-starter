@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\ResolveSite;
 use App\Http\Middleware\SetLocale;
 use App\Support\ErrorPages;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
+            // Before the shared props, which describe the site.
+            ResolveSite::class,
             HandleAppearance::class,
             SetLocale::class,
             HandleInertiaRequests::class,
@@ -35,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         // These errors get the app's own pages instead of Laravel's, except where the exceptions below apply.
-        $exceptions->respond(function ($response, \Throwable $exception, Request $request) {
+        $exceptions->respond(function ($response, Throwable $exception, Request $request) {
             $status = $response->getStatusCode();
             $errorPages = [
                 401 => 'errors/unauthorized-error',

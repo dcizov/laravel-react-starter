@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import RichTextView from '@/components/cms/rich-text-view';
 import { cn } from '@/lib/utils';
 import type { ContentBlock } from '@/types/cms';
 
@@ -39,12 +40,22 @@ function Block({ block }: { block: ContentBlock }) {
             );
 
         case 'paragraph':
-            return <p className="whitespace-pre-line">{block.data.text}</p>;
+            return block.data.doc ? (
+                <RichTextView doc={block.data.doc} />
+            ) : (
+                <p className="whitespace-pre-line">{block.data.text}</p>
+            );
 
         case 'quote':
             return (
                 <figure className="border-s-4 ps-4 text-lg italic">
-                    <blockquote>{block.data.text}</blockquote>
+                    {block.data.doc ? (
+                        <blockquote>
+                            <RichTextView doc={block.data.doc} />
+                        </blockquote>
+                    ) : (
+                        <blockquote>{block.data.text}</blockquote>
+                    )}
                     {block.data.cite && (
                         <figcaption className="mt-2 text-sm text-muted-foreground not-italic">
                             {block.data.cite}
@@ -54,8 +65,13 @@ function Block({ block }: { block: ContentBlock }) {
             );
 
         case 'list': {
+            // A rich list keeps its own list nodes. Older plain lists are shown from their items.
+            if (block.data.doc) {
+                return <RichTextView doc={block.data.doc} />;
+            }
+
             // Static list: items are never reordered or edited here, so the position is a stable key.
-            const items = block.data.items.map((item, index) => (
+            const items = (block.data.items ?? []).map((item, index) => (
                 // eslint-disable-next-line @eslint-react/no-array-index-key
                 <li key={index}>{item}</li>
             ));

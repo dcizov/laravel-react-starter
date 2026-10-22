@@ -38,42 +38,46 @@ export type DataTableToolbarOptions<TData extends RowData> = {
 export function DataTableToolbar<TData extends RowData>({
     table,
     options,
+    search,
 }: {
     table: ReactTable<DataTableFeatures, TData>;
     options: DataTableToolbarOptions<TData>;
+    // Server mode passes the search text and its setter. Client mode reads the search column instead.
+    search?: { value: string; onChange: (value: string) => void };
 }) {
     const t = useTrans();
     const searchColumn = options.search
         ? table.getColumn(options.search.column)
         : undefined;
-    const filtered = table.state.columnFilters.length > 0;
+    const searchValue = search
+        ? search.value
+        : ((searchColumn?.getFilterValue() as string) ?? '');
+    const setSearch = (value: string) =>
+        search ? search.onChange(value) : searchColumn?.setFilterValue(value);
+    const filtered = table.state.columnFilters.length > 0 || searchValue !== '';
     const showViewOptions = options.viewOptions ?? true;
 
     return (
         <div className="flex items-center justify-between gap-2">
             <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
-                {options.search && searchColumn && (
+                {options.search && (search || searchColumn) && (
                     <InputGroup className="h-8 w-[150px] lg:w-[250px]">
                         <InputGroupInput
+                            type="search"
+                            aria-label={options.search.placeholder}
                             placeholder={options.search.placeholder}
-                            value={
-                                (searchColumn.getFilterValue() as string) ?? ''
-                            }
-                            onChange={(event) =>
-                                searchColumn.setFilterValue(event.target.value)
-                            }
+                            value={searchValue}
+                            onChange={(event) => setSearch(event.target.value)}
                         />
                         <InputGroupAddon>
                             <Search />
                         </InputGroupAddon>
-                        {(searchColumn.getFilterValue() as string) && (
+                        {searchValue && (
                             <InputGroupAddon align="inline-end">
                                 <InputGroupButton
                                     size="icon-xs"
                                     aria-label={t('Clear search')}
-                                    onClick={() =>
-                                        searchColumn.setFilterValue('')
-                                    }
+                                    onClick={() => setSearch('')}
                                 >
                                     <X />
                                 </InputGroupButton>
@@ -105,7 +109,10 @@ export function DataTableToolbar<TData extends RowData>({
                 {filtered && (
                     <Button
                         variant="ghost"
-                        onClick={() => table.resetColumnFilters()}
+                        onClick={() => {
+                            setSearch('');
+                            table.resetColumnFilters();
+                        }}
                         size="sm"
                         className="px-2 lg:px-3"
                     >

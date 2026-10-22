@@ -1,7 +1,11 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/data-table/data-table';
+import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import PageHeader from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,14 +23,6 @@ import {
     NativeSelect,
     NativeSelectOption,
 } from '@/components/ui/native-select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { useTrans } from '@/hooks/use-trans';
 import type { ContentTypeInfo, CustomFieldDef, FieldType } from '@/types/cms';
 
@@ -86,6 +82,127 @@ export default function CmsTypes({
         }
     };
 
+    const columns = useMemo<ColumnDef<DataTableFeatures, ContentTypeInfo>[]>(
+        () => [
+            {
+                accessorKey: 'label',
+                id: 'label',
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title={t('Name')} />
+                ),
+                cell: ({ row }) => (
+                    <span className="font-medium">
+                        {row.original.label}
+                        {row.original.builtin && (
+                            <Badge variant="outline" className="ms-2">
+                                {t('Built in')}
+                            </Badge>
+                        )}
+                    </span>
+                ),
+            },
+            {
+                id: 'address',
+                header: () => t('Address'),
+                cell: ({ row }) => (
+                    <span className="text-muted-foreground">
+                        /
+                        {row.original.key === 'page'
+                            ? 'pages'
+                            : row.original.key === 'post'
+                              ? 'blog'
+                              : `content/${row.original.key}`}
+                    </span>
+                ),
+                enableSorting: false,
+            },
+            {
+                id: 'origin',
+                accessorFn: (row) => (row.builtin ? 'built-in' : 'custom'),
+                header: () => null,
+                cell: () => null,
+                enableSorting: false,
+            },
+            {
+                id: 'features',
+                header: () => t('Features'),
+                cell: ({ row }) => (
+                    <div className="flex flex-wrap gap-1">
+                        {row.original.supports.map((item) => (
+                            <Badge key={item} variant="secondary">
+                                {t(SUPPORT_LABELS[item] ?? item)}
+                            </Badge>
+                        ))}
+                        {row.original.hasArchive && (
+                            <Badge variant="secondary">{t('Archive')}</Badge>
+                        )}
+                        {row.original.fields.length > 0 && (
+                            <Badge variant="secondary">
+                                {t(':count fields', {
+                                    count: row.original.fields.length,
+                                })}
+                            </Badge>
+                        )}
+                    </div>
+                ),
+                enableSorting: false,
+            },
+            {
+                accessorKey: 'entriesCount',
+                id: 'entriesCount',
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t('Entries')}
+                    />
+                ),
+                cell: ({ row }) => row.original.entriesCount,
+            },
+            {
+                id: 'actions',
+                header: () => <span className="sr-only">{t('Actions')}</span>,
+                cell: ({ row }) => (
+                    <div className="flex justify-end gap-1">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            render={
+                                <Link
+                                    href={`/admin/content/${row.original.key}`}
+                                />
+                            }
+                            nativeButton={false}
+                        >
+                            {t('Entries')}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={t('Edit')}
+                            onClick={() => setEditing(row.original)}
+                        >
+                            <Pencil />
+                        </Button>
+                        {!row.original.builtin && (
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label={t('Delete')}
+                                onClick={() => remove(row.original)}
+                            >
+                                <Trash2 />
+                            </Button>
+                        )}
+                    </div>
+                ),
+                enableSorting: false,
+                enableHiding: false,
+            },
+        ],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [t],
+    );
+
     return (
         <>
             <Head title={t('Content types')} />
@@ -102,106 +219,30 @@ export default function CmsTypes({
                     }
                 />
 
-                <div className="overflow-hidden rounded-xl border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('Name')}</TableHead>
-                                <TableHead>{t('Address')}</TableHead>
-                                <TableHead>{t('Features')}</TableHead>
-                                <TableHead>{t('Entries')}</TableHead>
-                                <TableHead className="text-end">
-                                    {t('Actions')}
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {types.map((type) => (
-                                <TableRow key={type.key}>
-                                    <TableCell className="font-medium">
-                                        {type.label}
-                                        {type.builtin && (
-                                            <Badge
-                                                variant="outline"
-                                                className="ms-2"
-                                            >
-                                                {t('Built in')}
-                                            </Badge>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground">
-                                        /
-                                        {type.key === 'page'
-                                            ? 'pages'
-                                            : type.key === 'post'
-                                              ? 'blog'
-                                              : `content/${type.key}`}
-                                    </TableCell>
-                                    <TableCell className="flex flex-wrap gap-1">
-                                        {type.supports.map((item) => (
-                                            <Badge
-                                                key={item}
-                                                variant="secondary"
-                                            >
-                                                {t(
-                                                    SUPPORT_LABELS[item] ??
-                                                        item,
-                                                )}
-                                            </Badge>
-                                        ))}
-                                        {type.hasArchive && (
-                                            <Badge variant="secondary">
-                                                {t('Archive')}
-                                            </Badge>
-                                        )}
-                                        {type.fields.length > 0 && (
-                                            <Badge variant="secondary">
-                                                {t(':count fields', {
-                                                    count: type.fields.length,
-                                                })}
-                                            </Badge>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>{type.entriesCount}</TableCell>
-                                    <TableCell>
-                                        <div className="flex justify-end gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                render={
-                                                    <Link
-                                                        href={`/admin/content/${type.key}`}
-                                                    />
-                                                }
-                                                nativeButton={false}
-                                            >
-                                                {t('Entries')}
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                aria-label={t('Edit')}
-                                                onClick={() => setEditing(type)}
-                                            >
-                                                <Pencil />
-                                            </Button>
-                                            {!type.builtin && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon-sm"
-                                                    aria-label={t('Delete')}
-                                                    onClick={() => remove(type)}
-                                                >
-                                                    <Trash2 />
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+                <DataTable<ContentTypeInfo>
+                    columns={columns}
+                    data={types}
+                    initialPageSize={20}
+                    getRowId={(row) => row.key}
+                    hiddenColumns={['origin']}
+                    emptyMessage={t('No content types yet.')}
+                    toolbar={{
+                        search: {
+                            column: 'label',
+                            placeholder: t('Search names'),
+                        },
+                        filters: [
+                            {
+                                column: 'origin',
+                                title: t('Kind'),
+                                options: [
+                                    { label: t('Built in'), value: 'built-in' },
+                                    { label: t('Custom'), value: 'custom' },
+                                ],
+                            },
+                        ],
+                    }}
+                />
             </div>
 
             {editing && (

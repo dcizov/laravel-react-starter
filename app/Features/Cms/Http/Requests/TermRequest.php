@@ -3,6 +3,7 @@
 namespace App\Features\Cms\Http\Requests;
 
 use App\Features\Cms\Models\Term;
+use App\Support\Sites\CurrentSite;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,11 +22,12 @@ class TermRequest extends FormRequest
         /** @var Term|null $term */
         $term = $this->route('term');
 
-        // Slugs are unique per content type and taxonomy, so two types can both have a "news" category.
+        // Slugs are unique per site, content type and taxonomy, so two types can both have a "news" category.
         // A term keeps its content type once created, so its current type is the one to check against.
         $contentType = $term?->content_type ?? (string) $this->input('content_type');
 
         $slugUnique = Rule::unique('cms_terms', 'slug')
+            ->where('site_id', app(CurrentSite::class)->id())
             ->where('content_type', $contentType)
             ->where('taxonomy', (string) $this->input('taxonomy'));
 

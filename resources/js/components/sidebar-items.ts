@@ -1,4 +1,5 @@
 import {
+    Globe,
     BookOpen,
     FileText,
     FolderGit2,
@@ -157,7 +158,7 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'Pages',
                 href: '/admin/content/page',
                 icon: FileText,
-                permission: 'content.manage',
+                permission: 'content.view',
                 feature: 'cms',
             },
             {
@@ -165,7 +166,7 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'Posts',
                 href: '/admin/content/post',
                 icon: Newspaper,
-                permission: 'content.manage',
+                permission: 'content.view',
                 feature: 'blog',
             },
             {
@@ -173,7 +174,7 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'Content types',
                 href: '/admin/cms/types',
                 icon: Shapes,
-                permission: 'content.manage',
+                permission: 'settings.manage',
                 feature: 'cms',
             },
             {
@@ -181,7 +182,7 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'Calls to action',
                 href: '/admin/cms/ctas',
                 icon: MousePointerClick,
-                permission: 'content.manage',
+                permission: 'content.edit-any',
                 feature: 'cms',
             },
             {
@@ -189,7 +190,7 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'Categories and tags',
                 href: '/admin/cms/terms',
                 icon: Tags,
-                permission: 'content.manage',
+                permission: 'content.edit-any',
                 feature: 'cms',
             },
             {
@@ -197,8 +198,15 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'Comments',
                 href: '/admin/blog/comments',
                 icon: MessageSquare,
-                permission: 'content.manage',
+                permission: 'comments.moderate',
                 feature: 'cms',
+            },
+            {
+                id: 'admin-sites',
+                title: 'Sites',
+                href: '/admin/sites',
+                icon: Globe,
+                permission: 'sites.manage',
             },
             {
                 id: 'admin-seo',

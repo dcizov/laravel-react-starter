@@ -3,6 +3,7 @@ import AppLogo from '@/components/app-logo';
 import { NavGroup } from '@/components/nav-group';
 import { NavUser } from '@/components/nav-user';
 import { visibleSidebarGroups } from '@/components/sidebar-items';
+import { SiteSwitcher } from '@/components/site-switcher';
 import {
     Sidebar,
     SidebarContent,
@@ -40,6 +41,7 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
+                <SiteSwitcher />
             </SidebarHeader>
 
             <SidebarContent>

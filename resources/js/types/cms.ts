@@ -1,3 +1,5 @@
+import type { RichDoc } from '@/components/cms/rich-text';
+
 // Shapes shared by the content (cms), blog and SEO pages. They match the arrays built by the PHP presenters.
 
 export type Taxonomy = 'category' | 'tag';
@@ -29,13 +31,22 @@ export type ContentTypeInfo = {
 
 export type ContentBlock =
     | { id: string; type: 'heading'; data: { level: 2 | 3; text: string } }
-    | { id: string; type: 'paragraph'; data: { text: string } }
+    // Rich text (doc) is what the editor saves. text and items are the plain form that older content still has.
+    | {
+          id: string;
+          type: 'paragraph';
+          data: { doc?: RichDoc; text?: string | null };
+      }
     | {
           id: string;
           type: 'quote';
-          data: { text: string; cite?: string | null };
+          data: { doc?: RichDoc; text?: string | null; cite?: string | null };
       }
-    | { id: string; type: 'list'; data: { ordered: boolean; items: string[] } }
+    | {
+          id: string;
+          type: 'list';
+          data: { ordered: boolean; doc?: RichDoc; items?: string[] | null };
+      }
     | {
           id: string;
           type: 'image';

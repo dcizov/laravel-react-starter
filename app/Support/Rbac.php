@@ -39,8 +39,27 @@ final class Rbac
 
     public const PERMISSION_INTEGRATIONS_MANAGE = 'integrations.manage';
 
-    // Pages, custom post types, posts, CTAs and taxonomies (the cms feature).
-    public const PERMISSION_CONTENT_MANAGE = 'content.manage';
+    // Content (the cms feature). Pages, custom post types, posts, CTAs and taxonomies.
+    // View: see the entries of the current site and preview them. Authors see only their own unless they can edit any.
+    public const PERMISSION_CONTENT_VIEW = 'content.view';
+
+    public const PERMISSION_CONTENT_CREATE = 'content.create';
+
+    public const PERMISSION_CONTENT_EDIT_OWN = 'content.edit-own';
+
+    public const PERMISSION_CONTENT_EDIT_ANY = 'content.edit-any';
+
+    // Set an entry to published or schedule it. Without this, entries are saved as drafts.
+    public const PERMISSION_CONTENT_PUBLISH = 'content.publish';
+
+    // Move entries to the trash, restore them, and delete them for good.
+    public const PERMISSION_CONTENT_DELETE = 'content.delete';
+
+    // Approve, mark as spam, and delete visitors' comments (the cms feature).
+    public const PERMISSION_COMMENTS_MODERATE = 'comments.moderate';
+
+    // Create, edit, and delete the sites, and choose which one the admin works on.
+    public const PERMISSION_SITES_MANAGE = 'sites.manage';
 
     // Site-wide SEO settings (the seo feature).
     public const PERMISSION_SEO_MANAGE = 'seo.manage';
@@ -62,6 +81,7 @@ final class Rbac
         self::PERMISSION_ROLES_MANAGE,
         self::PERMISSION_PERMISSIONS_MANAGE,
         self::PERMISSION_SETTINGS_MANAGE,
+        self::PERMISSION_SITES_MANAGE,
     ];
 
     /**

@@ -21,6 +21,7 @@ Route::middleware(['web', 'auth', 'verified'])
         Route::middleware('can:newsletter.manage')->group(function () {
             Route::get('newsletter', [SubscriberController::class, 'index'])->name('newsletter.index');
             Route::get('newsletter/export', [SubscriberController::class, 'exportCsv'])->name('newsletter.csv');
+            Route::post('newsletter/bulk-delete', [SubscriberController::class, 'bulkDestroy'])->name('newsletter.bulk-destroy');
             Route::delete('newsletter/{subscriber}', [SubscriberController::class, 'destroy'])->name('newsletter.destroy');
         });
     });

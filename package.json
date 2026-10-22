@@ -9,6 +9,7 @@
         "check": "vp check",
         "check:fix": "vp check --fix",
         "types:check": "tsc --noEmit",
+        "check:translations": "node scripts/check-translations.mjs",
         "test:js": "vp test run",
         "prepare": "husky"
     },
@@ -26,6 +27,10 @@
         "@laravel/passkeys": "^0.2.0",
         "@tailwindcss/vite": "^4.1.11",
         "@tanstack/react-table": "^9.3.1",
+        "@tiptap/extension-link": "^3.32.0",
+        "@tiptap/pm": "^3.32.0",
+        "@tiptap/react": "^3.32.0",
+        "@tiptap/starter-kit": "^3.32.0",
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.0",
         "@vitejs/plugin-react": "^6.1.1",

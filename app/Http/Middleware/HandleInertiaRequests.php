@@ -4,11 +4,13 @@ namespace App\Http\Middleware;
 
 use App\Features\FeatureRegistry;
 use App\Http\Controllers\ImpersonationController;
+use App\Models\Site;
 use App\Settings\AppSettings;
 use App\Support\DisplaySettings;
 use App\Support\Fonts;
-use App\Support\SidebarVariant;
 use App\Support\Locales;
+use App\Support\SidebarVariant;
+use App\Support\Sites\CurrentSite;
 use App\Support\Timezones;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -69,6 +71,38 @@ class HandleInertiaRequests extends Middleware
             'sidebarVariant' => SidebarVariant::forUser($request->user()),
             'locales' => Locales::options(),
             'font' => Fonts::forUser($request->user()),
+            'site' => self::currentSite(),
+            // The admin's site switcher. Only the admin pages need the list.
+            'sites' => $request->is('admin', 'admin/*')
+                ? Site::query()->orderByDesc('is_default')->orderBy('name')->get()->map(fn (Site $site) => [
+                    'id' => $site->id,
+                    'name' => $site->name,
+                    'slug' => $site->slug,
+                    'domain' => $site->domain,
+                    'isDefault' => $site->isDefault(),
+                ])->values()->all()
+                : null,
+        ];
+    }
+
+    /**
+     * The site this request works on, for the links and the admin switcher.
+     *
+     * @return array{id: int, name: string, slug: string, locale: string, isDefault: bool, basePath: string, mode: string}
+     */
+    public static function currentSite(): array
+    {
+        $current = app(CurrentSite::class);
+        $site = $current->site();
+
+        return [
+            'id' => $site->id,
+            'name' => $site->name,
+            'slug' => $site->slug,
+            'locale' => $site->locale,
+            'isDefault' => $site->isDefault(),
+            'basePath' => $current->basePath(),
+            'mode' => $current->mode(),
         ];
     }
 }

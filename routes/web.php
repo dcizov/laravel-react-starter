@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
@@ -11,10 +12,19 @@ use App\Http\Controllers\Settings\LanguageController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Support\Rbac;
+use App\Support\Sites\PublicRoutes;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', [HomeController::class, 'show'])->name('home');
+// The home page of the site: the landing page on the default site, the site's own home page elsewhere.
+// The copy under /s/{site} gets its own name. `home()` must always mean the root URL (the sign-in pages link their
+// logo there), and Wayfinder cannot generate two helpers with one name.
+Route::middleware('web')
+    ->prefix('s/{site}')
+    ->where(['site' => PublicRoutes::SLUG_PATTERN])
+    ->get('/', [HomeController::class, 'show'])
+    ->name('site.home');
+Route::middleware('web')->get('/', [HomeController::class, 'show'])->name('home');
 
 // Language for guests, kept in the session. Signed-in users change it in their settings.
 Route::post('language', [LanguageController::class, 'guest'])->middleware('web')->name('language.guest');
@@ -50,6 +60,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('users/roles', [UserController::class, 'bulkUpdateRole'])->middleware('can:'.Rbac::PERMISSION_USERS_MANAGE_ROLES)->name('users.role.bulk');
 
     Route::prefix('admin')->name('admin.')->group(function () {
+        // Choosing the site to work on needs no permission of its own: the data still checks each permission.
+        Route::post('sites/switch', [SiteController::class, 'switch'])->name('sites.switch');
+        Route::middleware('can:'.Rbac::PERMISSION_SITES_MANAGE)->group(function () {
+            Route::get('sites', [SiteController::class, 'index'])->name('sites.index');
+            Route::post('sites', [SiteController::class, 'store'])->name('sites.store');
+            Route::put('sites/{site}', [SiteController::class, 'update'])->name('sites.update');
+            Route::delete('sites/{site}', [SiteController::class, 'destroy'])->name('sites.destroy');
+        });
         Route::resource('roles', RoleController::class)
             ->except('show')
             ->middleware('can:roles.manage');

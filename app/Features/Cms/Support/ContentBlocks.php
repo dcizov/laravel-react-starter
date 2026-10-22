@@ -3,9 +3,11 @@
 namespace App\Features\Cms\Support;
 
 use App\Features\Cms\Models\Cta;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
+use App\Support\Sites\CurrentSite;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * The content blocks of pages, posts and custom post types. Each block is {id, type, data}.
@@ -68,6 +70,12 @@ final class ContentBlocks
 
             $validated = $validator->validated();
 
+            // Rich text replaces the plain fields. The document is cleaned once here, so only whitelisted nodes are stored.
+            if (is_array($validated['doc'] ?? null)) {
+                $validated['doc'] = RichText::clean($validated['doc'], "body.$index.doc");
+                unset($validated['text'], $validated['items']);
+            }
+
             $clean[] = [
                 'id' => is_string($block['id'] ?? null) && $block['id'] !== '' ? Str::limit($block['id'], 40, '') : Str::random(8),
                 'type' => $type,
@@ -88,16 +96,21 @@ final class ContentBlocks
                 'level' => ['required', 'integer', 'in:2,3'],
                 'text' => ['required', 'string', 'max:200'],
             ],
+            // Paragraphs, quotes and lists are rich text (doc). Plain text (text, items) is still accepted for content
+            // saved before the rich editor, and is shown as it was.
             'paragraph' => [
-                'text' => ['required', 'string', 'max:5000'],
+                'doc' => ['nullable', 'array'],
+                'text' => ['required_without:doc', 'nullable', 'string', 'max:5000'],
             ],
             'quote' => [
-                'text' => ['required', 'string', 'max:1000'],
+                'doc' => ['nullable', 'array'],
+                'text' => ['required_without:doc', 'nullable', 'string', 'max:1000'],
                 'cite' => ['nullable', 'string', 'max:200'],
             ],
             'list' => [
                 'ordered' => ['required', 'boolean'],
-                'items' => ['present', 'array', 'max:50'],
+                'doc' => ['nullable', 'array'],
+                'items' => ['required_without:doc', 'nullable', 'array', 'max:50'],
                 'items.*' => ['required', 'string', 'max:500'],
             ],
             'image' => [
@@ -111,7 +124,7 @@ final class ContentBlocks
             ],
             // A cta either points at a saved call to action, or carries its own text.
             'cta' => [
-                'cta_id' => ['nullable', 'integer', 'exists:cms_ctas,id'],
+                'cta_id' => ['nullable', 'integer', Rule::exists('cms_ctas', 'id')->where('site_id', app(CurrentSite::class)->id())],
                 'heading' => ['required_without:cta_id', 'nullable', 'string', 'max:160'],
                 'text' => ['nullable', 'string', 'max:300'],
                 'button_label' => ['nullable', 'string', 'max:40'],

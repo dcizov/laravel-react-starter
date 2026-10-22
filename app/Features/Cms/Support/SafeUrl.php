@@ -22,4 +22,12 @@ final class SafeUrl
             }
         };
     }
+
+    /**
+     * Whether a link is one of the allowed kinds. The rule above uses the same check.
+     */
+    public static function isAllowed(string $value): bool
+    {
+        return preg_match('#^(https?://[^\s]+|/(?!/)[^\s]*|\#[A-Za-z0-9_-]{0,80})$#i', $value) === 1;
+    }
 }

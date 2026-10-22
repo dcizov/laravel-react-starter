@@ -2,13 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Support\Sites\CurrentSite;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,7 +18,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // One per request, so each request chooses its own site (see App\Http\Middleware\ResolveSite).
+        $this->app->scoped(CurrentSite::class);
     }
 
     /**

@@ -55,6 +55,35 @@ final class EntryListing
     }
 
     /**
+     * Keeps the entries whose title or excerpt contains the words typed in the search box. Each word must match.
+     *
+     * @param  Builder<ContentEntry>  $query
+     * @return Builder<ContentEntry>
+     */
+    public static function search(Builder $query, ?string $search): Builder
+    {
+        $words = collect(preg_split('/\s+/', trim((string) $search), -1, PREG_SPLIT_NO_EMPTY) ?: [])
+            ->map(fn (string $word) => str($word)->limit(60, '')->toString())
+            ->take(5);
+
+        foreach ($words as $word) {
+            $query->where(fn (Builder $inner) => $inner
+                ->whereLike('title', '%'.self::escapeLike($word).'%', caseSensitive: false)
+                ->orWhereLike('excerpt', '%'.self::escapeLike($word).'%', caseSensitive: false));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Escapes the characters that LIKE treats as wildcards, so a search for "100%" matches that text.
+     */
+    public static function escapeLike(string $value): string
+    {
+        return addcslashes($value, '\\%_');
+    }
+
+    /**
      * The approved comments of an entry, ready for the browser. Pending and spam comments are never included.
      *
      * @return list<array{id: int, author: string, body: string, createdAt: string|null}>

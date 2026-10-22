@@ -2,11 +2,12 @@
 
 namespace App\Features\Cms\Models;
 
+use App\Features\Cms\Factories\TermFactory;
+use App\Models\Concerns\BelongsToSite;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Features\Cms\Factories\TermFactory;
 
 /**
  * A category or tag. Each term belongs to one content type, and entries of that type can use it.
@@ -19,6 +20,7 @@ use App\Features\Cms\Factories\TermFactory;
  */
 class Term extends Model
 {
+    use BelongsToSite;
     use HasFactory;
 
     public const CATEGORY = 'category';

@@ -6,6 +6,8 @@ use App\Features\Cms\Models\ContentEntry;
 use App\Features\Cms\Models\ContentType;
 use App\Features\FeatureRegistry;
 use App\Support\Seo\SeoHead;
+use App\Support\Sites\CurrentSite;
+use Illuminate\Support\Facades\Route;
 
 /**
  * Turns content into the arrays the pages receive. Keeps the URL rules in one place.
@@ -29,6 +31,42 @@ final class ContentPresenter
     }
 
     /**
+     * The public address of an entry on the site the admin is working on. Admin pages cannot use route() for this,
+     * because they are not under the site's own prefix, so the path is taken from the public route and joined to the
+     * site's own address.
+     */
+    public static function publicUrlFor(ContentEntry $entry): string
+    {
+        $path = (string) parse_url(self::url($entry), PHP_URL_PATH);
+        $site = app(CurrentSite::class)->site();
+        // The default site's route is already the right address when the admin works on it.
+        $base = $site->isDefault() ? rtrim((string) config('app.url'), '/') : rtrim($site->publicUrl(), '/');
+
+        return $base.$path;
+    }
+
+    /**
+     * The name shown as the author, with a link to their author page when the blog has one.
+     *
+     * @return array{name: string, url: string|null}|null
+     */
+    public static function author(ContentEntry $entry): ?array
+    {
+        $entry->loadMissing('author');
+
+        if ($entry->author === null) {
+            return null;
+        }
+
+        return [
+            'name' => $entry->author->name,
+            'url' => Route::has('blog.author') && app(FeatureRegistry::class)->isEnabled('blog')
+                ? route('blog.author', $entry->author_id)
+                : null,
+        ];
+    }
+
+    /**
      * A short form for lists and archives.
      *
      * @return array<string, mixed>
@@ -42,6 +80,7 @@ final class ContentPresenter
             'excerpt' => $entry->excerpt,
             'featuredImage' => $entry->featured_image,
             'publishedAt' => $entry->published_at?->toIso8601String(),
+            'author' => self::author($entry),
             'url' => self::url($entry),
         ];
     }
@@ -81,6 +120,7 @@ final class ContentPresenter
             'excerpt' => $entry->excerpt,
             'featuredImage' => $entry->featured_image,
             'publishedAt' => $entry->published_at?->toIso8601String(),
+            'author' => self::author($entry),
             'type' => [
                 'key' => $type->key,
                 'label' => $type->label,
@@ -124,7 +164,7 @@ final class ContentPresenter
             ],
             'termIds' => $entry->terms->pluck('id')->values()->all(),
             'blocks' => $entry->body ?? [],
-            'url' => $entry->isLive() ? self::url($entry) : null,
+            'url' => $entry->isLive() ? self::publicUrlFor($entry) : null,
         ];
     }
 }

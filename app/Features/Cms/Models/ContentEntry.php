@@ -2,6 +2,8 @@
 
 namespace App\Features\Cms\Models;
 
+use App\Features\Cms\Factories\ContentEntryFactory;
+use App\Models\Concerns\BelongsToSite;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,7 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Features\Cms\Factories\ContentEntryFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * One piece of content: a page, a post, or an entry of a custom post type.
@@ -22,14 +25,20 @@ use App\Features\Cms\Factories\ContentEntryFactory;
  * @property list<array{id: string, type: string, data: array<string, mixed>}>|null $body
  * @property string|null $featured_image
  * @property string $status
- * @property \Illuminate\Support\Carbon|null $published_at
+ * @property Carbon|null $published_at
  * @property int|null $author_id
  * @property array<string, mixed>|null $custom_fields
  * @property array{title?: string|null, description?: string|null, noindex?: bool}|null $seo
+ * @property int $site_id
+ * @property Carbon|null $deleted_at
  */
 class ContentEntry extends Model
 {
+    use BelongsToSite;
     use HasFactory;
+
+    // Trashed entries are kept (see the trash in the admin). They are removed for good only on request.
+    use SoftDeletes;
 
     public const STATUS_DRAFT = 'draft';
 
@@ -90,6 +99,14 @@ class ContentEntry extends Model
     public function terms(): BelongsToMany
     {
         return $this->belongsToMany(Term::class, 'cms_entry_terms', 'entry_id', 'term_id');
+    }
+
+    /**
+     * Earlier versions of this entry, newest first.
+     */
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(ContentEntryRevision::class, 'entry_id')->latest('id');
     }
 
     public function isLive(): bool

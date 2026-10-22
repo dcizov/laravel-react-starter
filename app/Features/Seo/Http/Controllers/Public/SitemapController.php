@@ -7,6 +7,7 @@ use App\Features\Cms\Support\ContentPresenter;
 use App\Features\FeatureRegistry;
 use App\Http\Controllers\Controller;
 use App\Settings\AppSettings;
+use App\Support\Sites\CurrentSite;
 use Illuminate\Http\Response;
 
 /**
@@ -22,8 +23,13 @@ class SitemapController extends Controller
 
         $urls = [];
 
-        if ($features->isEnabled('landing')) {
+        $current = app(CurrentSite::class);
+        // The landing page belongs to the default site. Other sites list their own home page, when they have one.
+        if ($current->isDefault() && $features->isEnabled('landing')) {
             $urls[] = ['loc' => url('/'), 'lastmod' => null];
+        }
+        if (! $current->isDefault() && $current->site()->homeSlug() !== null) {
+            $urls[] = ['loc' => route('pages.show', $current->site()->homeSlug()), 'lastmod' => null];
         }
 
         $entries = ContentEntry::query()

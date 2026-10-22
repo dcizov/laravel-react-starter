@@ -4,6 +4,7 @@ namespace App\Support\Seo;
 
 use App\Features\FeatureRegistry;
 use App\Settings\AppSettings;
+use App\Support\Sites\CurrentSite;
 
 /**
  * Works out the page title, description, image, canonical link and robots setting for a page.
@@ -28,13 +29,15 @@ final class SeoHead
         $seoOn = app(FeatureRegistry::class)->isEnabled('seo');
         $settings ??= app(AppSettings::class);
 
-        $siteName = $seoOn ? ($settings->app_name ?? null) : null;
+        // The default site uses the app's name and SEO settings. Other sites use their own name and description.
+        $site = app(CurrentSite::class)->site();
+        $siteName = $seoOn ? ($site->isDefault() ? ($settings->app_name ?? null) : $site->name) : null;
 
         $pageTitle = $overrides['title'] ?? $title;
         $pageDescription = $overrides['description'] ?? $description;
 
         if ($seoOn) {
-            $pageDescription = $pageDescription ?: $settings->seo_description;
+            $pageDescription = $pageDescription ?: ($site->isDefault() ? $settings->seo_description : $site->description());
             $image = $image ?: $settings->seo_image;
         }
 

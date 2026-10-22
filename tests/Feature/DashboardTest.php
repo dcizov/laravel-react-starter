@@ -1,5 +1,6 @@
 <?php
 
+use App\Features\Cms\Models\ContentEntry;
 use App\Models\Task;
 use App\Models\User;
 use App\Support\Rbac;
@@ -119,4 +120,126 @@ test('a new account has no change to report against last week', function () {
     $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertInertia(fn ($page) => $page->where('summary.created_change', null));
+});
+
+// The site overview cards. They are deferred: the first response only names the prop, and the cards load in a
+// second request, so these tests load the deferred prop the way the page does.
+
+function enableOverviewFeatures(): void
+{
+    config(['features.enabled' => ['landing', 'newsletter', 'integrations', 'cms', 'blog', 'seo']]);
+}
+
+function overviewEntry(array $attributes): ContentEntry
+{
+    return ContentEntry::query()->create(array_merge([
+        'content_type' => 'page',
+        'title' => 'Entry',
+        'slug' => 'entry-'.uniqid(),
+        'status' => ContentEntry::STATUS_PUBLISHED,
+        'published_at' => now()->subDay(),
+        'body' => [],
+        'custom_fields' => [],
+        'seo' => [],
+    ], $attributes));
+}
+
+test('the site overview is deferred, so the first response does not carry it', function () {
+    enableOverviewFeatures();
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $this->actingAs($admin)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->component('dashboard')
+            ->missing('overview')
+            ->has('deferredProps'));
+});
+
+test('the overview counts published, draft and trashed entries for users who may edit any', function () {
+    enableOverviewFeatures();
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+    $author = User::factory()->create();
+
+    overviewEntry(['author_id' => $author->id, 'slug' => 'author-live']);
+    overviewEntry(['author_id' => $admin->id, 'slug' => 'admin-live']);
+    overviewEntry(['author_id' => $author->id, 'slug' => 'author-draft', 'status' => ContentEntry::STATUS_DRAFT]);
+    overviewEntry(['author_id' => $author->id, 'slug' => 'author-trashed'])->delete();
+
+    $this->actingAs($admin)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->loadDeferredProps(fn ($reload) => $reload
+                ->where('overview.content.published', 2)
+                ->where('overview.content.drafts', 1)
+                ->where('overview.content.trashed', 1)
+                ->where('overview.content.canCreate', true)
+                ->where('overview.site.isDefault', true)
+                ->has('overview.content.types')));
+});
+
+test('authors see the counts of their own entries only', function () {
+    enableOverviewFeatures();
+    $author = User::factory()->create();
+    $author->assignRole('author');
+    $other = User::factory()->create();
+
+    overviewEntry(['author_id' => $author->id, 'slug' => 'mine']);
+    overviewEntry(['author_id' => $other->id, 'slug' => 'theirs']);
+
+    $this->actingAs($author)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->loadDeferredProps(fn ($reload) => $reload
+                ->where('overview.content.published', 1)
+                ->where('overview.content.drafts', 0)));
+});
+
+test('a user without any permission gets the site name and no cards', function () {
+    enableOverviewFeatures();
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->loadDeferredProps(fn ($reload) => $reload
+                ->has('overview.site')
+                ->missing('overview.content')
+                ->missing('overview.comments')
+                ->missing('overview.newsletter')
+                ->missing('overview.seo')
+                ->missing('overview.sites')));
+});
+
+test('the comments, newsletter, seo and sites cards need their permission', function () {
+    enableOverviewFeatures();
+    $user = User::factory()->create();
+    $user->givePermissionTo(['comments.moderate', 'sites.manage']);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->loadDeferredProps(fn ($reload) => $reload
+                ->has('overview.comments.pending')
+                ->has('overview.sites.count')
+                ->missing('overview.newsletter')
+                ->missing('overview.seo')));
+});
+
+test('a card is left out while its feature is switched off', function () {
+    config(['features.enabled' => ['landing', 'newsletter', 'integrations']]);
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $this->actingAs($admin)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->loadDeferredProps(fn ($reload) => $reload
+                ->missing('overview.content')
+                ->missing('overview.comments')
+                ->missing('overview.seo')
+                ->has('overview.newsletter')
+                ->has('overview.sites')));
 });

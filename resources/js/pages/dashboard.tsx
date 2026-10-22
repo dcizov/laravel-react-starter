@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Deferred, Head, Link, usePage } from '@inertiajs/react';
 import {
     ArrowUp,
     CircleCheck,
@@ -10,6 +10,11 @@ import {
     Users,
 } from 'lucide-react';
 import type { ComponentProps } from 'react';
+import {
+    SiteOverviewCards,
+    SiteOverviewSkeleton,
+    type SiteOverview,
+} from '@/components/dashboard/site-overview';
 import PageHeader from '@/components/page-header';
 import { statuses, priorities } from '@/components/tasks/data';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -82,6 +87,8 @@ type Props = {
     showOwner: boolean;
     // Null when the user cannot see the Users page.
     usersCount: number | null;
+    // Deferred: missing on the first render, then sent by the server after the page has loaded.
+    overview?: SiteOverview;
 };
 
 // The start page after sign-in. Every number and list comes from the server, scoped to the tasks the user can see.
@@ -92,6 +99,7 @@ export default function Dashboard({
     recent,
     showOwner,
     usersCount,
+    overview,
 }: Props) {
     const t = useTrans();
     const { auth } = usePage().props;
@@ -171,6 +179,35 @@ export default function Dashboard({
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-4">
+                        <section
+                            className="space-y-3"
+                            aria-labelledby="site-overview-heading"
+                        >
+                            <h2
+                                id="site-overview-heading"
+                                className="text-sm font-medium"
+                            >
+                                {t('Site overview')}
+                            </h2>
+                            <Deferred
+                                data="overview"
+                                fallback={<SiteOverviewSkeleton />}
+                                rescue={
+                                    <Card>
+                                        <CardContent className="py-6 text-center text-sm text-muted-foreground">
+                                            {t(
+                                                'The site overview could not be loaded. Reload the page to try again.',
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                }
+                            >
+                                {overview && (
+                                    <SiteOverviewCards overview={overview} />
+                                )}
+                            </Deferred>
+                        </section>
+
                         <div className="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-4">
                             {stats.map((stat) => (
                                 <Card key={stat.title}>

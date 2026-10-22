@@ -2,11 +2,16 @@ import '@fontsource-variable/instrument-sans';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/manrope';
 import { createInertiaApp } from '@inertiajs/react';
-import type { ComponentType, ReactNode } from 'react';
+import {
+    lazy,
+    Suspense,
+    type ComponentProps,
+    type ComponentType,
+    type ReactNode,
+} from 'react';
 import { AppToaster } from '@/components/app-toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
-import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
@@ -18,6 +23,18 @@ const pages = import.meta.glob([
     './pages/**/*.tsx',
     '__FEATURE_PAGE_EXCLUDES__',
 ]);
+
+// The admin shell (sidebar, site switcher, navigation) is only used by the admin and app pages. Loading it lazily
+// keeps it out of the public pages, which otherwise download every icon and menu the shell imports.
+const AppLayoutShell = lazy(() => import('@/layouts/app-layout'));
+
+function AppLayout(props: ComponentProps<typeof AppLayoutShell>) {
+    return (
+        <Suspense fallback={null}>
+            <AppLayoutShell {...props} />
+        </Suspense>
+    );
+}
 
 // The outermost layout. It renders the toaster inside the Inertia page context, so
 // toasts can use usePage (for translations) and survive page changes.

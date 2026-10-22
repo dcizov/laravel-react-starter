@@ -1,7 +1,11 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/data-table/data-table';
+import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import PageHeader from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,14 +17,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { useTrans } from '@/hooks/use-trans';
 
@@ -61,6 +57,74 @@ export default function CmsCtas({ ctas }: { ctas: Cta[] }) {
         }
     };
 
+    const columns = useMemo<ColumnDef<DataTableFeatures, Cta>[]>(
+        () => [
+            {
+                accessorKey: 'name',
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title={t('Name')} />
+                ),
+                cell: ({ row }) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            },
+            {
+                accessorKey: 'heading',
+                id: 'heading',
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t('Heading')}
+                    />
+                ),
+                cell: ({ row }) => row.original.heading,
+            },
+            {
+                accessorKey: 'buttonLabel',
+                id: 'buttonLabel',
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t('Button')}
+                    />
+                ),
+                cell: ({ row }) => (
+                    <span className="text-muted-foreground">
+                        {row.original.buttonLabel ?? '–'}
+                    </span>
+                ),
+            },
+            {
+                id: 'actions',
+                header: () => <span className="sr-only">{t('Actions')}</span>,
+                cell: ({ row }) => (
+                    <div className="flex justify-end gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={t('Edit')}
+                            onClick={() => setEditing(row.original)}
+                        >
+                            <Pencil />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={t('Delete')}
+                            onClick={() => remove(row.original)}
+                        >
+                            <Trash2 />
+                        </Button>
+                    </div>
+                ),
+                enableSorting: false,
+                enableHiding: false,
+            },
+        ],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [t],
+    );
+
     return (
         <>
             <Head title={t('Calls to action')} />
@@ -77,63 +141,19 @@ export default function CmsCtas({ ctas }: { ctas: Cta[] }) {
                     }
                 />
 
-                <div className="overflow-hidden rounded-xl border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('Name')}</TableHead>
-                                <TableHead>{t('Heading')}</TableHead>
-                                <TableHead>{t('Button')}</TableHead>
-                                <TableHead className="text-end">
-                                    {t('Actions')}
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {ctas.length === 0 && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={4}
-                                        className="text-center text-muted-foreground"
-                                    >
-                                        {t('No calls to action yet.')}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                            {ctas.map((cta) => (
-                                <TableRow key={cta.id}>
-                                    <TableCell className="font-medium">
-                                        {cta.name}
-                                    </TableCell>
-                                    <TableCell>{cta.heading}</TableCell>
-                                    <TableCell className="text-muted-foreground">
-                                        {cta.buttonLabel ?? '–'}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex justify-end gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                aria-label={t('Edit')}
-                                                onClick={() => setEditing(cta)}
-                                            >
-                                                <Pencil />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                aria-label={t('Delete')}
-                                                onClick={() => remove(cta)}
-                                            >
-                                                <Trash2 />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+                <DataTable<Cta>
+                    columns={columns}
+                    data={ctas}
+                    initialPageSize={20}
+                    getRowId={(row) => String(row.id)}
+                    emptyMessage={t('No calls to action yet.')}
+                    toolbar={{
+                        search: {
+                            column: 'name',
+                            placeholder: t('Search names and headings'),
+                        },
+                    }}
+                />
             </div>
 
             {editing && (

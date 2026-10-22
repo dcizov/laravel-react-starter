@@ -1,7 +1,11 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useMemo, useState } from 'react';
+import { DataTable } from '@/components/data-table/data-table';
+import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import PageHeader from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,14 +22,6 @@ import {
     NativeSelect,
     NativeSelectOption,
 } from '@/components/ui/native-select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { useTrans } from '@/hooks/use-trans';
 import type { Taxonomy } from '@/types/cms';
 
@@ -51,16 +47,11 @@ export default function CmsTerms({
 }) {
     const t = useTrans();
     const [editing, setEditing] = useState<Term | 'new' | null>(null);
-    const [typeFilter, setTypeFilter] = useState('');
 
     const labelOf = useMemo(
         () => new Map(types.map((type) => [type.key, type.label])),
         [types],
     );
-
-    const visible = typeFilter
-        ? terms.filter((term) => term.contentType === typeFilter)
-        : terms;
 
     const remove = (term: Term) => {
         if (
@@ -75,6 +66,101 @@ export default function CmsTerms({
             });
         }
     };
+
+    const columns = useMemo<ColumnDef<DataTableFeatures, Term>[]>(
+        () => [
+            {
+                accessorKey: 'name',
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title={t('Name')} />
+                ),
+                cell: ({ row }) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            },
+            {
+                accessorKey: 'contentType',
+                id: 'contentType',
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t('Content type')}
+                    />
+                ),
+                cell: ({ row }) =>
+                    labelOf.get(row.original.contentType) ??
+                    row.original.contentType,
+            },
+            {
+                accessorKey: 'taxonomy',
+                id: 'taxonomy',
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title={t('Kind')} />
+                ),
+                cell: ({ row }) => (
+                    <Badge variant="outline">
+                        {row.original.taxonomy === 'category'
+                            ? t('Category')
+                            : t('Tag')}
+                    </Badge>
+                ),
+            },
+            {
+                accessorKey: 'slug',
+                id: 'slug',
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t('Address')}
+                    />
+                ),
+                cell: ({ row }) => (
+                    <span className="text-muted-foreground">
+                        {archivePath(row.original)}
+                    </span>
+                ),
+            },
+            {
+                accessorKey: 'entriesCount',
+                id: 'entriesCount',
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t('Entries')}
+                    />
+                ),
+                cell: ({ row }) => row.original.entriesCount,
+            },
+            {
+                id: 'actions',
+                header: () => <span className="sr-only">{t('Actions')}</span>,
+                cell: ({ row }) => (
+                    <div className="flex justify-end gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={t('Edit')}
+                            onClick={() => setEditing(row.original)}
+                        >
+                            <Pencil />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={t('Delete')}
+                            onClick={() => remove(row.original)}
+                        >
+                            <Trash2 />
+                        </Button>
+                    </div>
+                ),
+                enableSorting: false,
+                enableHiding: false,
+            },
+        ],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [labelOf, t],
+    );
 
     return (
         <>
@@ -92,101 +178,37 @@ export default function CmsTerms({
                     }
                 />
 
-                <div className="flex flex-wrap items-end gap-2">
-                    <div className="grid gap-2">
-                        <Label htmlFor="terms-type-filter">
-                            {t('Content type')}
-                        </Label>
-                        <NativeSelect
-                            id="terms-type-filter"
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value)}
-                        >
-                            <NativeSelectOption value="">
-                                {t('All types')}
-                            </NativeSelectOption>
-                            {types.map((type) => (
-                                <NativeSelectOption
-                                    key={type.key}
-                                    value={type.key}
-                                >
-                                    {type.label}
-                                </NativeSelectOption>
-                            ))}
-                        </NativeSelect>
-                    </div>
-                </div>
-
-                <div className="overflow-hidden rounded-xl border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('Name')}</TableHead>
-                                <TableHead>{t('Content type')}</TableHead>
-                                <TableHead>{t('Kind')}</TableHead>
-                                <TableHead>{t('Address')}</TableHead>
-                                <TableHead>{t('Entries')}</TableHead>
-                                <TableHead className="text-end">
-                                    {t('Actions')}
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {visible.length === 0 && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={6}
-                                        className="text-center text-muted-foreground"
-                                    >
-                                        {t('No categories or tags yet.')}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                            {visible.map((term) => (
-                                <TableRow key={term.id}>
-                                    <TableCell className="font-medium">
-                                        {term.name}
-                                    </TableCell>
-                                    <TableCell>
-                                        {labelOf.get(term.contentType) ??
-                                            term.contentType}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline">
-                                            {term.taxonomy === 'category'
-                                                ? t('Category')
-                                                : t('Tag')}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground">
-                                        {archivePath(term)}
-                                    </TableCell>
-                                    <TableCell>{term.entriesCount}</TableCell>
-                                    <TableCell>
-                                        <div className="flex justify-end gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                aria-label={t('Edit')}
-                                                onClick={() => setEditing(term)}
-                                            >
-                                                <Pencil />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                aria-label={t('Delete')}
-                                                onClick={() => remove(term)}
-                                            >
-                                                <Trash2 />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+                <DataTable<Term>
+                    columns={columns}
+                    data={terms}
+                    initialPageSize={20}
+                    getRowId={(row) => String(row.id)}
+                    emptyMessage={t('No categories or tags yet.')}
+                    toolbar={{
+                        search: {
+                            column: 'name',
+                            placeholder: t('Search names'),
+                        },
+                        filters: [
+                            {
+                                column: 'contentType',
+                                title: t('Content type'),
+                                options: types.map((type) => ({
+                                    label: type.label,
+                                    value: type.key,
+                                })),
+                            },
+                            {
+                                column: 'taxonomy',
+                                title: t('Kind'),
+                                options: [
+                                    { label: t('Category'), value: 'category' },
+                                    { label: t('Tag'), value: 'tag' },
+                                ],
+                            },
+                        ],
+                    }}
+                />
             </div>
 
             {editing && (

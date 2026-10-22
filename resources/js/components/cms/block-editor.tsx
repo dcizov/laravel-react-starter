@@ -1,5 +1,11 @@
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
 import { useId } from 'react';
+import RichTextEditor from '@/components/cms/rich-text-editor';
+import {
+    docFromLegacyItems,
+    docFromLegacyText,
+    EMPTY_DOC,
+} from '@/components/cms/rich-text';
 import { ImageField } from '@/components/image-field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,11 +37,11 @@ export function newBlock(type: BlockType): ContentBlock {
         case 'heading':
             return { id, type, data: { level: 2, text: '' } };
         case 'paragraph':
-            return { id, type, data: { text: '' } };
+            return { id, type, data: { doc: EMPTY_DOC } };
         case 'quote':
-            return { id, type, data: { text: '', cite: '' } };
+            return { id, type, data: { doc: EMPTY_DOC, cite: '' } };
         case 'list':
-            return { id, type, data: { ordered: false, items: [''] } };
+            return { id, type, data: { ordered: false, doc: EMPTY_DOC } };
         case 'image':
             return { id, type, data: { src: '', alt: '', caption: '' } };
         case 'code':
@@ -270,24 +276,26 @@ function BlockFields({
 
         case 'paragraph':
             return (
-                <TextField
+                <RichTextEditor
                     id={id}
                     label={t('Text')}
-                    value={block.data.text}
-                    max={5000}
-                    onChange={(text) => onUpdate({ text })}
+                    value={block.data.doc ?? docFromLegacyText(block.data.text)}
+                    maxCharacters={5000}
+                    onChange={(doc) => onUpdate({ doc })}
                 />
             );
 
         case 'quote':
             return (
                 <>
-                    <TextField
+                    <RichTextEditor
                         id={id}
                         label={t('Quote')}
-                        value={block.data.text}
-                        max={1000}
-                        onChange={(text) => onUpdate({ text })}
+                        value={
+                            block.data.doc ?? docFromLegacyText(block.data.text)
+                        }
+                        maxCharacters={1000}
+                        onChange={(doc) => onUpdate({ doc })}
                     />
                     <TextField
                         id={`${id}-cite`}
@@ -301,33 +309,16 @@ function BlockFields({
 
         case 'list':
             return (
-                <>
-                    <div className="grid gap-2">
-                        <Label htmlFor={id}>{t('Items (one per line)')}</Label>
-                        <Textarea
-                            id={id}
-                            rows={4}
-                            value={block.data.items.join('\n')}
-                            onChange={(e) =>
-                                onUpdate({
-                                    items: e.target.value
-                                        .split('\n')
-                                        .slice(0, 50),
-                                })
-                            }
-                        />
-                    </div>
-                    <label className="flex items-center gap-2 text-sm">
-                        <input
-                            type="checkbox"
-                            checked={block.data.ordered}
-                            onChange={(e) =>
-                                onUpdate({ ordered: e.target.checked })
-                            }
-                        />
-                        {t('Numbered list')}
-                    </label>
-                </>
+                <RichTextEditor
+                    id={id}
+                    label={t('Items')}
+                    mode="list"
+                    value={
+                        block.data.doc ?? docFromLegacyItems(block.data.items)
+                    }
+                    maxCharacters={5000}
+                    onChange={(doc) => onUpdate({ doc })}
+                />
             );
 
         case 'image':
