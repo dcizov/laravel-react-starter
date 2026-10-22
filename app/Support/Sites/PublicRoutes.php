@@ -6,10 +6,11 @@ use Closure;
 use Illuminate\Support\Facades\Route;
 
 /**
- * Registers the public routes twice: under /s/{site} for sites reached by path, and at the root for the default
- * site and for sites with a domain. Both copies carry the same route names. The root copy is registered last, so
- * route('blog.index') produces the root URL, and a request on /s/{site} adds the prefix through forceRootUrl.
- * The home route is the exception: its /s/{site} copy is named site.home (see routes/web.php).
+ * Registers the public routes twice: at the root for the default site and for sites with a domain, and under
+ * /s/{site} for sites reached by path. Both copies carry the same route names. Laravel keeps the first route
+ * registered under a name, so the root copy is registered first: route('blog.index') produces the root URL, and a
+ * request on /s/{site} adds the prefix through forceRootUrl. The home route's /s/{site} copy is named site.home
+ * (see routes/web.php).
  */
 final class PublicRoutes
 {
@@ -17,11 +18,11 @@ final class PublicRoutes
 
     public static function register(Closure $routes): void
     {
+        Route::middleware('web')->group($routes);
+
         Route::middleware('web')
             ->prefix('s/{site}')
             ->where(['site' => self::SLUG_PATTERN])
             ->group($routes);
-
-        Route::middleware('web')->group($routes);
     }
 }

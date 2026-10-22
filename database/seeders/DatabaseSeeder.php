@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
 
         if ($features->isEnabled('cms')) {
             $this->call(CmsDemoSeeder::class);
+            $this->call(SitesDemoSeeder::class);
         }
 
         if ($features->isEnabled('blog')) {

@@ -1065,5 +1065,9 @@
     "The text must be a document.": "Der Text muss ein Dokument sein.",
     "This entry is in the trash. Restore it before you change it.": "Dieser Eintrag liegt im Papierkorb. Stelle ihn wieder her, bevor du ihn änderst.",
     "This site still has content. Move or delete its pages, posts, categories, tags and calls to action first.": "Diese Site hat noch Inhalte. Verschiebe oder lösche zuerst ihre Seiten, Beiträge, Kategorien, Schlagworte und Handlungsaufforderungen.",
-    "You do not have permission to publish or unpublish content.": "Du hast keine Berechtigung, Inhalte zu veröffentlichen oder zurückzuziehen."
+    "You do not have permission to publish or unpublish content.": "Du hast keine Berechtigung, Inhalte zu veröffentlichen oder zurückzuziehen.",
+    "All posts": "Alle Beiträge",
+    "RSS feed": "RSS-Feed",
+    "Search posts": "Beiträge durchsuchen",
+    "No posts match your search.": "Keine Beiträge passen zu deiner Suche."
 }

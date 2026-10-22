@@ -38,6 +38,10 @@ class ResolveSite
 
             $current->use($site, CurrentSite::MODE_PATH);
             URL::forceRootUrl($request->getSchemeAndHttpHost().'/s/'.$site->slug);
+
+            // Laravel passes route parameters to controllers by position. Without this, the site segment would
+            // shift every later parameter, so a controller's $slug would receive the site's slug.
+            $request->route()->forgetParameter('site');
         } else {
             $site = Site::forHost($request->getHost());
 

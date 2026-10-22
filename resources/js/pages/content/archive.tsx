@@ -3,6 +3,7 @@ import Pagination from '@/components/cms/pagination';
 import PublicLayout from '@/components/cms/public-layout';
 import SeoMeta from '@/components/cms/seo-meta';
 import TermFilter from '@/components/cms/term-filter';
+import { useSiteBase } from '@/hooks/use-site-base';
 import { useTrans } from '@/hooks/use-trans';
 import type { EntrySummary, Paginated, SeoData, TermRef } from '@/types/cms';
 
@@ -23,6 +24,7 @@ export default function ContentArchive({
     seo: SeoData;
 }) {
     const t = useTrans();
+    const base = useSiteBase();
 
     return (
         <PublicLayout>
@@ -31,7 +33,7 @@ export default function ContentArchive({
                 {type.label}
             </h1>
             <TermFilter
-                basePath={`/content/${type.key}`}
+                basePath={`${base}/content/${type.key}`}
                 filter={filter}
                 categories={categories}
                 tags={tags}
@@ -63,13 +65,29 @@ export function EntryList({
         <ul className="flex flex-col divide-y">
             {entries.data.map((entry) => (
                 <li key={entry.id} className="flex flex-col gap-1 py-5">
-                    {entry.publishedAt && (
-                        <time className="text-sm text-muted-foreground">
-                            {new Date(entry.publishedAt).toLocaleDateString(
-                                'de-DE',
-                            )}
-                        </time>
-                    )}
+                    <p className="flex flex-wrap gap-x-2 text-sm text-muted-foreground">
+                        {entry.publishedAt && (
+                            <time>
+                                {new Date(entry.publishedAt).toLocaleDateString(
+                                    'de-DE',
+                                )}
+                            </time>
+                        )}
+                        {entry.author && (
+                            <span>
+                                {entry.author.url ? (
+                                    <Link
+                                        href={entry.author.url}
+                                        className="hover:underline"
+                                    >
+                                        {entry.author.name}
+                                    </Link>
+                                ) : (
+                                    entry.author.name
+                                )}
+                            </span>
+                        )}
+                    </p>
                     <h2 className="text-xl font-semibold">
                         <Link href={entry.url} className="hover:underline">
                             {entry.title}

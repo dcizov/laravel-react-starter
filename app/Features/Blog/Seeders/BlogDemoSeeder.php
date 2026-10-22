@@ -7,7 +7,9 @@ use App\Features\Cms\Models\Comment;
 use App\Features\Cms\Models\ContentEntry;
 use App\Features\Cms\Models\ContentType;
 use App\Features\Cms\Models\Term;
+use App\Support\Sites\CurrentSite;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -40,6 +42,7 @@ class BlogDemoSeeder extends Seeder
             $entry = ContentEntry::query()->updateOrCreate(
                 ['content_type' => $post->key, 'slug' => $slug],
                 [
+                    'site_id' => app(CurrentSite::class)->id(),
                     'status' => ContentEntry::STATUS_PUBLISHED,
                     'published_at' => now()->subDays($attributes['days_ago']),
                     'excerpt' => $attributes['excerpt'],
@@ -87,16 +90,16 @@ class BlogDemoSeeder extends Seeder
 
     /**
      * @param  list<string>  $names
-     * @return \Illuminate\Support\Collection<string, Term>
+     * @return Collection<string, Term>
      */
-    private function terms(string $taxonomy, array $names): \Illuminate\Support\Collection
+    private function terms(string $taxonomy, array $names): Collection
     {
         $terms = collect();
 
         foreach ($names as $name) {
             $terms[$name] = Term::query()->updateOrCreate(
                 ['content_type' => 'post', 'taxonomy' => $taxonomy, 'slug' => Str::slug($name)],
-                ['name' => $name],
+                ['site_id' => app(CurrentSite::class)->id(), 'name' => $name],
             );
         }
 

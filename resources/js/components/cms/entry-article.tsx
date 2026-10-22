@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import ContentBlocks from '@/components/cms/content-blocks';
 import { Badge } from '@/components/ui/badge';
 import type { PublicEntry } from '@/types/cms';
@@ -23,6 +24,20 @@ export default function EntryArticle({ entry }: { entry: PublicEntry }) {
                 <h1 className="text-2xl font-semibold tracking-tight">
                     {entry.title}
                 </h1>
+                {entry.author && (
+                    <p className="text-sm text-muted-foreground">
+                        {entry.author.url ? (
+                            <Link
+                                href={entry.author.url}
+                                className="hover:underline"
+                            >
+                                {entry.author.name}
+                            </Link>
+                        ) : (
+                            entry.author.name
+                        )}
+                    </p>
+                )}
                 {entry.excerpt && (
                     <p className="text-lg text-muted-foreground">
                         {entry.excerpt}

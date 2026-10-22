@@ -3,6 +3,8 @@
 namespace App\Features\Cms\Factories;
 
 use App\Features\Cms\Models\ContentEntry;
+use App\Support\Sites\CurrentSite;
+use Faker\Generator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -22,6 +24,7 @@ class ContentEntryFactory extends Factory
         $title = rtrim($faker->sentence(4), '.');
 
         return [
+            'site_id' => app(CurrentSite::class)->id(),
             'content_type' => 'page',
             'title' => $title,
             // The random suffix keeps slugs unique within a type, even when titles repeat.
@@ -70,7 +73,7 @@ class ContentEntryFactory extends Factory
      *
      * @return list<array{id: string, type: string, data: array<string, mixed>}>
      */
-    private function body(\Faker\Generator $faker): array
+    private function body(Generator $faker): array
     {
         return [
             ['id' => Str::random(8), 'type' => 'heading', 'data' => ['level' => 2, 'text' => $faker->sentence(3)]],

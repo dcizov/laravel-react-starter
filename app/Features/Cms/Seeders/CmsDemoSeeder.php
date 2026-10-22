@@ -7,6 +7,7 @@ use App\Features\Cms\Models\ContentEntry;
 use App\Features\Cms\Models\ContentType;
 use App\Features\Cms\Models\Cta;
 use App\Features\Cms\Models\Term;
+use App\Support\Sites\CurrentSite;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -74,7 +75,7 @@ class CmsDemoSeeder extends Seeder
         $saved = [];
 
         foreach ($ctas as $name => $attributes) {
-            $saved[$name] = Cta::query()->updateOrCreate(['name' => $name], $attributes);
+            $saved[$name] = Cta::query()->updateOrCreate(['name' => $name], ['site_id' => app(CurrentSite::class)->id(), ...$attributes]);
         }
 
         return $saved;
@@ -213,6 +214,7 @@ class CmsDemoSeeder extends Seeder
         return ContentEntry::query()->updateOrCreate(
             ['content_type' => $type, 'slug' => $slug],
             [
+                'site_id' => app(CurrentSite::class)->id(),
                 'status' => ContentEntry::STATUS_PUBLISHED,
                 'published_at' => now()->subDay(),
                 'excerpt' => null,
@@ -235,7 +237,7 @@ class CmsDemoSeeder extends Seeder
         foreach ($names as $name) {
             $terms[$name] = Term::query()->updateOrCreate(
                 ['content_type' => $type, 'taxonomy' => $taxonomy, 'slug' => Str::slug($name)],
-                ['name' => $name],
+                ['site_id' => app(CurrentSite::class)->id(), 'name' => $name],
             );
         }
 

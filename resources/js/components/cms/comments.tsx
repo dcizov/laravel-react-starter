@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useSiteBase } from '@/hooks/use-site-base';
 import { useTrans } from '@/hooks/use-trans';
 
 export type PublicComment = {
@@ -62,6 +63,7 @@ export default function Comments({
 
 function CommentForm({ typeKey, slug }: { typeKey: string; slug: string }) {
     const t = useTrans();
+    const base = useSiteBase();
     const form = useForm({
         author_name: '',
         author_email: '',
@@ -74,7 +76,7 @@ function CommentForm({ typeKey, slug }: { typeKey: string; slug: string }) {
             className="flex flex-col gap-4"
             onSubmit={(event) => {
                 event.preventDefault();
-                form.post(`/content/${typeKey}/${slug}/comments`, {
+                form.post(`${base}/content/${typeKey}/${slug}/comments`, {
                     preserveScroll: true,
                     onSuccess: () => form.reset('body'),
                 });

@@ -39,6 +39,41 @@ Register a new feature by adding its class to `available` in `config/features.ph
   enabled features' permissions. Other roles are not changed.
 - Setting `FEATURES` to an unknown name, or enabling a feature without its dependency, stops the application with a clear message.
 
+## Sites
+
+One installation can publish several sites. The default site answers every address that no other site claims, and keeps
+the unprefixed URLs (`/blog`, `/pages/kontakt`). Each other site is reached in one of two ways:
+
+- **By domain**: set the site's `domain`, such as `news.example.com`. Its links use that host.
+- **By path**: leave `domain` empty. The site lives under `/s/{slug}`, and every link on it carries the prefix.
+
+`App\Http\Middleware\ResolveSite` picks the site for each request and stores it in `App\Support\Sites\CurrentSite`.
+Entries, categories and tags, and calls to action belong to a site (`BelongsToSite`), and queries only see the current
+site. Content types are shared by all sites.
+
+Rules for public code, so that path mode keeps working:
+
+- Routes for public pages are registered with `App\Support\Sites\PublicRoutes::register()`, which registers each route
+  twice: at the root and under `/s/{site}`. Both copies share one name, and Laravel keeps the first registration, so the
+  root copy is registered first. Use `route('blog.index')` and similar names as usual.
+- In the browser, build links to public pages with the site's base path (`useSiteBase()` in
+  `resources/js/hooks/use-site-base.ts`), never with a hard-coded `/blog`. The newsletter pages are global and keep their URLs.
+- The `{site}` segment is removed from the route parameters once it has been read, so a controller's `$slug` is still the
+  first parameter after it. Laravel passes parameters by position.
+- Seeders run with model events muted (`DatabaseSeeder` uses `WithoutModelEvents`), so the site-filling hook of
+  `BelongsToSite` does not run. A seeder must give `site_id` itself.
+
+The site's name, locale, description (the SEO default) and home page (`home_slug`) are set in the admin under Sites.
+
+## Blog
+
+The blog is the built-in `post` type, with the feature `blog` switched on:
+
+- `/blog` lists the posts, with a search box (title and excerpt, GET `?q=`), categories and tags.
+  The search and filters keep their values when you paginate, and can be bookmarked.
+- `/blog/feed.xml` is the RSS feed for the site.
+- `/blog/authors/{id}` lists one author's live posts. Post pages and lists link to it. Authors with no live posts have no page.
+
 ## Demo content
 
 The cms, blog, seo, and landing features come with example content, so there is something to look at after set-up.
@@ -47,6 +82,7 @@ feature is enabled:
 
 ```
 php artisan db:seed --class="App\Features\Cms\Seeders\CmsDemoSeeder"       # pages, calls to action, events, custom fields, comments
+php artisan db:seed --class="Database\Seeders\SitesDemoSeeder"          # a second site, Newsroom, in German, at /s/newsroom (needs cms)
 php artisan db:seed --class="App\Features\Blog\Seeders\BlogDemoSeeder"     # posts, categories, tags, comments
 php artisan db:seed --class="App\Features\Seo\Seeders\SeoDemoSeeder"       # site description
 php artisan db:seed --class="App\Features\Landing\Seeders\LandingDemoSeeder" # latest-posts block (fresh installs only)

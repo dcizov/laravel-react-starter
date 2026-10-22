@@ -15,8 +15,10 @@ return [
     |
     */
 
+    // Off: the app has no SSR entry point (resources/js/app.tsx only renders in the browser), so there is no
+    // server bundle to run. Turn this on only together with an ssr entry and the build:ssr script.
     'ssr' => [
-        'enabled' => true,
+        'enabled' => false,
         'url' => 'http://127.0.0.1:13714',
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
 

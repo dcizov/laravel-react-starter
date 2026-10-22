@@ -91,6 +91,7 @@ export type PublicEntry = {
     excerpt: string | null;
     featuredImage: string | null;
     publishedAt: string | null;
+    author: PublicAuthor | null;
     type: { key: string; label: string; singular: string };
     body: ContentBlock[];
     terms: { category: TermRef[]; tag: TermRef[] };
@@ -103,6 +104,9 @@ export type PublicEntry = {
     seo: SeoData;
 };
 
+// The author of an entry. url is the author's page on the blog, or null when the blog is switched off.
+export type PublicAuthor = { name: string; url: string | null };
+
 export type EntrySummary = {
     id: number;
     title: string;
@@ -110,6 +114,7 @@ export type EntrySummary = {
     excerpt: string | null;
     featuredImage: string | null;
     publishedAt: string | null;
+    author: PublicAuthor | null;
     url: string;
 };
 

@@ -108,7 +108,7 @@ export default function ContentEntryForm({
     previewUrl: string;
 }) {
     const t = useTrans();
-    const { timezone } = usePage().props;
+    const { timezone, site } = usePage().props;
     const base = `/admin/content/${type.key}`;
     const supports = (feature: string) => type.supports.includes(feature);
     // The status can only change when the admin may publish. An author can still save a live entry as it is.
@@ -378,7 +378,7 @@ export default function ContentEntryForm({
                                 onChange={(v) => form.setData('slug', v)}
                                 error={form.errors.slug}
                                 max={160}
-                                hint={`${publicPath(type.key, form.data.slug || '…')}`}
+                                hint={`${site.basePath}${publicPath(type.key, form.data.slug || '…')}`}
                             />
                             {supports('excerpt') && (
                                 <Field>
