@@ -20,7 +20,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -28,6 +27,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Creates, edits, trashes and restores entries of any content type: pages, posts and custom post types.
@@ -145,7 +145,8 @@ class ContentEntryController extends Controller
         $snapshot = ContentEntryRevision::snapshot($entry);
         $entry->fill($this->attributes($request, $contentType, $entry));
 
-        $termIds = collect($request->validated('term_ids', []))->sort()->values()->all();
+        $submittedTermIds = $request->validated('term_ids', []);
+        $termIds = collect(is_array($submittedTermIds) ? $submittedTermIds : [])->sort()->values()->all();
         $termsBefore = $entry->terms()->pluck('cms_terms.id')->sort()->values()->all();
 
         // Only a change to the content is worth a revision. Saving without changes creates none.
@@ -241,6 +242,7 @@ class ContentEntryController extends Controller
                 'restore' => $this->authorize('restore', $entry),
                 'forceDelete' => $this->authorize('forceDelete', $entry),
                 'publish', 'draft' => $this->authorize('publish', ContentEntry::class) && $this->authorize('update', $entry),
+                default => abort(422),
             };
         }
 
@@ -251,6 +253,7 @@ class ContentEntryController extends Controller
                 'forceDelete' => $entry->trashed() ? $entry->forceDelete() : null,
                 'publish' => $this->publishNow($entry, $user->id),
                 'draft' => $this->moveToDraft($entry, $user->id),
+                default => abort(422),
             };
         }
 
@@ -321,7 +324,7 @@ class ContentEntryController extends Controller
         ]);
     }
 
-    public function showPreview(Request $request, string $type, string $token): HttpResponse
+    public function showPreview(Request $request, string $type, string $token): SymfonyResponse
     {
         $contentType = $this->typeOrFail($type);
         $payload = Cache::get('cms-preview:'.$token);
@@ -352,10 +355,14 @@ class ContentEntryController extends Controller
                 ],
             ];
 
-        return Inertia::render($page['component'], [
+        $response = Inertia::render($page['component'], [
             ...$page['props'],
             'preview' => true,
-        ])->toResponse($request)->withHeaders(['X-Robots-Tag' => 'noindex, nofollow']);
+        ])->toResponse($request);
+
+        $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+
+        return $response;
     }
 
     /**
@@ -369,11 +376,13 @@ class ContentEntryController extends Controller
 
         $path = $request->file('image')->store('content', 'public');
 
-        return response()->json(['url' => Storage::disk('public')->url($path)]);
+        return response()->json(['url' => Storage::disk('public')->url((string) $path)]);
     }
 
     /**
      * The entries of the list, with the filters and search applied. Authors see their own entries only, unless they can edit any.
+     *
+     * @return Builder<ContentEntry>
      */
     private function listQuery(Request $request, ContentType $type, string $filter): Builder
     {
@@ -520,10 +529,17 @@ class ContentEntryController extends Controller
      */
     private function taxonomiesOf(ContentType $type): array
     {
-        return collect([
-            $type->supports(ContentType::SUPPORT_CATEGORY) ? Term::CATEGORY : null,
-            $type->supports(ContentType::SUPPORT_TAG) ? Term::TAG : null,
-        ])->filter()->values()->all();
+        $taxonomies = [];
+
+        if ($type->supports(ContentType::SUPPORT_CATEGORY)) {
+            $taxonomies[] = Term::CATEGORY;
+        }
+
+        if ($type->supports(ContentType::SUPPORT_TAG)) {
+            $taxonomies[] = Term::TAG;
+        }
+
+        return $taxonomies;
     }
 
     private function slugFor(ContentType $type, string $slug, int $entryId): string
@@ -581,7 +597,7 @@ class ContentEntryController extends Controller
                     'title' => $revision->title,
                     'status' => $revision->status,
                     'author' => $revision->author?->name,
-                    'createdAt' => $revision->created_at?->toIso8601String(),
+                    'createdAt' => $revision->created_at->toIso8601String(),
                 ])->values()
                 : [],
             'previewUrl' => route('admin.content.preview.store', $type->key),

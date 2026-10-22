@@ -90,12 +90,12 @@ final class EntryListing
      */
     public static function approvedComments(ContentEntry $entry): array
     {
-        return $entry->comments()->approved()->oldest()->get()->map(fn (Comment $comment) => [
+        return array_values($entry->comments()->approved()->oldest()->get()->map(fn (Comment $comment) => [
             'id' => $comment->id,
             'author' => $comment->author_name,
             'body' => $comment->body,
             'createdAt' => $comment->created_at?->toIso8601String(),
-        ])->values()->all();
+        ])->all());
     }
 
     /**
@@ -103,7 +103,7 @@ final class EntryListing
      */
     private static function liveTerms(string $contentType, string $taxonomy): array
     {
-        return Term::query()
+        return array_values(Term::query()
             ->forType($contentType)
             ->where('taxonomy', $taxonomy)
             ->whereHas('entries', fn ($query) => $query->where('content_type', $contentType)->live())
@@ -111,6 +111,6 @@ final class EntryListing
             ->get(['id', 'name', 'slug'])
             ->map(fn (Term $term) => ['id' => $term->id, 'name' => $term->name, 'slug' => $term->slug])
             ->values()
-            ->all();
+            ->all());
     }
 }
