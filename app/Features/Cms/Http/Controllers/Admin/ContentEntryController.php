@@ -241,7 +241,7 @@ class ContentEntryController extends Controller
                 'trash' => $this->authorize('delete', $entry),
                 'restore' => $this->authorize('restore', $entry),
                 'forceDelete' => $this->authorize('forceDelete', $entry),
-                'publish', 'draft' => $this->authorize('publish', ContentEntry::class) && $this->authorize('update', $entry),
+                'publish', 'draft' => $this->authorizePublishing($entry),
                 default => abort(422),
             };
         }
@@ -602,6 +602,16 @@ class ContentEntryController extends Controller
                 : [],
             'previewUrl' => route('admin.content.preview.store', $type->key),
         ]);
+    }
+
+    /**
+     * Publishing or unpublishing needs the publish ability, and changing the entry needs update access. Each check
+     * throws when it is denied, so both must pass.
+     */
+    private function authorizePublishing(ContentEntry $entry): void
+    {
+        $this->authorize('publish', ContentEntry::class);
+        $this->authorize('update', $entry);
     }
 
     private function ensureNotTrashed(ContentEntry $entry): void
