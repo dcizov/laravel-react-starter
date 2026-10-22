@@ -91,6 +91,9 @@ final class AddonCompiler
      */
     public function problems(): array
     {
+        // The registry memoizes the manifest it read. Read it again, so the check sees what is on disk now.
+        $this->registry->reload();
+
         $rows = AddonStore::rows();
         $status = $this->registry->status();
 
