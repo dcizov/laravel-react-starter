@@ -324,6 +324,7 @@
     "Application name": "Name der Anwendung",
     "Default role for new accounts": "Standardrolle für neue Konten",
     "Settings saved.": "Einstellungen gespeichert.",
+    "The file could not be saved. Please try again.": "Die Datei konnte nicht gespeichert werden. Bitte versuche es erneut.",
     "This role is the default for new accounts. Choose another default first.": "Diese Rolle ist die Standardrolle für neue Konten. Wähle zuerst eine andere Standardrolle.",
     "Filter roles...": "Rollen filtern …",
     "Filter permissions...": "Berechtigungen filtern …",

@@ -13,6 +13,7 @@ use App\Features\Cms\Support\ContentPresenter;
 use App\Features\Cms\Support\EntryListing;
 use App\Features\FeatureRegistry;
 use App\Http\Controllers\Controller;
+use App\Support\PublicUploads;
 use App\Support\Rbac;
 use App\Support\Sites\CurrentSite;
 use Illuminate\Database\Eloquent\Builder;
@@ -374,9 +375,9 @@ class ContentEntryController extends Controller
             'image' => ['required', 'file', 'mimes:png,jpg,jpeg,webp', 'max:4096'],
         ]);
 
-        $path = $request->file('image')->store('content', 'public');
+        $path = PublicUploads::storeOrFail($request->file('image'), 'content', 'image');
 
-        return response()->json(['url' => Storage::disk('public')->url((string) $path)]);
+        return response()->json(['url' => Storage::disk('public')->url($path)]);
     }
 
     /**

@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Support\PublicUploads;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -39,24 +41,41 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
-        if ($request->hasFile('avatar') || $request->boolean('remove_avatar')) {
-            if ($user->avatar_path) {
-                Storage::disk('public')->delete($user->avatar_path);
+        // Both new pictures are stored before any old one is removed or anything is saved, so a failure
+        // leaves the current pictures in place.
+        $newAvatar = $request->hasFile('avatar')
+            ? PublicUploads::storeOrFail($request->file('avatar'), 'avatars', 'avatar')
+            : null;
+
+        try {
+            $newHeader = $request->hasFile('header')
+                ? PublicUploads::storeOrFail($request->file('header'), 'headers', 'header')
+                : null;
+        } catch (ValidationException $exception) {
+            // The avatar was stored before the header failed, so it is removed again.
+            if ($newAvatar !== null) {
+                Storage::disk('public')->delete($newAvatar);
             }
 
-            $user->avatar_path = $request->hasFile('avatar')
-                ? $request->file('avatar')->store('avatars', 'public')
-                : null;
+            throw $exception;
+        }
+
+        if ($request->hasFile('avatar') || $request->boolean('remove_avatar')) {
+            $previousAvatar = $user->avatar_path;
+            $user->avatar_path = $newAvatar;
+
+            if ($previousAvatar) {
+                Storage::disk('public')->delete($previousAvatar);
+            }
         }
 
         if ($request->hasFile('header') || $request->boolean('remove_header')) {
-            if ($user->header_path) {
-                Storage::disk('public')->delete($user->header_path);
-            }
+            $previousHeader = $user->header_path;
+            $user->header_path = $newHeader;
 
-            $user->header_path = $request->hasFile('header')
-                ? $request->file('header')->store('headers', 'public')
-                : null;
+            if ($previousHeader) {
+                Storage::disk('public')->delete($previousHeader);
+            }
         }
 
         $user->save();

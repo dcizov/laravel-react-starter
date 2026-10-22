@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Settings\AppSettings;
+use App\Support\PublicUploads;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -47,13 +48,16 @@ class AdminSettingsController extends Controller
         $settings->custom_error_pages = $request->boolean('custom_error_pages');
 
         if ($request->hasFile('logo') || $request->boolean('remove_logo')) {
-            if ($settings->app_logo_path) {
-                Storage::disk('public')->delete($settings->app_logo_path);
-            }
+            // The new logo is stored first, so a failed upload leaves the current logo in place.
+            $previousLogo = $settings->app_logo_path;
 
             $settings->app_logo_path = $request->hasFile('logo')
-                ? (string) $request->file('logo')->store('branding', 'public')
+                ? PublicUploads::storeOrFail($request->file('logo'), 'branding', 'logo')
                 : null;
+
+            if ($previousLogo) {
+                Storage::disk('public')->delete($previousLogo);
+            }
         }
 
         $settings->save();

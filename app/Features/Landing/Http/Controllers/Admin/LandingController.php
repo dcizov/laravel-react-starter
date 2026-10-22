@@ -10,6 +10,7 @@ use App\Features\Landing\LandingPresets;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\HomeController;
 use App\Settings\AppSettings;
+use App\Support\PublicUploads;
 use App\Support\Seo\SeoHead;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -104,9 +105,9 @@ class LandingController extends Controller
             'image' => ['required', 'file', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
         ]);
 
-        $path = $request->file('image')->store('landing', 'public');
+        $path = PublicUploads::storeOrFail($request->file('image'), 'landing', 'image');
 
-        return response()->json(['url' => Storage::disk('public')->url((string) $path)]);
+        return response()->json(['url' => Storage::disk('public')->url($path)]);
     }
 
     /**
