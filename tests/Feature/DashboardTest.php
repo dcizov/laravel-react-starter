@@ -150,12 +150,18 @@ test('the site overview is deferred, so the first response does not carry it', f
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $this->actingAs($admin)
-        ->get(route('dashboard'))
-        ->assertInertia(fn ($page) => $page
-            ->component('dashboard')
-            ->missing('overview')
-            ->has('deferredProps'));
+    $response = $this->actingAs($admin)->get(route('dashboard'));
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('dashboard')
+        ->missing('overview'));
+
+    // AssertableInertia does not expose the deferred groups, so read them from the page the response renders.
+    // The overview is listed there, which is what makes the frontend request it.
+    $deferred = collect($response->viewData('page')['deferredProps'] ?? [])->flatten()->all();
+
+    expect($deferred)->not->toBeEmpty()
+        ->and(collect($deferred)->contains(fn (string $path): bool => str_starts_with($path, 'overview')))->toBeTrue();
 });
 
 test('the overview counts published, draft and trashed entries for users who may edit any', function () {

@@ -185,14 +185,15 @@ test('a bulk role change cannot remove the last admin', function () {
 });
 
 test('an admin can create a role with the permissions they pick', function () {
+    // The CMS creates the editor and author roles, so this role needs a name of its own.
     $this->actingAs(admin())
         ->post(route('admin.roles.store'), [
-            'name' => 'editor',
+            'name' => 'reviewer',
             'permissions' => [Rbac::PERMISSION_TASKS_VIEW_ANY],
         ])
         ->assertRedirect(route('admin.roles.index'));
 
-    expect(Role::findByName('editor')->permissions->pluck('name')->all())
+    expect(Role::findByName('reviewer')->permissions->pluck('name')->all())
         ->toBe([Rbac::PERMISSION_TASKS_VIEW_ANY]);
 });
 
