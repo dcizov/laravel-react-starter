@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Fragment } from 'react';
 import type { RichDoc, RichMark, RichNode } from '@/components/cms/rich-text';
 
 // Shows a stored document. It builds React elements from the tree, so no HTML is ever inserted as HTML, and a link
@@ -20,7 +21,11 @@ export default function RichTextView({
 function renderNode(node: RichNode, key: number): ReactNode {
     switch (node.type) {
         case 'text':
-            return wrapMarks(node.text, node.marks ?? [], key);
+            return (
+                <Fragment key={key}>
+                    {wrapMarks(node.text, node.marks ?? [])}
+                </Fragment>
+            );
 
         case 'hardBreak':
             return <br key={key} />;
@@ -63,17 +68,16 @@ function children(nodes: RichNode[] | undefined): ReactNode[] {
 }
 
 // Marks wrap the text from the inside out, so bold italic text gets both.
-function wrapMarks(text: string, marks: RichMark[], key: number): ReactNode {
-    return marks.reduce<ReactNode>((inner, mark, index) => {
+function wrapMarks(text: string, marks: RichMark[]): ReactNode {
+    return marks.reduce<ReactNode>((inner, mark) => {
         switch (mark.type) {
             case 'bold':
-                return <strong key={`${key}-${index}`}>{inner}</strong>;
+                return <strong>{inner}</strong>;
             case 'italic':
-                return <em key={`${key}-${index}`}>{inner}</em>;
+                return <em>{inner}</em>;
             case 'link':
                 return isSafeHref(mark.attrs.href) ? (
                     <a
-                        key={`${key}-${index}`}
                         href={mark.attrs.href}
                         rel="noopener noreferrer nofollow"
                         className="underline underline-offset-4"
