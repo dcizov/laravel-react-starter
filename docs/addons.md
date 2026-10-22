@@ -118,9 +118,7 @@ Addon routes must use controller classes, not closures, or `php artisan route:ca
 
 Addon permissions are created and assigned to `admin` on activation (`Rbac::syncFeaturePermissions`). `Rbac::permissions()` includes the active addons' permissions, so turning a feature on or off does not remove them from `admin`.
 
-On deactivation the addon's permissions are removed from every role. Their permission rows are kept, so a later activation finds them again.
-
-**Limitation:** a permission granted directly to a user, rather than through a role, is not removed on deactivation.
+On deactivation the addon's permissions are removed from every role and from every user who was granted one directly. Their permission rows are kept, so a later activation finds them again. This is the chosen policy: the addon's permissions are gone from all holders when it is off, and nothing is left orphaned. Re-grant them after reactivation if a user still needs them.
 
 ## Deployment order
 
@@ -159,7 +157,6 @@ Run them with `php artisan test --filter=Addon` (or `composer test`).
 - No remove, uninstall or purge. Deactivated addons keep their code, tables and data indefinitely.
 - No updates. A changed `addon.json` blocks compile until it is restored.
 - Local folders only. No Composer, npm, VCS or Packagist discovery.
-- Direct user permissions are not revoked on deactivation (see Permissions).
 - Migrations are not reversed. Addon migrations must be written to be safe to re-run after a partial failure on databases without transactional DDL. PostgreSQL, the production database, rolls back DDL with the transaction.
 - Built-in features are not managed by addons. `FeatureManager` and `FEATURES` are unchanged.
 - `addons/` is not git-ignored. Commit addons deliberately, as code.

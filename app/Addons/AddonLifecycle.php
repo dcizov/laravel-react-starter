@@ -303,15 +303,19 @@ final class AddonLifecycle
     }
 
     /**
-     * Take the addon's permissions away from every role. Its permission rows are kept, so a later activation
-     * finds them again. Permissions are named "{slug}.{action}", and the validator keeps those names unique.
+     * Take the addon's permissions away from every role and from every user who was granted one directly. Its
+     * permission rows are kept, so a later activation finds them again. Permissions are named "{slug}.{action}",
+     * and the validator keeps those names unique.
      */
     private function revokePermissions(string $slug): void
     {
         Permission::query()
             ->where('name', 'like', $slug.'.%')
             ->get()
-            ->each(fn (Permission $permission) => $permission->roles()->detach());
+            ->each(function (Permission $permission): void {
+                $permission->roles()->detach();
+                $permission->users()->detach();
+            });
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

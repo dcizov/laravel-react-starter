@@ -23,7 +23,7 @@ class AddonsDeactivate extends Command
             return self::FAILURE;
         }
 
-        $this->info("Deactivated [{$addon->slug}]. Its code, tables and data were kept. Its permissions were removed from every role.");
+        $this->info("Deactivated [{$addon->slug}]. Its code, tables and data were kept. Its permissions were removed from every role and from every user granted them directly.");
 
         return self::SUCCESS;
     }

@@ -11,6 +11,7 @@ use App\Addons\Exceptions\AddonManifestException;
 use App\Models\Addon;
 use App\Models\AddonMigration;
 use App\Models\AuditLog;
+use App\Models\User;
 use App\Providers\AddonServiceProvider;
 use Fixtures\LifecycleFixture\LifecycleFixtureServiceProvider;
 use Illuminate\Support\Facades\DB;
@@ -108,12 +109,14 @@ test('activation refuses an addon that is already active, and an addon that is n
         ->toThrow(AddonLifecycleException::class, 'is already active');
 });
 
-test('deactivation keeps code, tables and data, removes permissions from roles and runs no down-migration', function () {
+test('deactivation keeps code, tables and data, removes permissions from roles and direct user grants, and runs no down-migration', function () {
     $lifecycle = app(AddonLifecycle::class);
     $lifecycle->install(FIXTURE_SLUG);
     $lifecycle->activate(FIXTURE_SLUG);
 
     Role::findOrCreate('editor')->givePermissionTo(FIXTURE_PERMISSION);
+    $grantee = User::factory()->create();
+    $grantee->givePermissionTo(FIXTURE_PERMISSION);
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     DB::table('lifecycle_fixture_items')->insert(['label' => 'kept', 'created_at' => now(), 'updated_at' => now()]);
@@ -128,6 +131,7 @@ test('deactivation keeps code, tables and data, removes permissions from roles a
         ->and(AddonMigration::query()->where('addon_slug', FIXTURE_SLUG)->count())->toBe(1)
         ->and(rolePermissionNames('admin'))->not->toContain(FIXTURE_PERMISSION)
         ->and(rolePermissionNames('editor'))->not->toContain(FIXTURE_PERMISSION)
+        ->and($grantee->refresh()->hasDirectPermission(FIXTURE_PERMISSION))->toBeFalse()
         ->and(Permission::query()->where('name', FIXTURE_PERMISSION)->exists())->toBeTrue()
         ->and(AddonSandbox::compiled(addonRoot())['addons'][FIXTURE_SLUG]['enabled'])->toBeFalse();
 });
