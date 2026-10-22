@@ -27,6 +27,7 @@ import {
     StatsBlock,
     TestimonialsBlock,
 } from '@/components/landing/marketing-blocks';
+import { PostsBlock } from '@/components/landing/posts-block';
 import {
     FooterBlock,
     FooterExtra,
@@ -243,6 +244,9 @@ function renderContent(block: LandingBlock, style: ResolvedStyle): ReactNode {
 
         case 'faq':
             return <FaqBlock data={block.data} variant={style.variant} />;
+
+        case 'posts':
+            return <PostsBlock data={block.data} variant={style.variant} />;
 
         case 'cta':
             return <CtaBlock data={block.data} variant={style.variant} />;

@@ -1,14 +1,13 @@
 <?php
 
-namespace App\Features\Blog\Models;
+namespace App\Features\Cms\Models;
 
-use App\Features\Cms\Models\ContentEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A visitor's comment on a post. Visitors only see approved comments.
+ * A visitor's comment on an entry whose type has the comments support. Visitors only see approved comments.
  *
  * @property int $id
  * @property int $entry_id
@@ -28,7 +27,7 @@ class Comment extends Model
     /** @var list<string> */
     public const STATUSES = [self::PENDING, self::APPROVED, self::SPAM];
 
-    protected $table = 'blog_comments';
+    protected $table = 'cms_comments';
 
     protected $fillable = [
         'entry_id',

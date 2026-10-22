@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Comments now live in the cms feature (cms_comments). Nothing to create if they already exist.
+        if (Schema::hasTable('cms_comments') || Schema::hasTable('blog_comments')) {
+            return;
+        }
+
         Schema::create('blog_comments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('entry_id')->constrained('cms_entries')->cascadeOnDelete();

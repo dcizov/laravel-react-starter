@@ -197,8 +197,8 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 title: 'Comments',
                 href: '/admin/blog/comments',
                 icon: MessageSquare,
-                permission: 'blog.manage',
-                feature: 'blog',
+                permission: 'content.manage',
+                feature: 'cms',
             },
             {
                 id: 'admin-seo',

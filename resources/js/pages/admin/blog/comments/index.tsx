@@ -4,6 +4,11 @@ import Pagination from '@/components/cms/pagination';
 import PageHeader from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+    NativeSelect,
+    NativeSelectOption,
+} from '@/components/ui/native-select';
 import {
     Table,
     TableBody,
@@ -23,22 +28,40 @@ type Comment = {
     body: string;
     status: 'pending' | 'approved' | 'spam';
     createdAt: string | null;
-    post: { title: string; slug: string } | null;
+    entry: { title: string; slug: string; type: string } | null;
 };
 
 const STATUSES = ['pending', 'approved', 'spam'] as const;
 
-// Comment moderation. New comments wait as pending until someone approves them.
+// Comment moderation for every content type that has comments. New comments wait as pending until approved.
 export default function BlogComments({
     status,
+    type,
+    types,
     counts,
     comments,
 }: {
     status: 'pending' | 'approved' | 'spam';
+    type: string | null;
+    types: { key: string; label: string }[];
     counts: Record<string, number>;
     comments: Paginated<Comment>;
 }) {
     const t = useTrans();
+
+    // The status tabs keep the chosen content type, so switching status does not reset the filter.
+    const statusHref = (item: string) => {
+        const params = new URLSearchParams({ status: item });
+
+        if (type) {
+            params.set('type', type);
+        }
+
+        return `/admin/blog/comments?${params.toString()}`;
+    };
+
+    const typeLabel = (key: string) =>
+        types.find((item) => item.key === key)?.label ?? key;
 
     const label = (value: string) => {
         switch (value) {
@@ -85,7 +108,7 @@ export default function BlogComments({
                     {STATUSES.map((item) => (
                         <Link
                             key={item}
-                            href={`/admin/blog/comments?status=${item}`}
+                            href={statusHref(item)}
                             preserveState
                             className={cn(
                                 buttonVariants({
@@ -103,12 +126,51 @@ export default function BlogComments({
                     ))}
                 </nav>
 
+                <div className="flex flex-wrap items-end gap-2">
+                    <div className="grid gap-2">
+                        <Label htmlFor="comments-type">
+                            {t('Content type')}
+                        </Label>
+                        <NativeSelect
+                            id="comments-type"
+                            value={type ?? ''}
+                            onChange={(event) => {
+                                const params = new URLSearchParams({
+                                    status,
+                                });
+
+                                if (event.target.value) {
+                                    params.set('type', event.target.value);
+                                }
+
+                                router.get(
+                                    `/admin/blog/comments?${params.toString()}`,
+                                    {},
+                                    { preserveState: true, replace: true },
+                                );
+                            }}
+                        >
+                            <NativeSelectOption value="">
+                                {t('All types')}
+                            </NativeSelectOption>
+                            {types.map((item) => (
+                                <NativeSelectOption
+                                    key={item.key}
+                                    value={item.key}
+                                >
+                                    {item.label}
+                                </NativeSelectOption>
+                            ))}
+                        </NativeSelect>
+                    </div>
+                </div>
+
                 <div className="overflow-hidden rounded-xl border">
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>{t('Comment')}</TableHead>
-                                <TableHead>{t('Post')}</TableHead>
+                                <TableHead>{t('Entry')}</TableHead>
                                 <TableHead>{t('Date')}</TableHead>
                                 <TableHead className="text-end">
                                     {t('Actions')}
@@ -142,7 +204,18 @@ export default function BlogComments({
                                         </p>
                                     </TableCell>
                                     <TableCell>
-                                        {comment.post?.title ?? '–'}
+                                        {comment.entry ? (
+                                            <>
+                                                <div>{comment.entry.title}</div>
+                                                <div className="text-xs text-muted-foreground">
+                                                    {typeLabel(
+                                                        comment.entry.type,
+                                                    )}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            '–'
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">
                                         {comment.createdAt

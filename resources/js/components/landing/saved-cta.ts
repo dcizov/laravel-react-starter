@@ -1,4 +1,7 @@
-import type { LandingBlock } from '@/components/landing/block-types';
+import type {
+    LandingBlock,
+    LatestPost,
+} from '@/components/landing/block-types';
 import type { CtaOption } from '@/types/cms';
 
 // Shows a cta block the way the public page will: when it points at a saved call to action, the saved text is used.
@@ -25,6 +28,25 @@ export function applySavedCta(
             text: cta.text ?? '',
             button_label: cta.button_label ?? '',
             button_url: cta.button_url ?? '',
+        },
+    };
+}
+
+// Shows a posts block the way the public page will: its posts are the newest ones the server sent.
+// The posts are never saved in the draft, so the editor fills them in from the latest-posts list.
+export function applyLatestPosts(
+    block: LandingBlock,
+    latestPosts: LatestPost[],
+): LandingBlock {
+    if (block.type !== 'posts') {
+        return block;
+    }
+
+    return {
+        ...block,
+        data: {
+            ...block.data,
+            posts: latestPosts.slice(0, block.data.count),
         },
     };
 }

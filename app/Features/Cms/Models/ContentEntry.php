@@ -80,7 +80,7 @@ class ContentEntry extends Model
 
     public function comments(): HasMany
     {
-        return $this->hasMany(\App\Features\Blog\Models\Comment::class, 'entry_id');
+        return $this->hasMany(Comment::class, 'entry_id');
     }
 
     public function terms(): BelongsToMany

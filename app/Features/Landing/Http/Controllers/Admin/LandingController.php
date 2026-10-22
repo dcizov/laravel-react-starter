@@ -8,6 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Settings\AppSettings;
 use App\Support\Seo\SeoHead;
 use App\Features\Landing\LandingBlocks;
+use App\Features\Landing\LandingContent;
 use App\Features\Landing\LandingPresets;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +31,13 @@ class LandingController extends Controller
                 : [],
             'draft' => $this->draftOf($settings),
             'theme' => $this->themeDraftOf($settings),
-            'blockTypes' => LandingBlocks::TYPES,
+            // The latest-posts block is only offered while the blog is on.
+            'blockTypes' => array_values(array_filter(
+                LandingBlocks::TYPES,
+                fn (string $type) => $type !== 'posts' || $features->isEnabled('blog'),
+            )),
+            // The newest posts, so the editor can show them in the preview the way the public page will.
+            'latestPosts' => $features->isEnabled('blog') ? LandingContent::latest(LandingBlocks::MAX_POSTS) : [],
             'presets' => $this->presets(),
         ]);
     }

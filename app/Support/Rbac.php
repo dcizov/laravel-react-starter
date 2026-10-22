@@ -42,9 +42,6 @@ final class Rbac
     // Pages, custom post types, posts, CTAs and taxonomies (the cms feature).
     public const PERMISSION_CONTENT_MANAGE = 'content.manage';
 
-    // Comment moderation (the blog feature).
-    public const PERMISSION_BLOG_MANAGE = 'blog.manage';
-
     // Site-wide SEO settings (the seo feature).
     public const PERMISSION_SEO_MANAGE = 'seo.manage';
 

@@ -139,7 +139,7 @@ class ContentEntryController extends Controller
             'featured_image' => $type->supports(ContentType::SUPPORT_IMAGE) ? ($validated['featured_image'] ?? null) : null,
             'status' => $status,
             'published_at' => $publishedAt ?? $entry->published_at,
-            'body' => ContentBlocks::validate($request->input('blocks', [])),
+            'body' => ContentBlocks::validate($request->input('body', [])),
             'custom_fields' => $customFields,
             'seo' => array_filter([
                 'title' => $validated['seo']['title'] ?? null,
@@ -150,24 +150,31 @@ class ContentEntryController extends Controller
     }
 
     /**
-     * Keeps only the terms of the taxonomies this type supports.
+     * Keeps only the terms that belong to this type and to a taxonomy the type supports.
      *
      * @param  list<int>  $termIds
      */
     private function syncTerms(ContentEntry $entry, ContentType $type, array $termIds): void
     {
-        $allowed = collect([
-            $type->supports(ContentType::SUPPORT_CATEGORY) ? Term::CATEGORY : null,
-            $type->supports(ContentType::SUPPORT_TAG) ? Term::TAG : null,
-        ])->filter()->all();
-
         $ids = Term::query()
+            ->forType($type->key)
             ->whereIn('id', $termIds)
-            ->whereIn('taxonomy', $allowed)
+            ->whereIn('taxonomy', $this->taxonomiesOf($type))
             ->pluck('id')
             ->all();
 
         $entry->terms()->sync($ids);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function taxonomiesOf(ContentType $type): array
+    {
+        return collect([
+            $type->supports(ContentType::SUPPORT_CATEGORY) ? Term::CATEGORY : null,
+            $type->supports(ContentType::SUPPORT_TAG) ? Term::TAG : null,
+        ])->filter()->values()->all();
     }
 
     private function uniqueSlug(string $type, string $base, ?int $ignoreId): string
@@ -191,7 +198,7 @@ class ContentEntryController extends Controller
         return Inertia::render('admin/content/form', [
             'type' => ContentTypeController::payload($type),
             'entry' => $entry ? ContentPresenter::editable($entry) : null,
-            'terms' => Term::query()->orderBy('name')->get(['id', 'taxonomy', 'name'])->map(fn (Term $term) => [
+            'terms' => Term::query()->forType($type->key)->whereIn('taxonomy', $this->taxonomiesOf($type))->orderBy('name')->get(['id', 'taxonomy', 'name'])->map(fn (Term $term) => [
                 'id' => $term->id,
                 'taxonomy' => $term->taxonomy,
                 'name' => $term->name,

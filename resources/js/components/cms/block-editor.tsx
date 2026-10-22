@@ -57,20 +57,33 @@ export function newBlock(type: BlockType): ContentBlock {
 }
 
 // The editor for the body of an entry. Blocks can be reordered, removed, and given new content in place.
+// Validation errors come back keyed by block: body.{index}.{field}, or body.{index} for the block as a whole.
+// Each block shows its own errors under its fields.
 export default function BlockEditor({
     blocks,
     onChange,
     ctas,
     uploadEndpoint,
     onError,
+    errors = {},
 }: {
     blocks: ContentBlock[];
     onChange: (blocks: ContentBlock[]) => void;
     ctas: CtaOption[];
     uploadEndpoint: string;
     onError: (message: string) => void;
+    errors?: Record<string, string>;
 }) {
     const t = useTrans();
+
+    // The messages for one block, in the order the server reported them.
+    const blockErrors = (index: number): string[] =>
+        Object.entries(errors)
+            .filter(
+                ([key]) =>
+                    key === `body.${index}` || key.startsWith(`body.${index}.`),
+            )
+            .map(([, message]) => message);
 
     const update = (index: number, data: Record<string, unknown>) => {
         onChange(
@@ -157,6 +170,16 @@ export default function BlockEditor({
                         uploadEndpoint={uploadEndpoint}
                         onError={onError}
                     />
+
+                    {blockErrors(index).map((message) => (
+                        <p
+                            key={message}
+                            role="alert"
+                            className="text-sm text-destructive"
+                        >
+                            {message}
+                        </p>
+                    ))}
                 </div>
             ))}
 

@@ -59,10 +59,17 @@ import {
     variantCount,
     VARIANT_NAMES,
 } from '@/components/landing/block-types';
-import type { BlockType, LandingBlock } from '@/components/landing/block-types';
+import type {
+    BlockType,
+    LandingBlock,
+    LatestPost,
+} from '@/components/landing/block-types';
 import { LandingEditContext } from '@/components/landing/landing-edit';
 import { RenderBlock } from '@/components/landing/render-block';
-import { applySavedCta } from '@/components/landing/saved-cta';
+import {
+    applyLatestPosts,
+    applySavedCta,
+} from '@/components/landing/saved-cta';
 import type { LandingTheme } from '@/components/landing/theme';
 import { themeStyle } from '@/components/landing/theme';
 import { ThemePanel } from '@/components/landing/theme-panel';
@@ -193,12 +200,14 @@ export default function LandingEditor({
     presets,
     blockTypes: typeNames,
     ctas = [],
+    latestPosts = [],
 }: {
     draft: LandingBlock[];
     theme: LandingTheme;
     presets: Preset[];
     blockTypes: BlockType[];
     ctas?: CtaOption[];
+    latestPosts?: LatestPost[];
 }) {
     const t = useTrans();
     const draftKey = JSON.stringify({ blocks: draft, theme: savedTheme });
@@ -822,6 +831,7 @@ export default function LandingEditor({
                             onShuffle={shuffleBlock}
                             onText={setText}
                             ctas={ctas}
+                            latestPosts={latestPosts}
                         />
 
                         <aside className="flex flex-col gap-4 rounded-lg border p-4">
@@ -1096,6 +1106,7 @@ function Canvas({
     onShuffle,
     onText,
     ctas,
+    latestPosts,
 }: {
     blocks: LandingBlock[];
     theme: LandingTheme;
@@ -1112,6 +1123,7 @@ function Canvas({
     onShuffle: (id: string) => void;
     onText: (blockId: string, path: string, value: string) => void;
     ctas: CtaOption[];
+    latestPosts: LatestPost[];
 }) {
     const t = useTrans();
     const { resolvedAppearance } = useAppearance();
@@ -1188,6 +1200,7 @@ function Canvas({
                                     key={block.id}
                                     block={block}
                                     ctas={ctas}
+                                    latestPosts={latestPosts}
                                     index={index}
                                     total={blocks.length}
                                     selected={block.id === selectedId}
@@ -1225,9 +1238,11 @@ function SortableBlock({
     onShuffle,
     onText,
     ctas,
+    latestPosts,
 }: {
     block: LandingBlock;
     ctas: CtaOption[];
+    latestPosts: LatestPost[];
     index: number;
     total: number;
     selected: boolean;
@@ -1386,7 +1401,12 @@ function SortableBlock({
                 )}
             >
                 <LandingEditContext value={binding}>
-                    <RenderBlock block={applySavedCta(block, ctas)} />
+                    <RenderBlock
+                        block={applyLatestPosts(
+                            applySavedCta(block, ctas),
+                            latestPosts,
+                        )}
+                    />
                 </LandingEditContext>
             </div>
         </div>

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Features\Cms\Support\CtaReference;
 use App\Features\FeatureRegistry;
 use App\Features\Landing\LandingBlocks;
+use App\Features\Landing\LandingContent;
 use App\Support\Seo\SeoHead;
 use App\Settings\AppSettings;
 use Illuminate\Http\RedirectResponse;
@@ -34,13 +34,13 @@ class HomeController extends Controller
     }
 
     /**
-     * Saved calls to action only apply when the cms feature is on.
+     * The blocks as the public page shows them: saved calls to action and the latest posts are filled in.
      *
      * @param  list<array{id: string, type: string, data: array<string, mixed>}>  $blocks
      * @return list<array{id: string, type: string, data: array<string, mixed>}>
      */
     public static function blocks(array $blocks, FeatureRegistry $features): array
     {
-        return $features->isEnabled('cms') ? CtaReference::apply($blocks) : $blocks;
+        return LandingContent::apply($blocks, $features);
     }
 }

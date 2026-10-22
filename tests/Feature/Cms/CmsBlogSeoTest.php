@@ -1,8 +1,9 @@
 <?php
 
-use App\Features\Blog\Models\Comment;
+use App\Features\Cms\Models\Comment;
 use App\Features\Cms\Models\ContentEntry;
 use App\Features\Cms\Models\Cta;
+use App\Features\Cms\Models\Term;
 use App\Features\Cms\Support\ContentBlocks;
 use App\Models\User;
 use App\Settings\AppSettings;
@@ -14,6 +15,9 @@ use Illuminate\Validation\ValidationException;
 beforeEach(function () {
     Rbac::sync();
     config(['features.enabled' => ['landing', 'newsletter', 'integrations', 'cms', 'blog', 'seo']]);
+
+    // The built Vite manifest may predate some pages; these tests check the server, not the bundle.
+    $this->withoutVite();
 });
 
 function publishedEntry(string $type, string $slug, array $attributes = []): ContentEntry
@@ -63,19 +67,118 @@ test('a post redirects to the blog and the blog lists approved comments only', f
 test('a visitor comment waits for approval, and a bot that fills the hidden field is ignored', function () {
     publishedEntry('post', 'with-comments');
 
-    $this->post('/blog/with-comments/comments', ['author_name' => 'Ada', 'body' => 'Nice', 'website' => 'spam.example'])
+    $this->post('/content/post/with-comments/comments', ['author_name' => 'Ada', 'body' => 'Nice', 'website' => 'spam.example'])
         ->assertRedirect();
     expect(Comment::query()->count())->toBe(0);
 
-    $this->post('/blog/with-comments/comments', ['author_name' => 'Ada', 'body' => 'Nice'])
+    $this->post('/content/post/with-comments/comments', ['author_name' => 'Ada', 'body' => 'Nice'])
         ->assertRedirect();
     expect(Comment::query()->where('status', Comment::PENDING)->count())->toBe(1);
 });
 
-test('comments are not accepted on custom types', function () {
+test('comments are not accepted on types without the comments support', function () {
     publishedEntry('page', 'no-comments');
 
-    $this->post('/pages/no-comments/comments', ['author_name' => 'Ada', 'body' => 'Nope'])->assertNotFound();
+    $this->post('/content/page/no-comments/comments', ['author_name' => 'Ada', 'body' => 'Nope'])->assertNotFound();
+    expect(Comment::query()->count())->toBe(0);
+});
+
+test('a custom type with the comments support takes comments and shows approved ones', function () {
+    $type = \App\Features\Cms\Models\ContentType::query()->create([
+        'key' => 'events', 'label' => 'Events', 'singular_label' => 'Event', 'has_archive' => true,
+        'supports' => ['comments'], 'fields' => [],
+    ]);
+    $event = publishedEntry($type->key, 'launch-day');
+
+    $this->post('/content/events/launch-day/comments', ['author_name' => 'Ada', 'body' => 'See you there'])->assertRedirect();
+    Comment::query()->create(['entry_id' => $event->id, 'author_name' => 'Bob', 'body' => 'Visible', 'status' => Comment::APPROVED]);
+
+    $this->get('/content/events/launch-day')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('content/entry')
+            ->where('commentsEnabled', true)
+            ->has('comments', 1));
+    expect(Comment::query()->where('status', Comment::PENDING)->count())->toBe(1);
+});
+
+test('an admin saves a block body and it persists', function () {
+    $user = \App\Models\User::factory()->create();
+    $user->assignRole('admin');
+
+    $this->actingAs($user)->post('/admin/content/page', [
+        'title' => 'With body',
+        'slug' => 'with-body',
+        'status' => ContentEntry::STATUS_PUBLISHED,
+        'term_ids' => [],
+        'body' => [
+            ['id' => 'p1', 'type' => 'paragraph', 'data' => ['text' => 'Saved paragraph']],
+        ],
+    ])->assertRedirect();
+
+    expect(ContentEntry::query()->where('slug', 'with-body')->firstOrFail()->body)
+        ->toBe([['id' => 'p1', 'type' => 'paragraph', 'data' => ['text' => 'Saved paragraph']]]);
+});
+
+test('a bad block reports its error under that block only', function () {
+    $user = \App\Models\User::factory()->create();
+    $user->assignRole('admin');
+
+    $this->actingAs($user)->post('/admin/content/page', [
+        'title' => 'Bad body',
+        'slug' => 'bad-body',
+        'status' => ContentEntry::STATUS_DRAFT,
+        'term_ids' => [],
+        'body' => [
+            ['id' => 'p1', 'type' => 'paragraph', 'data' => ['text' => 'Fine']],
+            ['id' => 'i1', 'type' => 'image', 'data' => ['src' => 'javascript:alert(1)']],
+        ],
+    ])->assertSessionHasErrors(['body.1.src']);
+});
+
+test('the latest posts block fills in the newest posts, and is hidden while the blog is off', function () {
+    publishedEntry('post', 'older', ['published_at' => now()->subDays(3)]);
+    publishedEntry('post', 'newer', ['published_at' => now()->subDay()]);
+
+    $settings = app(AppSettings::class);
+    $settings->landing_published = [[
+        'id' => 'posts-1', 'type' => 'posts', 'data' => ['title' => 'News', 'count' => 1],
+    ]];
+    $settings->save();
+
+    $this->get('/')->assertInertia(fn ($page) => $page
+        ->where('blocks.0.type', 'posts')
+        ->has('blocks.0.data.posts', 1)
+        ->where('blocks.0.data.posts.0.slug', 'newer'));
+
+    config(['features.enabled' => ['landing', 'newsletter', 'integrations', 'cms', 'seo']]);
+
+    $this->get('/')->assertInertia(fn ($page) => $page->has('blocks', 0));
+});
+
+test('categories are scoped to their content type', function () {
+    $category = Term::query()->create(['content_type' => 'post', 'taxonomy' => Term::CATEGORY, 'name' => 'News', 'slug' => 'news']);
+    Term::query()->create(['content_type' => 'page', 'taxonomy' => Term::CATEGORY, 'name' => 'News', 'slug' => 'news']);
+
+    expect(Term::query()->forType('post')->pluck('id')->all())->toBe([$category->id]);
+});
+
+test('the archive filters by a category of its own type only', function () {
+    $category = Term::query()->create(['content_type' => 'post', 'taxonomy' => Term::CATEGORY, 'name' => 'Tips', 'slug' => 'tips']);
+    $tagged = publishedEntry('post', 'tagged-post');
+    publishedEntry('post', 'untagged-post');
+    $tagged->terms()->attach($category->id);
+
+    $this->get('/blog?category=tips')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('blog/index')
+            ->has('posts.data', 1)
+            ->where('posts.data.0.slug', 'tagged-post'));
+
+    // A term of another type is not found, so the filter is ignored rather than leaking across types.
+    Term::query()->create(['content_type' => 'page', 'taxonomy' => Term::TAG, 'name' => 'Pages only', 'slug' => 'pages-only']);
+
+    $this->get('/blog?tag=pages-only')
+        ->assertInertia(fn ($page) => $page->where('filter', null));
 });
 
 test('a saved call to action fills a landing block at render time', function () {
@@ -115,12 +218,12 @@ test('content blocks reject unknown types and keep inline calls to action', func
         ->and($clean[1]['data']['items'])->toBe(['One', 'Two']);
 });
 
-test('a block with an unsafe link is rejected on the body', function () {
+test('a block with an unsafe link is rejected under that block', function () {
     try {
         ContentBlocks::validate([['id' => 'i1', 'type' => 'image', 'data' => ['src' => 'javascript:alert(1)']]]);
         $this->fail('The unsafe image link should have been rejected.');
     } catch (ValidationException $exception) {
-        expect($exception->errors())->toHaveKey('body');
+        expect($exception->errors())->toHaveKey('body.0.src');
     }
 });
 

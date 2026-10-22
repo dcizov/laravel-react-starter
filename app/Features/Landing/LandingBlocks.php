@@ -18,7 +18,7 @@ final class LandingBlocks
     public const TYPES = [
         'hero', 'features', 'text', 'image', 'button',
         'logos', 'stats', 'testimonials', 'pricing', 'faq', 'cta',
-        'navbar', 'footer',
+        'posts', 'navbar', 'footer',
     ];
 
     public const MAX_BLOCKS = 40;
@@ -32,8 +32,11 @@ final class LandingBlocks
     public const VARIANT_COUNTS = [
         'navbar' => 5, 'footer' => 5, 'hero' => 5, 'logos' => 5, 'features' => 5,
         'stats' => 5, 'testimonials' => 5, 'pricing' => 5, 'faq' => 5, 'cta' => 5,
-        'text' => 5, 'image' => 4, 'button' => 4,
+        'text' => 5, 'image' => 4, 'button' => 4, 'posts' => 4,
     ];
+
+    // The most posts a latest-posts block can show.
+    public const MAX_POSTS = 6;
 
     public const FONTS = ['sans', 'serif', 'mono'];
 
@@ -136,10 +139,16 @@ final class LandingBlocks
         $validated = Validator::make(['blocks' => $blocks], $rules)->validate()['blocks'];
 
         return array_values(array_map(function (array $block): array {
+            // Only the fields the type knows are kept. Anything else (for example a post list added at render time) is dropped.
+            $allowed = array_flip(array_unique(array_map(
+                fn (string $key) => explode('.', $key)[0],
+                array_keys(self::fieldRules($block['type'])),
+            )));
+
             $result = [
                 'id' => $block['id'],
                 'type' => $block['type'],
-                'data' => $block['data'],
+                'data' => array_intersect_key($block['data'], $allowed),
             ];
 
             if (array_key_exists('style', $block)) {
@@ -284,6 +293,12 @@ final class LandingBlocks
                 'columns.*.links.*.label' => ['required', 'string', 'max:40'],
                 'columns.*.links.*.url' => ['required', 'string', 'max:500', self::safeUrl()],
                 'copyright' => ['nullable', 'string', 'max:160'],
+            ],
+            'posts' => [
+                // The newest published posts are added when the page is shown; they are never saved in the draft.
+                'title' => ['nullable', 'string', 'max:120'],
+                'text' => ['nullable', 'string', 'max:300'],
+                'count' => ['required', 'integer', 'between:1,'.self::MAX_POSTS],
             ],
             'cta' => [
                 // A saved call to action from the cms feature. When set, its content replaces the fields below.

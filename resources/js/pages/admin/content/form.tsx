@@ -229,6 +229,7 @@ export default function ContentEntryForm({
                         ctas={ctas}
                         uploadEndpoint="/admin/cms/images"
                         onError={(message) => form.setError('body', message)}
+                        errors={form.errors}
                     />
                     {form.errors.body && (
                         <p className="text-sm text-destructive">

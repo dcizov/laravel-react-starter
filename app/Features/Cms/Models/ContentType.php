@@ -29,8 +29,10 @@ class ContentType extends Model
 
     public const SUPPORT_TAG = 'tag';
 
+    public const SUPPORT_COMMENTS = 'comments';
+
     /**
-     * What a content type can use. Comments belong to the blog feature and are only offered on posts.
+     * What a content type can use. Comments are open to visitors on entries of a type that has them.
      *
      * @var list<string>
      */
@@ -39,6 +41,7 @@ class ContentType extends Model
         self::SUPPORT_IMAGE,
         self::SUPPORT_CATEGORY,
         self::SUPPORT_TAG,
+        self::SUPPORT_COMMENTS,
     ];
 
     /**

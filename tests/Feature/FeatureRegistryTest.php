@@ -54,7 +54,7 @@ final class FakeDependentFeature extends Feature
 test('the registry lists every feature the code provides, by slug', function () {
     $available = app(FeatureRegistry::class)->available();
 
-    expect(array_keys($available))->toEqual(['landing', 'newsletter', 'integrations'])
+    expect(array_keys($available))->toEqual(['landing', 'newsletter', 'integrations', 'cms', 'blog', 'seo'])
         ->and($available['landing'])->toBe(LandingFeature::class)
         ->and($available['newsletter'])->toBe(NewsletterFeature::class);
 });

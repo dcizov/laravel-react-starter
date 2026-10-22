@@ -1,5 +1,6 @@
 <?php
 
+use App\Features\Cms\Http\Controllers\Admin\CommentController;
 use App\Features\Cms\Http\Controllers\Admin\ContentEntryController;
 use App\Features\Cms\Http\Controllers\Admin\ContentTypeController;
 use App\Features\Cms\Http\Controllers\Admin\CtaController;
@@ -30,6 +31,11 @@ Route::middleware(['web', 'auth', 'verified'])
 
             Route::post('cms/images', [ContentEntryController::class, 'storeImage'])->name('cms.images.store');
 
+            // Comment moderation. The path is kept from the blog feature, where it first lived.
+            Route::get('blog/comments', [CommentController::class, 'index'])->name('blog.comments.index');
+            Route::patch('blog/comments/{comment}', [CommentController::class, 'update'])->name('blog.comments.update');
+            Route::delete('blog/comments/{comment}', [CommentController::class, 'destroy'])->name('blog.comments.destroy');
+
             Route::get('content/{type}', [ContentEntryController::class, 'index'])->name('content.index');
             Route::get('content/{type}/create', [ContentEntryController::class, 'create'])->name('content.create');
             Route::post('content/{type}', [ContentEntryController::class, 'store'])->name('content.store');
@@ -50,4 +56,10 @@ Route::middleware('web')->group(function () {
     Route::get('content/{type}/{slug}', [ContentController::class, 'show'])
         ->where(['type' => '[a-z][a-z0-9-]{1,39}', 'slug' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
         ->name('content.show');
+
+    // Visitors' comments on any type with the comments support. Five a minute per visitor.
+    Route::post('content/{type}/{slug}/comments', [ContentController::class, 'comment'])
+        ->where(['type' => '[a-z][a-z0-9-]{1,39}', 'slug' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+        ->middleware('throttle:5,1')
+        ->name('content.comments.store');
 });

@@ -2,16 +2,24 @@ import { Link } from '@inertiajs/react';
 import Pagination from '@/components/cms/pagination';
 import PublicLayout from '@/components/cms/public-layout';
 import SeoMeta from '@/components/cms/seo-meta';
+import TermFilter from '@/components/cms/term-filter';
 import { useTrans } from '@/hooks/use-trans';
-import type { EntrySummary, Paginated, SeoData } from '@/types/cms';
+import type { EntrySummary, Paginated, SeoData, TermRef } from '@/types/cms';
 
+// The archive of a content type. ?category= and ?tag= narrow it to one term of this type.
 export default function ContentArchive({
     type,
     entries,
+    filter,
+    categories,
+    tags,
     seo,
 }: {
     type: { key: string; label: string; singular: string };
     entries: Paginated<EntrySummary>;
+    filter: { taxonomy: 'category' | 'tag'; name: string; slug: string } | null;
+    categories: TermRef[];
+    tags: TermRef[];
     seo: SeoData;
 }) {
     const t = useTrans();
@@ -19,13 +27,19 @@ export default function ContentArchive({
     return (
         <PublicLayout>
             <SeoMeta seo={seo} />
-            <h1 className="mb-8 text-3xl font-bold tracking-tight">
-                {type.label}
-            </h1>
-            <EntryList
-                entries={entries}
-                emptyText={t('Nothing has been published yet.')}
+            <h1 className="text-3xl font-bold tracking-tight">{type.label}</h1>
+            <TermFilter
+                basePath={`/content/${type.key}`}
+                filter={filter}
+                categories={categories}
+                tags={tags}
             />
+            <div className="mt-8">
+                <EntryList
+                    entries={entries}
+                    emptyText={t('Nothing has been published yet.')}
+                />
+            </div>
             <Pagination links={entries.links} />
         </PublicLayout>
     );

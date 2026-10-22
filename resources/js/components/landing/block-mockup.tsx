@@ -712,6 +712,60 @@ function Skeleton({ type, variant }: { type: BlockType; variant: number }) {
                 </div>
             );
 
+        case 'posts':
+            if (variant === 1) {
+                return (
+                    <div className="flex h-full flex-col justify-center gap-1.5">
+                        <Repeat
+                            count={3}
+                            render={(index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between gap-2 border-b border-foreground/15 pb-1.5"
+                                >
+                                    <Bar className="w-2/3" />
+                                    <Bar className="w-6" />
+                                </div>
+                            )}
+                        />
+                    </div>
+                );
+            }
+            if (variant === 2) {
+                return (
+                    <div className="grid h-full grid-cols-2 gap-1.5">
+                        <div className="rounded-sm bg-foreground/15" />
+                        <div className="flex flex-col gap-1.5">
+                            <Bar className="w-full" />
+                            <Bar className="w-3/4" />
+                            <Bar className="w-1/2" />
+                        </div>
+                    </div>
+                );
+            }
+            if (variant === 3) {
+                return (
+                    <div className="flex h-full flex-wrap items-center justify-center gap-2">
+                        <Bar className="w-6" />
+                        <Bar className="w-8" />
+                        <Bar className="w-5" />
+                    </div>
+                );
+            }
+            return (
+                <div className="grid h-full grid-cols-3 gap-1.5">
+                    <Repeat
+                        count={3}
+                        render={(index) => (
+                            <div key={index} className="flex flex-col gap-1">
+                                <div className="aspect-[4/3] rounded-sm bg-foreground/15" />
+                                <Bar className="w-full" />
+                            </div>
+                        )}
+                    />
+                </div>
+            );
+
         case 'cta':
             if (variant === 1) {
                 return (

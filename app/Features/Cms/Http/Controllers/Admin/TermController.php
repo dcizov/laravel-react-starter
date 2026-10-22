@@ -3,6 +3,7 @@
 namespace App\Features\Cms\Http\Controllers\Admin;
 
 use App\Features\Cms\Http\Requests\TermRequest;
+use App\Features\Cms\Models\ContentType;
 use App\Features\Cms\Models\Term;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -18,8 +19,14 @@ class TermController extends Controller
     public function index(): Response
     {
         return Inertia::render('admin/cms/terms/index', [
-            'terms' => Term::query()->withCount('entries')->orderBy('taxonomy')->orderBy('name')->get()->map(fn (Term $term) => [
+            'types' => ContentType::query()->orderBy('label')->get(['key', 'label', 'supports'])->map(fn (ContentType $type) => [
+                'key' => $type->key,
+                'label' => $type->label,
+                'supports' => $type->supports ?? [],
+            ])->values(),
+            'terms' => Term::query()->withCount('entries')->orderBy('content_type')->orderBy('taxonomy')->orderBy('name')->get()->map(fn (Term $term) => [
                 'id' => $term->id,
+                'contentType' => $term->content_type,
                 'taxonomy' => $term->taxonomy,
                 'name' => $term->name,
                 'slug' => $term->slug,
@@ -62,7 +69,9 @@ class TermController extends Controller
     {
         $validated = $request->validated();
 
+        // The content type is only set when the term is created; see TermRequest.
         return [
+            ...(isset($validated['content_type']) ? ['content_type' => $validated['content_type']] : []),
             'taxonomy' => $validated['taxonomy'],
             'name' => $validated['name'],
             'slug' => filled($validated['slug'] ?? null) ? $validated['slug'] : Str::slug($validated['name']),

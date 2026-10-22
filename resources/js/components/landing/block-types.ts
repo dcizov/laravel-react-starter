@@ -12,6 +12,7 @@ import {
     PanelTop,
     Megaphone,
     MousePointerClick,
+    Newspaper,
     Palette,
     Quote,
     Rocket,
@@ -42,6 +43,16 @@ export type PricingItem = {
     button_url?: string;
 };
 export type FaqItem = { question: string; answer?: string };
+// A post as the latest-posts block shows it. The server adds these when the page is shown; they are never saved.
+export type LatestPost = {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt: string | null;
+    featuredImage: string | null;
+    publishedAt: string | null;
+    url: string;
+};
 export type NavLinkItem = { label: string; url: string };
 type FooterColumn = { title: string; links: NavLinkItem[] };
 
@@ -62,6 +73,12 @@ export type BlockData = {
     testimonials: { title?: string; items: TestimonialItem[] };
     pricing: { title?: string; items: PricingItem[] };
     faq: { title?: string; items: FaqItem[] };
+    posts: {
+        title?: string;
+        text?: string;
+        count: number; // 1 to 6.
+        posts?: LatestPost[]; // Filled in by the server.
+    };
     cta: {
         title: string;
         text?: string;
@@ -184,6 +201,7 @@ export const VARIANT_NAMES: Record<BlockType, string[]> = {
     testimonials: ['Pairs', 'Featured', 'Wall', 'Single', 'Columns'],
     pricing: ['Cards', 'Rows', 'Focus', 'Compact', 'Minimal'],
     faq: ['Accordion', 'Open list', 'Two columns', 'Cards', 'Split'],
+    posts: ['Cards', 'List', 'Featured', 'Compact'],
     cta: ['Banner', 'Outline', 'Split', 'Gradient', 'Minimal'],
     text: ['Centered', 'Accent rule', 'Two columns', 'Pull quote', 'Sidebar'],
     image: ['Rounded', 'Full width', 'Framed', 'Caption'],
@@ -217,6 +235,7 @@ export const blockTypes: {
     { type: 'testimonials', label: 'Testimonials', icon: Quote },
     { type: 'pricing', label: 'Pricing', icon: Tag },
     { type: 'faq', label: 'FAQ', icon: HelpCircle },
+    { type: 'posts', label: 'Latest posts', icon: Newspaper },
     { type: 'cta', label: 'Call to action', icon: Megaphone },
     { type: 'text', label: 'Text', icon: Type },
     { type: 'image', label: 'Image', icon: ImageIcon },
@@ -310,6 +329,11 @@ const defaults: { [K in BlockType]: BlockData[K] } = {
     faq: {
         title: 'Questions',
         items: [{ question: 'Your question?', answer: 'The answer.' }],
+    },
+    posts: {
+        title: 'Latest posts',
+        text: 'The newest stories from the blog.',
+        count: 3,
     },
     cta: {
         title: 'Ready to start?',
@@ -408,6 +432,7 @@ export const MAX_ITEMS: Partial<Record<BlockType, number>> = {
     testimonials: 6,
     pricing: 4,
     faq: 10,
+    posts: 6,
     navbar: 6,
     footer: 4,
 };

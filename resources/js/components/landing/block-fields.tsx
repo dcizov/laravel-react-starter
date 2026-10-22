@@ -623,6 +623,50 @@ export function BlockFields({
             );
         }
 
+        case 'posts':
+            return (
+                <FieldGroup>
+                    <TextField
+                        id="title"
+                        label={t('Heading')}
+                        value={block.data.title}
+                        max={120}
+                        onChange={(value) => set({ title: value })}
+                    />
+                    <TextField
+                        id="text"
+                        label={t('Text')}
+                        value={block.data.text}
+                        max={300}
+                        multiline
+                        onChange={(value) => set({ text: value })}
+                    />
+                    <Field>
+                        <FieldLabel htmlFor="landing-count">
+                            {t('Number of posts')}
+                        </FieldLabel>
+                        <NativeSelect
+                            id="landing-count"
+                            value={block.data.count}
+                            onChange={(event) =>
+                                set({ count: Number(event.target.value) })
+                            }
+                        >
+                            {[1, 2, 3, 4, 5, 6].map((count) => (
+                                <NativeSelectOption key={count} value={count}>
+                                    {count}
+                                </NativeSelectOption>
+                            ))}
+                        </NativeSelect>
+                        <FieldDescription>
+                            {t(
+                                'The newest published posts are shown. The block is hidden while the blog is off.',
+                            )}
+                        </FieldDescription>
+                    </Field>
+                </FieldGroup>
+            );
+
         case 'cta':
             return (
                 <FieldGroup>

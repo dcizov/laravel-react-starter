@@ -27,11 +27,11 @@ final class ContentBlocks
     public static function validate(mixed $blocks): array
     {
         if (! is_array($blocks) || ! array_is_list($blocks)) {
-            throw ValidationException::withMessages(['blocks' => __('The content must be a list of blocks.')]);
+            throw ValidationException::withMessages(['body' => __('The content must be a list of blocks.')]);
         }
 
         if (count($blocks) > self::MAX_BLOCKS) {
-            throw ValidationException::withMessages(['blocks' => __('A page can have at most :max blocks.', ['max' => self::MAX_BLOCKS])]);
+            throw ValidationException::withMessages(['body' => __('A page can have at most :max blocks.', ['max' => self::MAX_BLOCKS])]);
         }
 
         $clean = [];
@@ -40,7 +40,7 @@ final class ContentBlocks
             $type = is_array($block) ? ($block['type'] ?? null) : null;
 
             if (! in_array($type, self::TYPES, true)) {
-                throw ValidationException::withMessages(["blocks.$index" => __('Unknown block type.')]);
+                throw ValidationException::withMessages(["body.$index" => __('Unknown block type.')]);
             }
 
             $data = is_array($block['data'] ?? null) ? $block['data'] : [];
@@ -53,12 +53,20 @@ final class ContentBlocks
                 ));
             }
 
-            try {
-                $validated = Validator::make($data, self::rulesFor($type))->validate();
-            } catch (ValidationException $exception) {
-                // Errors are reported on the body as a whole, which is the field the editor shows them under.
-                throw ValidationException::withMessages(['body' => $exception->validator->errors()->first()]);
+            $validator = Validator::make($data, self::rulesFor($type));
+
+            if ($validator->fails()) {
+                // Each error is keyed to its block and field (body.{index}.{field}), so the editor can show it under that block.
+                $errors = [];
+
+                foreach ($validator->errors()->toArray() as $field => $messages) {
+                    $errors["body.$index.$field"] = $messages[0];
+                }
+
+                throw ValidationException::withMessages($errors);
             }
+
+            $validated = $validator->validated();
 
             $clean[] = [
                 'id' => is_string($block['id'] ?? null) && $block['id'] !== '' ? Str::limit($block['id'], 40, '') : Str::random(8),

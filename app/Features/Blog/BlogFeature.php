@@ -3,10 +3,9 @@
 namespace App\Features\Blog;
 
 use App\Features\Feature;
-use App\Support\Rbac;
 
 /**
- * The blog: posts (a built-in content type), a public blog with categories and tags, and comments with moderation.
+ * The blog: posts (a built-in content type) and a public blog with categories and tags. Comments are the cms feature's.
  */
 final class BlogFeature extends Feature
 {
@@ -22,7 +21,8 @@ final class BlogFeature extends Feature
 
     public static function permissions(): array
     {
-        return [Rbac::PERMISSION_BLOG_MANAGE];
+        // Comment moderation is part of the cms feature (content.manage), so the blog adds no permission of its own.
+        return [];
     }
 
     public static function dependsOn(): array
