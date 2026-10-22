@@ -36,7 +36,7 @@ it('reports every problem in one pass instead of stopping at the first', functio
     $errors = addonValidator()->errors($data, FIXTURE_DIR, 'lifecycle-fixture');
     $text = implode("\n", $errors);
 
-    expect($errors)->toHaveCount(9)
+    expect($errors)->toHaveCount(11)
         ->and($text)->toContain('"name" must be a Composer-style package name')
         ->and($text)->toContain('"version" must be a semantic version')
         ->and($text)->toContain('"core" ^2.0 does not include')
@@ -68,7 +68,7 @@ it('checks slug, package name, version and label formats', function (string $fie
     'slug with uppercase' => ['slug', 'Lifecycle', '"slug" must use lowercase'],
     'slug with underscore' => ['slug', 'life_cycle', '"slug" must use lowercase'],
     'name without a vendor' => ['name', 'lifecycle-fixture', '"name" must be a Composer-style'],
-    'pre-release version' => ['version', '1.0.0-beta.1', '"version" must be a semantic version'],
+    'two-part version' => ['version', '1.0', '"version" must be a semantic version'],
     'empty label' => ['label', '   ', '"label" must be a non-empty string'],
 ]);
 
@@ -80,7 +80,7 @@ it('rejects invalid core and dependency constraints', function () {
     $text = implode("\n", addonValidator()->errors($data, FIXTURE_DIR, 'lifecycle-fixture'));
 
     expect($text)->toContain('"core" "not a constraint" is not a valid version constraint')
-        ->and($text)->toContain('"requires.addons.other-addon" "&gt;&gt;1" is not a valid version constraint')
+        ->and($text)->toContain('"requires.addons.other-addon" ">>1" is not a valid version constraint')
         ->and($text)->toContain('invalid slug "Bad_Slug"')
         ->and($text)->toContain('An addon cannot require itself');
 });

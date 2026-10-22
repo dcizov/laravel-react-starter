@@ -320,6 +320,11 @@ final class ManifestValidator
                 continue;
             }
 
+            // Report a reserved clash even when the name is also malformed, so one pass shows every problem.
+            if (in_array($permission, $this->reservedPermissions, true)) {
+                $errors[] = "Permission \"{$permission}\" is already used by the app or a feature.";
+            }
+
             $action = $slug !== '' && str_starts_with($permission, $slug.'.')
                 ? substr($permission, strlen($slug) + 1)
                 : null;
@@ -328,10 +333,6 @@ final class ManifestValidator
                 $errors[] = "Permission \"{$permission}\" must start with \"{$slug}.\" followed by an action, for example \"{$slug}.view\".";
 
                 continue;
-            }
-
-            if (in_array($permission, $this->reservedPermissions, true)) {
-                $errors[] = "Permission \"{$permission}\" is already used by the app or a feature.";
             }
 
             if (in_array($permission, $seen, true)) {
@@ -366,7 +367,7 @@ final class ManifestValidator
                 || ! str_starts_with($table, $prefix)
                 || preg_match(self::TABLE_NAME_PATTERN, $table) !== 1
                 || strlen($table) > self::MAX_TABLE_LENGTH) {
-                $errors[] = "Table \"".(is_string($table) ? $table : '?')."\" must start with \"{$prefix}\", use lowercase letters, digits and underscores, and be at most ".self::MAX_TABLE_LENGTH.' characters.';
+                $errors[] = 'Table "'.(is_string($table) ? $table : '?')."\" must start with \"{$prefix}\", use lowercase letters, digits and underscores, and be at most ".self::MAX_TABLE_LENGTH.' characters.';
 
                 continue;
             }
