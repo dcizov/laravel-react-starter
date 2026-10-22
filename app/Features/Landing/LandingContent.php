@@ -54,7 +54,7 @@ final class LandingContent
      */
     public static function latest(int $count): array
     {
-        return ContentEntry::query()
+        return array_values(ContentEntry::query()
             ->where('content_type', 'post')
             ->live()
             ->orderByDesc('published_at')
@@ -62,6 +62,6 @@ final class LandingContent
             ->get()
             ->map(fn (ContentEntry $entry) => ContentPresenter::summary($entry))
             ->values()
-            ->all();
+            ->all());
     }
 }

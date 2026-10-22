@@ -231,6 +231,9 @@ final class LandingPresets
         ];
     }
 
+    /**
+     * @return array{primary: string, background: string, foreground: string, radius: int|float, font: string, text_size: string}
+     */
     private static function defaultTheme(): array
     {
         return [
@@ -243,6 +246,9 @@ final class LandingPresets
         ];
     }
 
+    /**
+     * @return array{primary: string, background: string, foreground: string, radius: int|float, font: string, text_size: string}
+     */
     private static function oceanTheme(): array
     {
         return [
@@ -255,6 +261,9 @@ final class LandingPresets
         ];
     }
 
+    /**
+     * @return array{primary: string, background: string, foreground: string, radius: int|float, font: string, text_size: string}
+     */
     private static function editorialTheme(): array
     {
         return [

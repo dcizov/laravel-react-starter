@@ -106,7 +106,7 @@ class LandingController extends Controller
 
         $path = $request->file('image')->store('landing', 'public');
 
-        return response()->json(['url' => Storage::disk('public')->url($path)]);
+        return response()->json(['url' => Storage::disk('public')->url((string) $path)]);
     }
 
     /**
@@ -116,9 +116,14 @@ class LandingController extends Controller
      */
     private function draftOf(AppSettings $settings): array
     {
-        return $settings->landing_draft
-            ?? $settings->landing_published
-            ?? LandingBlocks::defaults();
+        // The settings properties are untyped on purpose: Spatie reads @var tags to choose casts. The saved values
+        // are block lists written through the validated editor, so they are narrowed here.
+        /** @var list<array{id: string, type: string, data: array<string, mixed>}>|null $draft */
+        $draft = $settings->landing_draft;
+        /** @var list<array{id: string, type: string, data: array<string, mixed>}>|null $published */
+        $published = $settings->landing_published;
+
+        return $draft ?? $published ?? LandingBlocks::defaults();
     }
 
     /**
