@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Addons\AddonRegistry;
 use App\Features\FeatureRegistry;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -85,7 +86,8 @@ final class Rbac
     ];
 
     /**
-     * The permissions that exist right now: the core ones plus those of the enabled features.
+     * The permissions that exist right now: the core ones, plus those of the enabled features and the active addons.
+     * Addon permissions are included here so that switching a feature on or off does not take them away from admin.
      *
      * @return list<string>
      */
@@ -94,6 +96,7 @@ final class Rbac
         return array_values(array_unique([
             ...self::CORE_PERMISSIONS,
             ...app(FeatureRegistry::class)->permissions(),
+            ...app(AddonRegistry::class)->activePermissions(),
         ]));
     }
 
