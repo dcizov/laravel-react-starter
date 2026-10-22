@@ -12,8 +12,10 @@ use App\Models\AuditLog;
 use App\Support\Rbac;
 use Closure;
 use Composer\Semver\Semver;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
@@ -39,6 +41,7 @@ final class AddonLifecycle
         private readonly AddonCompiler $compiler,
         private readonly AddonMigrator $migrator,
         private readonly AddonRegistry $registry,
+        private readonly Router $router,
     ) {}
 
     /**
@@ -56,7 +59,7 @@ final class AddonLifecycle
             $manifest = $this->discoveredManifest($slug);
             $this->assertDependencies($manifest, activeRequired: false);
 
-            return DB::transaction(function () use ($manifest): Addon {
+            $addon = DB::transaction(function () use ($manifest): Addon {
                 $addon = Addon::query()->create([
                     'slug' => $manifest->slug,
                     'name' => $manifest->name,
@@ -74,6 +77,13 @@ final class AddonLifecycle
 
                 return $addon;
             });
+
+            // Installing changes the route set. Register the new routes in this process, and drop a route cache that
+            // was built without them, so the next boot registers them.
+            AddonRouteLoader::register($this->router, $this->registry);
+            $this->forgetStaleRouteCache();
+
+            return $addon;
         });
     }
 
@@ -212,6 +222,17 @@ final class AddonLifecycle
             }
         } finally {
             $lock->release();
+        }
+    }
+
+    /**
+     * A route cache built before an install does not have the new addon's routes. Removing it makes the next boot
+     * register the routes again. Run php artisan route:cache after the change to cache them.
+     */
+    private function forgetStaleRouteCache(): void
+    {
+        if (app()->routesAreCached()) {
+            File::delete(app()->getCachedRoutesPath());
         }
     }
 

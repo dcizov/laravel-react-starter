@@ -67,9 +67,13 @@ final class AddonServiceProvider extends ServiceProvider
             }
         }
 
+        $router = $this->app->make('router');
+
         // With cached routes, the routes come from the cache, which was built with the same installed set.
-        if (! $this->app->routesAreCached()) {
-            AddonRouteLoader::register($this->app->make('router'), $registry);
+        if ($this->app->routesAreCached()) {
+            AddonRouteLoader::acknowledge($router, $registry);
+        } else {
+            AddonRouteLoader::load($router, $registry->installed());
         }
     }
 

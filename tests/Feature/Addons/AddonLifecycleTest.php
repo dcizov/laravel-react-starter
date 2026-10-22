@@ -3,7 +3,6 @@
 use App\Addons\AddonCompiler;
 use App\Addons\AddonLifecycle;
 use App\Addons\AddonRegistry;
-use App\Addons\AddonRouteLoader;
 use App\Addons\Discovery\AddonDiscovery;
 use App\Addons\Events\AddonManifestCompiling;
 use App\Addons\Exceptions\AddonLifecycleException;
@@ -167,8 +166,7 @@ test('the addon.active middleware answers 404 when the addon is inactive, and it
     $lifecycle = app(AddonLifecycle::class);
     $lifecycle->install(FIXTURE_SLUG);
 
-    // The routes of an installed addon are always registered, so the route set does not change when it is switched.
-    AddonRouteLoader::register(app('router'), app(AddonRegistry::class));
+    // Installing registers the addon's routes in this process. They stay registered, and the middleware gates them.
 
     $this->get('/addons/'.FIXTURE_SLUG.'/ping')->assertNotFound();
 

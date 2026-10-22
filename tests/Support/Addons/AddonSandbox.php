@@ -4,7 +4,6 @@ namespace Tests\Support\Addons;
 
 use App\Addons\AddonLifecycle;
 use App\Addons\AddonRegistry;
-use App\Addons\AddonRouteLoader;
 use FilesystemIterator;
 use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
@@ -46,8 +45,8 @@ final class AddonSandbox
     }
 
     /**
-     * Copy an addon from this repository into a temporary root, install and activate it, and register its routes.
-     * The repository's addons folder and its compiled manifest are not touched.
+     * Copy an addon from this repository into a temporary root, then install and activate it through the lifecycle.
+     * The lifecycle registers its routes. The repository's addons folder and its compiled manifest are not touched.
      */
     public static function activateRepositoryAddon(string $slug): string
     {
@@ -69,8 +68,6 @@ final class AddonSandbox
         $lifecycle = app(AddonLifecycle::class);
         $lifecycle->install($slug);
         $lifecycle->activate($slug);
-
-        AddonRouteLoader::register(app('router'), app(AddonRegistry::class));
 
         return $root;
     }
