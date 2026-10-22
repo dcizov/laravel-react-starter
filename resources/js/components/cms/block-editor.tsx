@@ -1,11 +1,11 @@
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
 import { useId } from 'react';
-import RichTextEditor from '@/components/cms/rich-text-editor';
 import {
     docFromLegacyItems,
     docFromLegacyText,
     EMPTY_DOC,
 } from '@/components/cms/rich-text';
+import RichTextEditor from '@/components/cms/rich-text-editor';
 import { ImageField } from '@/components/image-field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

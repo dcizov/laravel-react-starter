@@ -2,8 +2,8 @@ import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
-import { dashboard, login } from '@/routes';
 import { create as newsletterCreate } from '@/routes/newsletter';
+import { dashboard, login } from '@/routes';
 
 // Computed once when the module loads, so rendering stays pure.
 const YEAR = new Date().getFullYear();

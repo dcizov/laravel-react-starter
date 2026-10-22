@@ -13,8 +13,8 @@ import type { ComponentProps } from 'react';
 import {
     SiteOverviewCards,
     SiteOverviewSkeleton,
-    type SiteOverview,
 } from '@/components/dashboard/site-overview';
+import type { SiteOverview } from '@/components/dashboard/site-overview';
 import PageHeader from '@/components/page-header';
 import { statuses, priorities } from '@/components/tasks/data';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';

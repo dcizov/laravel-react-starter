@@ -23,7 +23,6 @@ import {
     Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { dashboard } from '@/routes';
 import { index as indexAuditLog } from '@/routes/admin/audit-log';
 import { index as indexAdminIntegrations } from '@/routes/admin/integrations';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
@@ -35,6 +34,7 @@ import { index as indexTasks } from '@/routes/tasks';
 import { show as showUserProfile } from '@/routes/user-profile';
 import { index as indexUsers } from '@/routes/users';
 import type { NavItem } from '@/types';
+import { dashboard } from '@/routes';
 
 export type SidebarLink = NavItem & {
     id: string;

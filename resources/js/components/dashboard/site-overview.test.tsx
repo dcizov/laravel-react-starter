@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
     SiteOverviewCards,
     SiteOverviewSkeleton,
-    type SiteOverview,
 } from '@/components/dashboard/site-overview';
+import type { SiteOverview } from '@/components/dashboard/site-overview';
 
 // Replace :placeholders the way the real hook does, and keep the English text otherwise.
 vi.mock('@/hooks/use-trans', () => ({

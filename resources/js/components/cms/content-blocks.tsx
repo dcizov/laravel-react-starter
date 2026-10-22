@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
 import RichTextView from '@/components/cms/rich-text-view';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { ContentBlock } from '@/types/cms';
 
