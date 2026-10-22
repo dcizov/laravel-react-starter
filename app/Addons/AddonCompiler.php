@@ -6,7 +6,6 @@ use App\Addons\Discovery\AddonDiscovery;
 use App\Addons\Events\AddonManifestCompiling;
 use App\Addons\Exceptions\AddonException;
 use App\Models\Addon;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Writes the compiled manifest the app reads at boot, from the lifecycle state in the database and the addon

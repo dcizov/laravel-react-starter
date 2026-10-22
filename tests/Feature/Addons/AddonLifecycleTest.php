@@ -4,8 +4,10 @@ use App\Addons\AddonCompiler;
 use App\Addons\AddonLifecycle;
 use App\Addons\AddonRegistry;
 use App\Addons\AddonRouteLoader;
+use App\Addons\Discovery\AddonDiscovery;
 use App\Addons\Events\AddonManifestCompiling;
 use App\Addons\Exceptions\AddonLifecycleException;
+use App\Addons\Exceptions\AddonManifestException;
 use App\Models\Addon;
 use App\Models\AddonMigration;
 use App\Models\AuditLog;
@@ -13,9 +15,11 @@ use App\Providers\AddonServiceProvider;
 use Fixtures\LifecycleFixture\LifecycleFixtureServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Support\Addons\AddonSandbox;
 
 const FIXTURE_SLUG = 'lifecycle-fixture';
@@ -48,7 +52,7 @@ function rolePermissionNames(string $role): array
 }
 
 test('discovery and install record the addon without enabling it', function () {
-    $result = app(\App\Addons\Discovery\AddonDiscovery::class)->discover();
+    $result = app(AddonDiscovery::class)->discover();
 
     expect(array_keys($result->manifests))->toBe([FIXTURE_SLUG])
         ->and($result->hasErrors())->toBeFalse();
@@ -110,7 +114,7 @@ test('deactivation keeps code, tables and data, removes permissions from roles a
     $lifecycle->activate(FIXTURE_SLUG);
 
     Role::findOrCreate('editor')->givePermissionTo(FIXTURE_PERMISSION);
-    app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     DB::table('lifecycle_fixture_items')->insert(['label' => 'kept', 'created_at' => now(), 'updated_at' => now()]);
 
@@ -272,7 +276,7 @@ test('a changed addon.json blocks compile and is reported as out of date', funct
     file_put_contents(AddonSandbox::addonPath(addonRoot()).'/addon.json', json_encode(['changed' => true]));
 
     expect(fn () => app(AddonCompiler::class)->compile())
-        ->toThrow(\App\Addons\Exceptions\AddonManifestException::class, 'changed on disk after the addon was installed');
+        ->toThrow(AddonManifestException::class, 'changed on disk after the addon was installed');
 
     expect(implode("\n", app(AddonCompiler::class)->problems()))->toContain('changed on disk');
 });
@@ -282,7 +286,7 @@ test('a missing or unreadable compiled manifest enables no addons and logs a war
     $lifecycle->install(FIXTURE_SLUG);
     $lifecycle->activate(FIXTURE_SLUG);
 
-    \Illuminate\Support\Facades\Log::spy();
+    Log::spy();
     unlink(addonRoot().'/cache/addons.php');
 
     $registry = new AddonRegistry;
@@ -291,7 +295,7 @@ test('a missing or unreadable compiled manifest enables no addons and logs a war
         ->and($registry->active())->toBe([])
         ->and($registry->isActive(FIXTURE_SLUG))->toBeFalse();
 
-    \Illuminate\Support\Facades\Log::shouldHaveReceived('warning')->once();
+    Log::shouldHaveReceived('warning')->once();
 
     file_put_contents(addonRoot().'/cache/addons.php', '<?php this is not valid php');
 

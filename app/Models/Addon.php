@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * An addon that has been installed. Its status says where it is in its lifecycle. The row is kept when the
@@ -17,9 +18,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $path
  * @property string $manifest_checksum
  * @property string|null $last_error
- * @property \Illuminate\Support\Carbon|null $installed_at
- * @property \Illuminate\Support\Carbon|null $activated_at
- * @property \Illuminate\Support\Carbon|null $deactivated_at
+ * @property Carbon|null $installed_at
+ * @property Carbon|null $activated_at
+ * @property Carbon|null $deactivated_at
  */
 class Addon extends Model
 {

@@ -5,7 +5,6 @@ namespace App\Console\Commands\Addons;
 use App\Addons\AddonCompiler;
 use App\Addons\AddonStore;
 use App\Addons\Discovery\AddonDiscovery;
-use App\Models\Addon;
 use Illuminate\Console\Command;
 
 class AddonsList extends Command

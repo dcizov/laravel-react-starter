@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * One migration of an addon that has run. Used to decide which migrations still need to run, so a failed
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $addon_slug
  * @property string $migration
  * @property int $batch
- * @property \Illuminate\Support\Carbon $applied_at
+ * @property Carbon $applied_at
  */
 class AddonMigration extends Model
 {
