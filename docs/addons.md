@@ -162,6 +162,7 @@ Do not run `php artisan migrate:fresh` on an installation that has addons. It dr
 - `tests/Unit/Addons/ManifestValidatorTest.php`: manifest rules, discovery errors, duplicate slugs and cycles. It needs no database.
 - `tests/Unit/Addons/ArchitectureTest.php`: dependency boundaries (Pest arch plugin). Addon code must not import `App\Features`. The fixture must not import core or other addons.
 - `tests/Feature/Addons/AddonLifecycleTest.php`: install, activate, deactivate, route gating, permissions, migration tracking, compile, failure at migrate and at compile, recovery, and a changed manifest. It runs in a temporary addon root (`Tests\Support\Addons\AddonSandbox`), so it never writes to `bootstrap/cache` or `addons/`.
+- `tests/Feature/Addons/NewsletterAddonTest.php`: the real Newsletter addon through the same lifecycle. It checks that admin gets `newsletter.manage` on activation, that routes answer 404 while inactive, and that deactivation keeps the subscriber rows and table. Reactivation restores the routes. The feature tests call `activateNewsletterAddon()` from `tests/Pest.php`.
 - `tests/Feature/Addons/AddonCommandsTest.php`: exit codes of the commands.
 - `tests/Fixtures/addons/lifecycle-fixture/`: the test-only addon. Its namespace `Fixtures\LifecycleFixture\` is mapped in `autoload-dev`. It is not shipped. Its migration has a test seam: `config('addons.lifecycle-fixture.fail_at') === 'migrate'` makes it throw after creating its table.
 
