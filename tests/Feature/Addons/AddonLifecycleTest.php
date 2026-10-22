@@ -273,6 +273,41 @@ test('a compile failure during install leaves no addon row behind', function () 
         ->and(file_exists(addonRoot().'/cache/addons.php'))->toBeFalse();
 });
 
+test('a failure that is not an addon error is wrapped as a lifecycle error, keeps the cause, and is audited', function () {
+    Event::listen(AddonManifestCompiling::class, function (): void {
+        throw new RuntimeException('Simulated compile failure.');
+    });
+
+    try {
+        app(AddonLifecycle::class)->install(FIXTURE_SLUG);
+        $this->fail('The install should have failed.');
+    } catch (AddonLifecycleException $e) {
+        expect($e->getMessage())->toBe('Could not install ['.FIXTURE_SLUG.']. Simulated compile failure.')
+            ->and($e->getPrevious())->toBeInstanceOf(RuntimeException::class)
+            ->and($e->getPrevious()->getMessage())->toBe('Simulated compile failure.');
+    }
+
+    $audit = AuditLog::query()->where('action', 'addon.failed')->firstOrFail();
+
+    expect($audit->properties)->toMatchArray([
+        'addon' => FIXTURE_SLUG,
+        'action' => 'install',
+        'error' => 'Simulated compile failure.',
+    ]);
+});
+
+test('an addon error raised during a lifecycle operation reaches the caller unchanged', function () {
+    app(AddonLifecycle::class)->install(FIXTURE_SLUG);
+
+    file_put_contents(AddonSandbox::addonPath(addonRoot()).'/addon.json', json_encode(['changed' => true]));
+
+    // A changed addon.json is an AddonException, so the wrapper must not replace it.
+    expect(fn () => app(AddonLifecycle::class)->activate(FIXTURE_SLUG))
+        ->toThrow(AddonManifestException::class, 'changed on disk after the addon was installed');
+
+    expect(Addon::query()->where('slug', FIXTURE_SLUG)->firstOrFail()->status)->toBe(Addon::STATUS_INSTALLED);
+});
+
 test('a changed addon.json blocks compile and is reported as out of date', function () {
     $lifecycle = app(AddonLifecycle::class);
     $lifecycle->install(FIXTURE_SLUG);
