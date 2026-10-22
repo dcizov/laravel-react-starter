@@ -203,7 +203,7 @@ test('an author can edit a live entry without changing its status', function () 
         ->status->toBe(ContentEntry::STATUS_PUBLISHED);
 });
 
-test('a user without edit permission cannot update, and guests are sent to log in', function () {
+test('a user without edit permission cannot update, and guests are forbidden', function () {
     $entry = cmsPage(User::factory()->create(), ['title' => 'Original']);
     $viewOnly = cmsUserWith([Rbac::PERMISSION_CONTENT_VIEW]);
 
@@ -212,7 +212,7 @@ test('a user without edit permission cannot update, and guests are sent to log i
         ->assertForbidden();
 
     $this->put(route('admin.content.update', ['type' => 'page', 'entry' => $entry]), cmsEntryPayload($entry))
-        ->assertRedirect(route('login'));
+        ->assertForbidden();
 
     expect(cmsFresh($entry)->title)->toBe('Original');
 });
@@ -387,7 +387,7 @@ test('bulk actions reject an unknown action', function () {
     expect(cmsFresh($entry)->trashed())->toBeFalse();
 });
 
-test('bulk actions need the content view permission, and guests are sent to log in', function () {
+test('bulk actions need the content view permission, and guests are forbidden', function () {
     $entry = cmsPage(User::factory()->create());
     $payload = ['action' => 'trash', 'ids' => [$entry->id]];
 
@@ -396,7 +396,7 @@ test('bulk actions need the content view permission, and guests are sent to log 
         ->assertForbidden();
 
     $this->post(route('admin.content.bulk', ['type' => 'page']), $payload)
-        ->assertRedirect(route('login'));
+        ->assertForbidden();
 
     expect(cmsFresh($entry)->trashed())->toBeFalse();
 });
