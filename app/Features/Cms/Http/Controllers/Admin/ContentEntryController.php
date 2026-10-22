@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Support\Rbac;
 use App\Support\Sites\CurrentSite;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,8 @@ use Inertia\Response;
  */
 class ContentEntryController extends Controller
 {
+    use AuthorizesRequests;
+
     /** The statuses the list can filter by. "scheduled" is a published entry whose date is in the future. */
     private const FILTERS = ['all', 'draft', 'published', 'scheduled', 'trashed'];
 
