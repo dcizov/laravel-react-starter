@@ -1,0 +1,19 @@
+{
+    "name": "fixtures/lifecycle-fixture",
+    "slug": "lifecycle-fixture",
+    "version": "1.0.0",
+    "label": "Lifecycle fixture",
+    "core": "^1.0",
+    "provider": "Fixtures\\LifecycleFixture\\LifecycleFixtureServiceProvider",
+    "requires": {
+        "addons": {}
+    },
+    "provides": {
+        "routes": "routes/web.php",
+        "permissions": ["lifecycle-fixture.view"],
+        "migrations": "database/migrations",
+        "tables": ["lifecycle_fixture_items"],
+        "config": "config/lifecycle-fixture.php",
+        "translations": "lang"
+    }
+}
