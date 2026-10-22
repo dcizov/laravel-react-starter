@@ -2,14 +2,8 @@ import '@fontsource-variable/instrument-sans';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/manrope';
 import { createInertiaApp } from '@inertiajs/react';
-import {
-    lazy,
-    Suspense
-    
-    
-    
-} from 'react';
-import type {ComponentProps, ComponentType, ReactNode} from 'react';
+import { lazy, Suspense } from 'react';
+import type { ComponentProps, ComponentType, ReactNode } from 'react';
 import { AppToaster } from '@/components/app-toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
