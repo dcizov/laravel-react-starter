@@ -67,6 +67,7 @@ Route::middleware(['web', 'auth', 'verified'])
 
         Route::put('content/{type}/{entry}', [ContentEntryController::class, 'update'])
             ->withTrashed()
+            ->middleware('can:'.Rbac::PERMISSION_CONTENT_VIEW)
             ->name('content.update');
         Route::delete('content/{type}/{entry}', [ContentEntryController::class, 'destroy'])
             ->name('content.destroy');

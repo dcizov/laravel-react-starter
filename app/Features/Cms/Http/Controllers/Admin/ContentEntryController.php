@@ -11,11 +11,13 @@ use App\Features\Cms\Models\Term;
 use App\Features\Cms\Support\ContentBlocks;
 use App\Features\Cms\Support\ContentPresenter;
 use App\Features\Cms\Support\EntryListing;
+use App\Features\Cms\Support\PublicationChange;
 use App\Features\FeatureRegistry;
 use App\Http\Controllers\Controller;
 use App\Support\PublicUploads;
 use App\Support\Rbac;
 use App\Support\Sites\CurrentSite;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -142,6 +144,12 @@ class ContentEntryController extends Controller
         $this->belongsToType($entry, $contentType);
         $this->authorize('update', $entry);
         $this->ensureNotTrashed($entry);
+        $this->ensurePublicationAllowed(
+            $entry,
+            (string) $request->validated('status'),
+            $request->submittedPublishedAt() ?? $entry->published_at,
+            $request->user()->can('publish', ContentEntry::class),
+        );
 
         $snapshot = ContentEntryRevision::snapshot($entry);
         $entry->fill($this->attributes($request, $contentType, $entry));
@@ -276,12 +284,18 @@ class ContentEntryController extends Controller
         abort_unless($revision->entry_id === $entry->id, 404);
 
         $user = $request->user();
+
+        // Refused before the current version is saved as a revision, so a refused restore leaves no trace.
+        $this->ensurePublicationAllowed(
+            $entry,
+            $revision->status,
+            $revision->published_at,
+            $user->can('publish', ContentEntry::class),
+        );
+
         $snapshot = ContentEntryRevision::snapshot($entry);
 
         ContentEntryRevision::store($entry, $snapshot, $user->id);
-
-        // Without the publish permission, a revision cannot change whether the entry is live.
-        $status = $user->can('publish', ContentEntry::class) ? $revision->status : $entry->status;
 
         $entry->fill([
             'title' => $revision->title,
@@ -289,7 +303,7 @@ class ContentEntryController extends Controller
             'excerpt' => $revision->excerpt,
             'body' => $revision->body ?? [],
             'featured_image' => $revision->featured_image,
-            'status' => $status,
+            'status' => $revision->status,
             'published_at' => $revision->published_at,
             'custom_fields' => $revision->custom_fields ?? [],
             'seo' => $revision->seo ?? [],
@@ -613,6 +627,25 @@ class ContentEntryController extends Controller
     {
         $this->authorize('publish', ContentEntry::class);
         $this->authorize('update', $entry);
+    }
+
+    /**
+     * Refuses a change to the publication status or date of a published entry unless the user may publish. The
+     * message is keyed to the field that changed, so it shows where the form or restore failed.
+     */
+    private function ensurePublicationAllowed(
+        ContentEntry $entry,
+        string $status,
+        ?CarbonInterface $publishedAt,
+        bool $canPublish,
+    ): void {
+        $field = PublicationChange::restrictedField($entry, $status, $publishedAt);
+
+        if ($field === null || $canPublish) {
+            return;
+        }
+
+        throw ValidationException::withMessages([$field => PublicationChange::denialMessage($field)]);
     }
 
     private function ensureNotTrashed(ContentEntry $entry): void

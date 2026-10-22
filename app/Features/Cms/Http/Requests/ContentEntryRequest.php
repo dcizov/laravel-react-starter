@@ -4,8 +4,11 @@ namespace App\Features\Cms\Http\Requests;
 
 use App\Features\Cms\Models\ContentEntry;
 use App\Features\Cms\Models\ContentType;
+use App\Features\Cms\Support\PublicationChange;
 use App\Features\Cms\Support\SafeUrl;
 use App\Support\Sites\CurrentSite;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -60,7 +63,19 @@ class ContentEntryRequest extends FormRequest
     }
 
     /**
-     * Publishing and unpublishing need content.publish. Authors can still edit a live entry; its status stays as it is.
+     * The publication date the form submitted, or null when it left the field empty. Only call this after the
+     * published_at rule has passed.
+     */
+    public function submittedPublishedAt(): ?CarbonInterface
+    {
+        $raw = $this->input('published_at');
+
+        return is_string($raw) && filled($raw) ? Carbon::parse($raw) : null;
+    }
+
+    /**
+     * Publishing, unpublishing, and changing the date of a published entry need content.publish. Authors can still
+     * edit a live entry; its status and date stay as they are.
      *
      * @return list<\Closure(Validator): void>
      */
@@ -68,18 +83,21 @@ class ContentEntryRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                /** @var ContentEntry|null $entry */
-                $entry = $this->route('entry');
-
-                $wasLive = $entry?->status === ContentEntry::STATUS_PUBLISHED;
-                $becomesLive = $this->input('status') === ContentEntry::STATUS_PUBLISHED;
-
-                if ($wasLive === $becomesLive) {
+                // An invalid date already fails the rules, and it cannot be compared.
+                if ($validator->errors()->has('published_at')) {
                     return;
                 }
 
-                if (! $this->user()?->can('publish', ContentEntry::class)) {
-                    $validator->errors()->add('status', __('You do not have permission to publish or unpublish content.'));
+                /** @var ContentEntry|null $entry */
+                $entry = $this->route('entry');
+
+                // An empty date keeps the entry's current date, as the controller does.
+                $publishedAt = $this->submittedPublishedAt() ?? $entry?->published_at;
+
+                $field = PublicationChange::restrictedField($entry, (string) $this->input('status'), $publishedAt);
+
+                if ($field !== null && ! $this->user()?->can('publish', ContentEntry::class)) {
+                    $validator->errors()->add($field, PublicationChange::denialMessage($field));
                 }
             },
         ];
