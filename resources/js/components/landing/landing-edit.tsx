@@ -1,4 +1,11 @@
-import { animate, motion, useInView, useReducedMotion } from 'motion/react';
+import {
+    animate,
+    domAnimation,
+    LazyMotion,
+    m,
+    useInView,
+    useReducedMotion,
+} from 'motion/react';
 import { createContext, use, useEffect, useRef, useState } from 'react';
 import type {
     ClipboardEvent,
@@ -151,30 +158,36 @@ function WordReveal({
     const words = text.split(' ');
 
     return (
-        <Tag className={className}>
-            <span className="sr-only">{text}</span>
-            <span aria-hidden="true">
-                {words.map((word, index) => (
-                    <motion.span
-                        // Words can repeat, so the position is part of the key.
-                        // eslint-disable-next-line @eslint-react/no-array-index-key
-                        key={`${index}-${word}`}
-                        className="inline-block"
-                        initial={{ opacity: 0, filter: 'blur(8px)', y: 6 }}
-                        whileInView={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{
-                            duration: 0.5,
-                            delay: index * 0.07,
-                            ease: 'easeOut',
-                        }}
-                    >
-                        {word}
-                        {index < words.length - 1 ? '\u00A0' : ''}
-                    </motion.span>
-                ))}
-            </span>
-        </Tag>
+        <LazyMotion features={domAnimation}>
+            <Tag className={className}>
+                <span className="sr-only">{text}</span>
+                <span aria-hidden="true">
+                    {words.map((word, index) => (
+                        <m.span
+                            // Words can repeat, so the position is part of the key.
+                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                            key={`${index}-${word}`}
+                            className="inline-block"
+                            initial={{ opacity: 0, filter: 'blur(8px)', y: 6 }}
+                            whileInView={{
+                                opacity: 1,
+                                filter: 'blur(0px)',
+                                y: 0,
+                            }}
+                            viewport={{ once: true }}
+                            transition={{
+                                duration: 0.5,
+                                delay: index * 0.07,
+                                ease: 'easeOut',
+                            }}
+                        >
+                            {word}
+                            {index < words.length - 1 ? '\u00A0' : ''}
+                        </m.span>
+                    ))}
+                </span>
+            </Tag>
+        </LazyMotion>
     );
 }
 
@@ -261,14 +274,16 @@ export function Reveal({
     }
 
     return (
-        <motion.div
-            className={className}
-            initial={REVEAL_FROM[animation]}
-            whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-            viewport={{ once: true, amount: 0.12 }}
-            transition={{ duration: 0.7, ease: 'easeOut' }}
-        >
-            {children}
-        </motion.div>
+        <LazyMotion features={domAnimation}>
+            <m.div
+                className={className}
+                initial={REVEAL_FROM[animation]}
+                whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0.12 }}
+                transition={{ duration: 0.7, ease: 'easeOut' }}
+            >
+                {children}
+            </m.div>
+        </LazyMotion>
     );
 }
