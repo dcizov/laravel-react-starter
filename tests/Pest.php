@@ -6,6 +6,21 @@ use Tests\TestCase;
 
 /*
 |--------------------------------------------------------------------------
+| Addon isolation
+|--------------------------------------------------------------------------
+|
+| The app reads its compiled addon manifest at boot. Point the suite at a manifest that does not exist, so
+| the addons a developer has enabled locally never leak into a test. A test that needs an addon creates its
+| own sandbox with AddonSandbox, which is the only way addons are active in the suite.
+|
+*/
+
+$addonTestRoot = sys_get_temp_dir().'/addons-test-none-'.getmypid();
+putenv('ADDONS_MANIFEST_PATH='.$addonTestRoot.'/cache/addons.php');
+putenv('ADDONS_LAST_GOOD_PATH='.$addonTestRoot.'/cache/addons.last-good.php');
+
+/*
+|--------------------------------------------------------------------------
 | Test Case
 |--------------------------------------------------------------------------
 |

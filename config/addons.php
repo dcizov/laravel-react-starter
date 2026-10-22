@@ -39,9 +39,9 @@ return [
     |
     */
 
-    'manifest_path' => base_path('bootstrap/cache/addons.php'),
+    'manifest_path' => env('ADDONS_MANIFEST_PATH', base_path('bootstrap/cache/addons.php')),
 
-    'last_good_path' => base_path('bootstrap/cache/addons.last-good.php'),
+    'last_good_path' => env('ADDONS_LAST_GOOD_PATH', base_path('bootstrap/cache/addons.last-good.php')),
 
     /*
     |--------------------------------------------------------------------------

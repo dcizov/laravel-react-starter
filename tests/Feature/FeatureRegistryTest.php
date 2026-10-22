@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\Rbac;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Tests\Support\Addons\AddonSandbox;
 use Tests\Support\Features\FakeBaseFeature;
 use Tests\Support\Features\FakeDependentFeature;
 
@@ -62,6 +63,10 @@ test('enabling an unknown feature is refused before anything is written', functi
 });
 
 test('the roles screen only offers the permissions of enabled features', function () {
+    // No addon is active here, so the list depends only on the features. The sandbox is removed when the test ends.
+    $root = AddonSandbox::create();
+    register_shutdown_function(fn () => AddonSandbox::destroy($root));
+
     Rbac::sync();
 
     $admin = User::factory()->create();
@@ -91,4 +96,23 @@ test('syncing with a feature disabled removes its permission from admin, and kee
     expect($admin->hasPermissionTo('landing.manage'))->toBeTrue()
         ->and($admin->hasPermissionTo('integrations.manage'))->toBeFalse()
         ->and(Permission::query()->where('name', 'integrations.manage')->exists())->toBeTrue();
+});
+
+test('the roles screen offers an active addon permission, and still leaves out disabled features', function () {
+    activateNewsletterAddon();
+
+    Rbac::sync();
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    config(['features.enabled' => ['landing']]);
+
+    $props = $this->actingAs($admin)
+        ->get(route('admin.roles.create'))
+        ->assertOk()
+        ->viewData('page')['props'];
+
+    expect($props['permissions'])->toContain('landing.manage', 'newsletter.manage')
+        ->and($props['permissions'])->not->toContain('integrations.manage');
 });
