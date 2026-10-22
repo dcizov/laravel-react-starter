@@ -1,10 +1,10 @@
 <?php
 
+use App\Features\Landing\LandingBlocks;
+use App\Features\Landing\LandingPresets;
 use App\Models\User;
 use App\Settings\AppSettings;
 use App\Support\ErrorPages;
-use App\Features\Landing\LandingBlocks;
-use App\Features\Landing\LandingPresets;
 use App\Support\Rbac;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -51,7 +51,7 @@ test('the home page shows the default landing page when it is switched on', func
 });
 
 test('with the landing page switched off, guests go to login and users go to the dashboard', function () {
-    config(['features.enabled' => ['newsletter']]);
+    config(['features.enabled' => ['integrations']]);
 
     $this->get('/')->assertRedirect(route('login'));
 
@@ -224,15 +224,16 @@ test('the default page uses the section types, with a navigation bar and then a 
         ->and($types[1])->toBe('hero');
 });
 
-test('the enabled features are shared with every page', function () {
+test('the enabled features and active addons are shared with every page', function () {
     $user = User::factory()->create();
     $user->assignRole(Rbac::DEFAULT_ROLE);
 
-    config(['features.enabled' => ['newsletter']]);
+    config(['features.enabled' => ['integrations']]);
+    activateNewsletterAddon();
 
     $this->actingAs($user)
         ->get(route('dashboard'))
-        ->assertInertia(fn ($page) => $page->where('features', ['newsletter']));
+        ->assertInertia(fn ($page) => $page->where('features', ['integrations'])->where('addons', ['newsletter']));
 
     config(['features.enabled' => ['landing']]);
 

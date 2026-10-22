@@ -1,11 +1,12 @@
 <?php
 
-use App\Features\Newsletter\Models\NewsletterSubscriber;
+use Addons\Newsletter\Models\NewsletterSubscriber;
 use App\Models\User;
 use App\Support\Rbac;
 
 beforeEach(function () {
     Rbac::sync();
+    activateNewsletterAddon();
 });
 
 test('a visitor can subscribe and is shown the same message as a repeat sign-up', function () {
@@ -92,7 +93,7 @@ test('the admin list can be searched and a subscriber can be deleted', function 
         ->get(route('admin.newsletter.index', ['q' => 'two@']))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->component('admin/newsletter')
+            ->component('newsletter::admin/newsletter')
             ->has('subscribers.data', 1)
             ->where('subscribers.data.0.email', 'two@example.com'));
 

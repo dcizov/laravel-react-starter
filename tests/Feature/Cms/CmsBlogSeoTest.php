@@ -2,6 +2,7 @@
 
 use App\Features\Cms\Models\Comment;
 use App\Features\Cms\Models\ContentEntry;
+use App\Features\Cms\Models\ContentType;
 use App\Features\Cms\Models\Cta;
 use App\Features\Cms\Models\Term;
 use App\Features\Cms\Support\ContentBlocks;
@@ -14,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
     Rbac::sync();
-    config(['features.enabled' => ['landing', 'newsletter', 'integrations', 'cms', 'blog', 'seo']]);
+    config(['features.enabled' => ['landing', 'integrations', 'cms', 'blog', 'seo']]);
 
     // The built Vite manifest may predate some pages; these tests check the server, not the bundle.
     $this->withoutVite();
@@ -84,7 +85,7 @@ test('comments are not accepted on types without the comments support', function
 });
 
 test('a custom type with the comments support takes comments and shows approved ones', function () {
-    $type = \App\Features\Cms\Models\ContentType::query()->create([
+    $type = ContentType::query()->create([
         'key' => 'events', 'label' => 'Events', 'singular_label' => 'Event', 'has_archive' => true,
         'supports' => ['comments'], 'fields' => [],
     ]);
@@ -102,7 +103,7 @@ test('a custom type with the comments support takes comments and shows approved 
 });
 
 test('an admin saves a block body and it persists', function () {
-    $user = \App\Models\User::factory()->create();
+    $user = User::factory()->create();
     $user->assignRole('admin');
 
     $this->actingAs($user)->post('/admin/content/page', [
@@ -120,7 +121,7 @@ test('an admin saves a block body and it persists', function () {
 });
 
 test('a bad block reports its error under that block only', function () {
-    $user = \App\Models\User::factory()->create();
+    $user = User::factory()->create();
     $user->assignRole('admin');
 
     $this->actingAs($user)->post('/admin/content/page', [
@@ -150,7 +151,7 @@ test('the latest posts block fills in the newest posts, and is hidden while the 
         ->has('blocks.0.data.posts', 1)
         ->where('blocks.0.data.posts.0.slug', 'newer'));
 
-    config(['features.enabled' => ['landing', 'newsletter', 'integrations', 'cms', 'seo']]);
+    config(['features.enabled' => ['landing', 'integrations', 'cms', 'seo']]);
 
     $this->get('/')->assertInertia(fn ($page) => $page->has('blocks', 0));
 });

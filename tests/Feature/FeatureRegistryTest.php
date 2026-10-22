@@ -3,9 +3,9 @@
 use App\Features\FeatureManager;
 use App\Features\FeatureRegistry;
 use App\Features\Landing\LandingFeature;
-use App\Features\Newsletter\NewsletterFeature;
 use App\Models\User;
 use App\Support\Rbac;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\Support\Features\FakeBaseFeature;
 use Tests\Support\Features\FakeDependentFeature;
@@ -13,9 +13,8 @@ use Tests\Support\Features\FakeDependentFeature;
 test('the registry lists every feature the code provides, by slug', function () {
     $available = app(FeatureRegistry::class)->available();
 
-    expect(array_keys($available))->toEqual(['landing', 'newsletter', 'integrations', 'cms', 'blog', 'seo'])
-        ->and($available['landing'])->toBe(LandingFeature::class)
-        ->and($available['newsletter'])->toBe(NewsletterFeature::class);
+    expect(array_keys($available))->toEqual(['landing', 'integrations', 'cms', 'blog', 'seo'])
+        ->and($available['landing'])->toBe(LandingFeature::class);
 });
 
 test('an unknown feature name in FEATURES is rejected with the known names', function () {
@@ -90,6 +89,6 @@ test('syncing with a feature disabled removes its permission from admin, and kee
     $admin = Role::findByName('admin');
 
     expect($admin->hasPermissionTo('landing.manage'))->toBeTrue()
-        ->and($admin->hasPermissionTo('newsletter.manage'))->toBeFalse()
-        ->and(\Spatie\Permission\Models\Permission::query()->where('name', 'newsletter.manage')->exists())->toBeTrue();
+        ->and($admin->hasPermissionTo('integrations.manage'))->toBeFalse()
+        ->and(Permission::query()->where('name', 'integrations.manage')->exists())->toBeTrue();
 });

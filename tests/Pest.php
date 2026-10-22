@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\Addons\AddonSandbox;
 use Tests\TestCase;
 
 /*
@@ -47,4 +48,15 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Install and activate the repository's newsletter addon for this test, and register its routes. The temporary
+ * addon root is removed when the test process ends.
+ */
+function activateNewsletterAddon(): void
+{
+    $root = AddonSandbox::activateRepositoryAddon('newsletter');
+
+    register_shutdown_function(fn () => AddonSandbox::destroy($root));
 }

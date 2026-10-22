@@ -2,7 +2,9 @@
 
 namespace Tests\Support\Addons;
 
+use App\Addons\AddonLifecycle;
 use App\Addons\AddonRegistry;
+use App\Addons\AddonRouteLoader;
 use FilesystemIterator;
 use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
@@ -39,6 +41,36 @@ final class AddonSandbox
         ]);
 
         app(AddonRegistry::class)->reload();
+
+        return $root;
+    }
+
+    /**
+     * Copy an addon from this repository into a temporary root, install and activate it, and register its routes.
+     * The repository's addons folder and its compiled manifest are not touched.
+     */
+    public static function activateRepositoryAddon(string $slug): string
+    {
+        $root = sys_get_temp_dir().'/addons-test-'.Str::random(12);
+
+        mkdir($root.'/addons', 0775, true);
+        mkdir($root.'/cache', 0775, true);
+        self::copy(dirname(__DIR__, 3).'/addons/'.$slug, $root.'/addons/'.$slug);
+
+        config([
+            'addons.paths' => [$root.'/addons'],
+            'addons.manifest_path' => $root.'/cache/addons.php',
+            'addons.last_good_path' => $root.'/cache/addons.last-good.php',
+            'addons.core_version' => '1.0.0',
+        ]);
+
+        app(AddonRegistry::class)->reload();
+
+        $lifecycle = app(AddonLifecycle::class);
+        $lifecycle->install($slug);
+        $lifecycle->activate($slug);
+
+        AddonRouteLoader::register(app('router'), app(AddonRegistry::class));
 
         return $root;
     }

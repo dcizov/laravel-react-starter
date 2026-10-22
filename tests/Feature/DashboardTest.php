@@ -127,7 +127,8 @@ test('a new account has no change to report against last week', function () {
 
 function enableOverviewFeatures(): void
 {
-    config(['features.enabled' => ['landing', 'newsletter', 'integrations', 'cms', 'blog', 'seo']]);
+    config(['features.enabled' => ['landing', 'integrations', 'cms', 'blog', 'seo']]);
+    activateNewsletterAddon();
 }
 
 function overviewEntry(array $attributes): ContentEntry
@@ -229,7 +230,8 @@ test('the comments, newsletter, seo and sites cards need their permission', func
 });
 
 test('a card is left out while its feature is switched off', function () {
-    config(['features.enabled' => ['landing', 'newsletter', 'integrations']]);
+    config(['features.enabled' => ['landing', 'integrations']]);
+    activateNewsletterAddon();
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
