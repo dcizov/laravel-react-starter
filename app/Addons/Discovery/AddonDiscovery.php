@@ -131,9 +131,10 @@ final class AddonDiscovery
         $finished = [];
 
         $visit = function (string $slug, array $path) use (&$visit, &$cycles, &$finished, $manifests): void {
+            /** @var list<string> $path */
             $position = array_search($slug, $path, true);
 
-            if ($position !== false) {
+            if (is_int($position)) {
                 $cycles[] = [...array_slice($path, $position), $slug];
 
                 return;

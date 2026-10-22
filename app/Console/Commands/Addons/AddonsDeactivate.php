@@ -15,7 +15,8 @@ class AddonsDeactivate extends Command
     public function handle(AddonLifecycle $lifecycle): int
     {
         try {
-            $addon = $lifecycle->deactivate((string) $this->argument('slug'));
+            $slug = $this->argument('slug');
+            $addon = $lifecycle->deactivate(is_string($slug) ? $slug : '');
         } catch (AddonException $e) {
             $this->error($e->getMessage());
 

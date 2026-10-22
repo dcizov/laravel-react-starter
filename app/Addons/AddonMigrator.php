@@ -5,7 +5,6 @@ namespace App\Addons;
 use App\Addons\Exceptions\AddonLifecycleException;
 use App\Addons\Manifest\AddonManifest;
 use App\Models\AddonMigration;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
@@ -37,8 +36,9 @@ final class AddonMigrator
 
             $migration = require $file;
 
-            if (! $migration instanceof Migration) {
-                throw new AddonLifecycleException("Migration {$name} of [{$manifest->slug}] must return a migration object.");
+            // Migration files return an anonymous class with up(); Laravel's base Migration class declares no up().
+            if (! is_object($migration) || ! method_exists($migration, 'up')) {
+                throw new AddonLifecycleException("Migration {$name} of [{$manifest->slug}] must return a migration object with an up() method.");
             }
 
             try {

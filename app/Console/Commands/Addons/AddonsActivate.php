@@ -15,7 +15,8 @@ class AddonsActivate extends Command
     public function handle(AddonLifecycle $lifecycle): int
     {
         try {
-            $addon = $lifecycle->activate((string) $this->argument('slug'));
+            $slug = $this->argument('slug');
+            $addon = $lifecycle->activate(is_string($slug) ? $slug : '');
         } catch (AddonException $e) {
             $this->error($e->getMessage());
 
