@@ -1,3 +1,4 @@
+import { globSync } from 'node:fs';
 import inertia from '@inertiajs/vite';
 import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import babel from '@rolldown/plugin-babel';
@@ -52,6 +53,14 @@ function featurePages(features: string[]): Plugin {
     };
 }
 
+// Every page of every addon is its own build entry. Blade asks the manifest for the page by its path
+// (addons/<slug>/resources/js/pages/<page>.tsx), and only a build input is guaranteed to have a manifest key.
+// Lazy glob imports in app.tsx alone do not. Addons are built whether or not they are installed, so a clean
+// checkout gets the same manifest as one with addons active.
+const addonPageEntries = globSync('addons/*/resources/js/pages/**/*.tsx', {
+    cwd: process.cwd(),
+}).map((file) => file.replace(/\\/g, '/'));
+
 const env = loadEnv('production', process.cwd(), '');
 const enabledFeatures = (
     process.env.FEATURES ??
@@ -66,7 +75,11 @@ export default defineConfig({
     plugins: lazyPlugins(() => [
         featurePages(enabledFeatures),
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.tsx',
+                ...addonPageEntries,
+            ],
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {
