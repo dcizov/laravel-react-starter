@@ -2,14 +2,15 @@
 
 namespace App\Features\Landing\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Features\Cms\Models\Cta;
 use App\Features\FeatureRegistry;
-use App\Http\Controllers\HomeController;
-use App\Settings\AppSettings;
-use App\Support\Seo\SeoHead;
 use App\Features\Landing\LandingBlocks;
 use App\Features\Landing\LandingContent;
 use App\Features\Landing\LandingPresets;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\HomeController;
+use App\Settings\AppSettings;
+use App\Support\Seo\SeoHead;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class LandingController extends Controller
     {
         return Inertia::render('admin/landing', [
             'ctas' => $features->isEnabled('cms')
-                ? \App\Features\Cms\Models\Cta::query()->orderBy('name')->get(['id', 'name', 'heading', 'text', 'button_label', 'button_url'])->values()
+                ? Cta::query()->orderBy('name')->get(['id', 'name', 'heading', 'text', 'button_label', 'button_url'])->values()
                 : [],
             'draft' => $this->draftOf($settings),
             'theme' => $this->themeDraftOf($settings),

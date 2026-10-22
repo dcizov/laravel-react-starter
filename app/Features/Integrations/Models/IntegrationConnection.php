@@ -3,6 +3,7 @@
 namespace App\Features\Integrations\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * A connected third-party tool. The credentials column holds every field value, encrypted.
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $integration_key
  * @property array<string, string> $credentials
- * @property \Illuminate\Support\Carbon|null $connected_at
+ * @property Carbon|null $connected_at
  */
 class IntegrationConnection extends Model
 {

@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\Settings;
 
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 use App\Support\Locales;
 use App\Support\Timezones;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class AccountSettingsUpdateRequest extends FormRequest

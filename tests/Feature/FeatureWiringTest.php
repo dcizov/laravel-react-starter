@@ -8,6 +8,6 @@ test('every feature has its pages listed in vite.config.ts', function () {
     $config = file_get_contents(base_path('vite.config.ts'));
 
     foreach (array_keys(app(FeatureRegistry::class)->available()) as $slug) {
-        expect($config)->toMatch('/^\s+'.preg_quote($slug, '/').": \\[/m", "Missing FEATURE_PAGES entry for [{$slug}].");
+        expect($config)->toMatch('/^\s+'.preg_quote($slug, '/').': \\[/m', "Missing FEATURE_PAGES entry for [{$slug}].");
     }
 });

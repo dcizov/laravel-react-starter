@@ -3,6 +3,7 @@
 namespace App\Features\Integrations;
 
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -88,7 +89,7 @@ final class GoogleOAuth
         return Str::random(40);
     }
 
-    private function post(string $url, array $data): ?\Illuminate\Http\Client\Response
+    private function post(string $url, array $data): ?Response
     {
         try {
             return Http::asForm()->timeout(10)->post($url, $data);

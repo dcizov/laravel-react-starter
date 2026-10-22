@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Support\Timezones;
 
 test('account settings page is displayed after password confirmation', function () {
     $user = User::factory()->create();
@@ -132,7 +133,7 @@ test('account page offers english and german and the timezone list', function ()
             ->has('languages', 2)
             ->where('languages.0.value', 'en')
             ->where('languages.1.value', 'de')
-            ->where('timezones', App\Support\Timezones::ZONES),
+            ->where('timezones', Timezones::ZONES),
         );
 });
 
@@ -148,4 +149,3 @@ test('language switch to german is saved and applies to the next request', funct
 
     expect($user->fresh()->locale)->toBe('de');
 });
-

@@ -2,9 +2,9 @@
 
 namespace App\Features\Seo\Http\Controllers\Admin;
 
+use App\Features\Cms\Support\SafeUrl;
 use App\Http\Controllers\Controller;
 use App\Settings\AppSettings;
-use App\Features\Cms\Support\SafeUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

@@ -2,11 +2,11 @@
 
 namespace App\Features\Cms\Models;
 
+use App\Features\Cms\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Features\Cms\Factories\CommentFactory;
 
 /**
  * A visitor's comment on an entry whose type has the comments support. Visitors only see approved comments.

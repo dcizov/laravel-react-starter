@@ -6,6 +6,7 @@ use App\Http\Controllers\ImpersonationController;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 /**
  * One recorded action in the admin area. Rows are only ever added.
@@ -19,7 +20,7 @@ use Illuminate\Http\Request;
  * @property string|null $subject_label
  * @property array<string, mixed>|null $properties
  * @property string|null $ip_address
- * @property \Illuminate\Support\Carbon $created_at
+ * @property Carbon $created_at
  */
 class AuditLog extends Model
 {

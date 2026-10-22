@@ -74,7 +74,6 @@ test('sidebar only receives the display items the user chose', function () {
         ->assertInertia(fn ($page) => $page->where('displayItems', ['documentation']));
 });
 
-
 test('items added after the user saved their choice are shown', function () {
     $user = User::factory()->create([
         'hidden_display_items' => ['repository'],

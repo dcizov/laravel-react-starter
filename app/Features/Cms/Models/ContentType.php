@@ -2,9 +2,9 @@
 
 namespace App\Features\Cms\Models;
 
+use App\Features\Cms\Support\SafeUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Features\Cms\Support\SafeUrl;
 use Illuminate\Validation\Rule;
 
 /**
