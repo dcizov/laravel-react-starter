@@ -61,7 +61,7 @@ export default function RoleForm({
         event.preventDefault();
 
         if (role) {
-            form.patch(update.url(String(role.id)), {
+            form.patch(update.url(role.id), {
                 preserveScroll: true,
                 onSuccess: () => form.setDefaults(),
             });

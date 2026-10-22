@@ -47,7 +47,7 @@ export default function Roles({ roles }: { roles: RoleRow[] }) {
             return;
         }
 
-        router.delete(destroy.url(String(pendingDelete.id)), {
+        router.delete(destroy.url(pendingDelete.id), {
             preserveScroll: true,
             onStart: () => setDeleting(true),
             onFinish: () => setDeleting(false),
@@ -106,7 +106,7 @@ export default function Roles({ roles }: { roles: RoleRow[] }) {
                             size="icon"
                             aria-label={t('Edit')}
                             onClick={() =>
-                                router.visit(edit.url(String(row.original.id)))
+                                router.visit(edit.url(row.original.id))
                             }
                         >
                             <Pencil />
