@@ -25,6 +25,8 @@ export default function Pagination({ links }: { links: PaginatorLink[] }) {
             {links.map((link, index) =>
                 link.url ? (
                     <Button
+                        // Paginator links are a static list for each page, so the position is a stable key.
+                        // eslint-disable-next-line @eslint-react/no-array-index-key
                         key={index}
                         variant={link.active ? 'default' : 'outline'}
                         size="sm"
@@ -35,6 +37,7 @@ export default function Pagination({ links }: { links: PaginatorLink[] }) {
                     </Button>
                 ) : (
                     <span
+                        // eslint-disable-next-line @eslint-react/no-array-index-key
                         key={index}
                         className="px-3 py-1.5 text-sm text-muted-foreground"
                     >

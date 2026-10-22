@@ -16,7 +16,7 @@ export function ImpersonationBanner() {
     return (
         <div
             role="status"
-            className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-500/40 bg-amber-500/15 px-4 py-2 text-sm"
+            className="flex flex-wrap items-center justify-between gap-3 border-b border-warning/40 bg-warning/15 px-4 py-2 text-sm"
         >
             <span>
                 {t(

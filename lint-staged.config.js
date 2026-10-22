@@ -5,7 +5,8 @@ const lintStagedConfig = {
         'eslint --fix --cache',
     ],
     '**/*.{md,mdx,json,css}': 'prettier --write --cache',
-    '**/*.php': './vendor/bin/sail pint --dirty',
+    // Pint is a dev dependency, so it runs directly. Sail is not required for commits.
+    '**/*.php': './vendor/bin/pint --dirty',
 };
 
 export default lintStagedConfig;

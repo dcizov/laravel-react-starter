@@ -392,8 +392,10 @@ function TypeDialog({
                         <legend className="mb-1 text-sm font-medium">
                             {t('Custom fields')}
                         </legend>
+                        {/* The field key is typed by the user and changes as they type, so the row position is the stable key. */}
                         {form.data.fields.map((field, index) => (
                             <div
+                                // eslint-disable-next-line @eslint-react/no-array-index-key
                                 key={index}
                                 className="grid gap-2 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_9rem_auto] sm:items-end"
                             >

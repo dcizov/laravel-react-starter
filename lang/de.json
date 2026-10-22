@@ -708,7 +708,7 @@
     "Edit user": "Benutzer bearbeiten",
     "Edit, verify, suspend, and remove accounts. Select rows to change roles in bulk.": "Konten bearbeiten, bestätigen, sperren und entfernen. Zeilen auswählen, um Rollen gesammelt zu ändern.",
     "Email verified": "E-Mail bestätigt",
-    "Everyone with an account.": "Alle mit einem Konto.",
+    "Everyone with an account. Read-only: to change accounts or roles, use Admin > Users.": "Alle mit einem Konto. Nur zum Lesen: Konten und Rollen änderst du unter Admin > Benutzer.",
     "Export CSV": "CSV exportieren",
     "Filter by action...": "Nach Aktion filtern …",
     "Get news and updates by email. You can unsubscribe at any time.": "Erhalte Neuigkeiten und Updates per E-Mail. Du kannst dich jederzeit abmelden.",

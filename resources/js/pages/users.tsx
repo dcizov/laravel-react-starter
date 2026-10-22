@@ -26,7 +26,9 @@ export default function Users({
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <PageHeader
                     title={t('Users')}
-                    description={t('Everyone with an account.')}
+                    description={t(
+                        'Everyone with an account. Read-only: to change accounts or roles, use Admin > Users.',
+                    )}
                 />
 
                 <DataTable

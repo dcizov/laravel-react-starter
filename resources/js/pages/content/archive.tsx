@@ -27,7 +27,9 @@ export default function ContentArchive({
     return (
         <PublicLayout>
             <SeoMeta seo={seo} />
-            <h1 className="text-3xl font-bold tracking-tight">{type.label}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">
+                {type.label}
+            </h1>
             <TermFilter
                 basePath={`/content/${type.key}`}
                 filter={filter}

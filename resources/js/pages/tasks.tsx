@@ -34,6 +34,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
+import { toast } from '@/components/ui/toast';
 import { useTrans } from '@/hooks/use-trans';
 import { index as tasksIndex } from '@/routes/tasks';
 
@@ -176,13 +177,24 @@ export default function Tasks({
                         getRowId={(row) => String(row.id)}
                         pageSizes={pageSizes}
                         enableRowDragging
-                        enableRowSelection
                         onRowOrderChange={(ids) => {
                             // Saved for this user only. The server sends the tasks back in this order.
+                            // If saving fails, show why and reload the saved order, so the table matches the server.
                             router.put(
                                 reorder.url(),
                                 { ids: ids.map(Number) },
-                                { preserveScroll: true },
+                                {
+                                    preserveScroll: true,
+                                    onError: (errors) => {
+                                        toast.add({
+                                            type: 'error',
+                                            title:
+                                                Object.values(errors)[0] ??
+                                                t('Something went wrong.'),
+                                        });
+                                        router.reload({ only: ['tasks'] });
+                                    },
+                                },
                             );
                         }}
                         renderDetail={renderDetail}

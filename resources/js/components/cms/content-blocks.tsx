@@ -54,7 +54,9 @@ function Block({ block }: { block: ContentBlock }) {
             );
 
         case 'list': {
+            // Static list: items are never reordered or edited here, so the position is a stable key.
             const items = block.data.items.map((item, index) => (
+                // eslint-disable-next-line @eslint-react/no-array-index-key
                 <li key={index}>{item}</li>
             ));
 

@@ -15,11 +15,8 @@ export function ShortcutHint({
 
     return (
         <KbdGroup className={cn('ml-auto', className)}>
-            {keys.map((key, index) => (
-                <Kbd
-                    key={`${key}-${index}`}
-                    className="border bg-background text-foreground"
-                >
+            {keys.map((key) => (
+                <Kbd key={key} className="border bg-background text-foreground">
                     {key}
                 </Kbd>
             ))}

@@ -247,3 +247,22 @@ test('the permissions page is read-only', function () {
         ->post('/admin/permissions', ['name' => 'reports.export'])
         ->assertMethodNotAllowed();
 });
+
+test('a user who can only view users cannot change roles', function () {
+    $viewer = User::factory()->create();
+    $role = Role::findOrCreate('viewer');
+    $role->syncPermissions([Rbac::PERMISSION_USERS_VIEW]);
+    $viewer->syncRoles($role);
+
+    $target = User::factory()->create();
+
+    $this->actingAs($viewer)
+        ->patch(route('users.role.update', $target), ['role' => 'admin'])
+        ->assertForbidden();
+
+    $this->actingAs($viewer)
+        ->patch(route('users.role.bulk'), ['ids' => [$target->id], 'role' => 'admin'])
+        ->assertForbidden();
+
+    expect($target->fresh()->hasRole('admin'))->toBeFalse();
+});

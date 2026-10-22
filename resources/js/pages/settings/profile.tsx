@@ -28,11 +28,11 @@ export default function Profile({
     const { auth } = usePage().props;
     const user = auth.user;
 
-    const fileInput = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [removeAvatar, setRemoveAvatar] = useState(false);
 
-    const headerInput = useRef<HTMLInputElement>(null);
+    const headerInputRef = useRef<HTMLInputElement>(null);
     const [headerPreview, setHeaderPreview] = useState<string | null>(null);
     const [removeHeader, setRemoveHeader] = useState(false);
 
@@ -65,8 +65,8 @@ export default function Profile({
     };
 
     const removeHeaderImage = () => {
-        if (headerInput.current) {
-            headerInput.current.value = '';
+        if (headerInputRef.current) {
+            headerInputRef.current.value = '';
         }
 
         setHeaderPreview(null);
@@ -75,8 +75,8 @@ export default function Profile({
 
     const removePicture = () => {
         // Clear the picked file too, so the upload does not win over the removal.
-        if (fileInput.current) {
-            fileInput.current.value = '';
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
 
         setPreview(null);
@@ -130,7 +130,7 @@ export default function Profile({
                                     <div className="grid gap-2">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <Input
-                                                ref={fileInput}
+                                                ref={fileInputRef}
                                                 id="avatar"
                                                 name="avatar"
                                                 type="file"
@@ -187,7 +187,7 @@ export default function Profile({
 
                                     <div className="flex flex-wrap items-center gap-2">
                                         <Input
-                                            ref={headerInput}
+                                            ref={headerInputRef}
                                             id="header"
                                             name="header"
                                             type="file"

@@ -11,6 +11,7 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
+import { create as newsletterCreate } from '@/routes/newsletter';
 import type { SeoData } from '@/types/cms';
 import { dashboard, login, register } from '@/routes';
 
@@ -28,7 +29,8 @@ export default function Welcome({
     seo?: SeoData;
 }) {
     const t = useTrans();
-    const { auth } = usePage().props;
+    const { auth, features } = usePage().props;
+    const hasNewsletter = (features as string[]).includes('newsletter');
     // The page follows the visitor's light or dark appearance.
     const { resolvedAppearance } = useAppearance();
     // A navigation bar block has its own place for sign-in links, so the default header is left out.
@@ -58,7 +60,7 @@ export default function Welcome({
                 {preview && (
                     <div
                         role="status"
-                        className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/40 bg-amber-500/15 px-4 py-2 text-sm"
+                        className="flex flex-wrap items-center justify-between gap-2 border-b border-warning/40 bg-warning/15 px-4 py-2 text-sm"
                     >
                         <span>
                             {t(
@@ -89,6 +91,18 @@ export default function Welcome({
                             </Button>
                         ) : (
                             <>
+                                {hasNewsletter && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        render={
+                                            <Link href={newsletterCreate()} />
+                                        }
+                                        nativeButton={false}
+                                    >
+                                        {t('Newsletter')}
+                                    </Button>
+                                )}
                                 <Button
                                     variant="ghost"
                                     size="sm"

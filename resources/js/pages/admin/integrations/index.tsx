@@ -125,7 +125,7 @@ function IntegrationAction({
         if (item.connected) {
             return (
                 <div className="ms-auto flex items-center gap-2">
-                    <Badge className="h-7 rounded-lg bg-emerald-600/10 px-3 text-sm text-emerald-600">
+                    <Badge className="h-7 rounded-lg bg-success/10 px-3 text-sm text-success">
                         <Check />
                         {t('Connected')}
                     </Badge>
@@ -176,7 +176,7 @@ function IntegrationAction({
     if (item.connected) {
         return (
             <div className="ms-auto flex items-center gap-2">
-                <Badge className="h-7 rounded-lg bg-emerald-600/10 px-3 text-sm text-emerald-600">
+                <Badge className="h-7 rounded-lg bg-success/10 px-3 text-sm text-success">
                     <Check />
                     {t('Connected')}
                 </Badge>

@@ -1,5 +1,5 @@
 import { ArrowUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
@@ -7,22 +7,32 @@ import { cn } from '@/lib/utils';
 // How far the visitor must scroll before the button appears.
 const SHOW_AFTER_PX = 400;
 
+// The scroll position is an external store: subscribe to the scroll event and read window.scrollY.
+// Defined outside the component so the subscription is not recreated on every render.
+function subscribeToScroll(onChange: () => void): () => void {
+    window.addEventListener('scroll', onChange, { passive: true });
+
+    return () => window.removeEventListener('scroll', onChange);
+}
+
+function isScrolledDown(): boolean {
+    return window.scrollY > SHOW_AFTER_PX;
+}
+
+// Hidden on the server, where there is no window. In the browser the real position is read at once,
+// so a reloaded page scrolled down still shows the button.
+function notScrolledOnServer(): boolean {
+    return false;
+}
+
 // A fixed button that scrolls the landing page back to the top.
 export function BackToTop() {
     const t = useTrans();
-    // Hidden on the server, where there is no window. The effect reads the position once the page is in the browser,
-    // so a reloaded page scrolled down still shows the button.
-    const [visible, setVisible] = useState(false);
-
-    useEffect(() => {
-        const update = () => setVisible(window.scrollY > SHOW_AFTER_PX);
-
-        update();
-
-        window.addEventListener('scroll', update, { passive: true });
-
-        return () => window.removeEventListener('scroll', update);
-    }, []);
+    const visible = useSyncExternalStore(
+        subscribeToScroll,
+        isScrolledDown,
+        notScrolledOnServer,
+    );
 
     return (
         <Button

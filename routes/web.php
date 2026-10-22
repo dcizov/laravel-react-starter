@@ -10,6 +10,7 @@ use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\Settings\LanguageController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
+use App\Support\Rbac;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -44,8 +45,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::get('users', [UserController::class, 'index'])->middleware('can:users.view')->name('users.index');
-    Route::patch('users/{user}/role', [UserController::class, 'updateRole'])->middleware('can:users.view')->name('users.role.update');
-    Route::patch('users/roles', [UserController::class, 'bulkUpdateRole'])->middleware('can:users.view')->name('users.role.bulk');
+    // Role changes need the same permission the controller checks, so the route and the controller agree.
+    Route::patch('users/{user}/role', [UserController::class, 'updateRole'])->middleware('can:'.Rbac::PERMISSION_USERS_MANAGE_ROLES)->name('users.role.update');
+    Route::patch('users/roles', [UserController::class, 'bulkUpdateRole'])->middleware('can:'.Rbac::PERMISSION_USERS_MANAGE_ROLES)->name('users.role.bulk');
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('roles', RoleController::class)

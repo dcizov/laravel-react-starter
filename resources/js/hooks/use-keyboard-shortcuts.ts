@@ -15,10 +15,10 @@ const SEQUENCE_TIMEOUT_MS = 1000;
 // Runs the handler for each shortcut sequence that was typed. Handlers can change
 // between renders; the latest ones are always used.
 export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
-    const latest = useRef(handlers);
+    const latestRef = useRef(handlers);
 
     useEffect(() => {
-        latest.current = handlers;
+        latestRef.current = handlers;
     });
 
     useEffect(() => {
@@ -54,7 +54,7 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
             if (complete) {
                 reset();
 
-                const handler = latest.current[complete];
+                const handler = latestRef.current[complete];
 
                 if (handler) {
                     event.preventDefault();

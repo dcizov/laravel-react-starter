@@ -2,7 +2,12 @@ import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
+import { index as blogIndex } from '@/routes/blog';
+import { create as newsletterCreate } from '@/routes/newsletter';
 import { dashboard, home, login } from '@/routes';
+
+// Computed once when the module loads, so rendering stays pure.
+const YEAR = new Date().getFullYear();
 
 // The shell for public content pages, posts and archives: site name, a few links, and the content below.
 export default function PublicLayout({ children }: { children: ReactNode }) {
@@ -23,8 +28,16 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                         </Link>
                     )}
                     {has('blog') && (
-                        <Link href="/blog" className="hover:underline">
+                        <Link href={blogIndex()} className="hover:underline">
                             {t('Blog')}
+                        </Link>
+                    )}
+                    {has('newsletter') && (
+                        <Link
+                            href={newsletterCreate()}
+                            className="hover:underline"
+                        >
+                            {t('Newsletter')}
                         </Link>
                     )}
                     {auth.user ? (
@@ -54,7 +67,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </main>
 
             <footer className="border-t px-4 py-6 text-center text-sm text-muted-foreground">
-                © {new Date().getFullYear()} {name}
+                © {YEAR} {name}
             </footer>
         </div>
     );

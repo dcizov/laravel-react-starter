@@ -25,7 +25,9 @@ export default function BlogIndex({
     return (
         <PublicLayout>
             <SeoMeta seo={seo} />
-            <h1 className="text-3xl font-bold tracking-tight">{t('Blog')}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">
+                {t('Blog')}
+            </h1>
             <TermFilter
                 basePath="/blog"
                 filter={filter}

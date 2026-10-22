@@ -798,7 +798,7 @@ export default function LandingEditor({
                                             key={preset.key}
                                             type="button"
                                             onClick={() => setApplying(preset)}
-                                            className="flex flex-col gap-1 rounded-lg border bg-background p-3 text-left transition-colors hover:bg-muted/60"
+                                            className="flex flex-col gap-1 rounded-lg border bg-background p-3 text-left transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                                         >
                                             <span className="text-sm font-medium">
                                                 {preset.label}
@@ -1036,7 +1036,7 @@ function PaletteItem({
                 {...attributes}
                 {...listeners}
                 className={cn(
-                    'flex w-full items-center gap-2 rounded-lg border bg-background px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/60',
+                    'flex w-full items-center gap-2 rounded-lg border bg-background px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                     isDragging && 'opacity-50',
                 )}
             >
@@ -1075,7 +1075,7 @@ function PaletteItem({
                             <button
                                 type="button"
                                 onClick={() => onAdd(index)}
-                                className="flex w-full flex-col gap-1 rounded-md p-1 text-left hover:bg-muted"
+                                className="flex w-full flex-col gap-1 rounded-md p-1 text-left hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                             >
                                 <BlockMockup type={type} variant={index} />
                                 <span className="truncate px-0.5 text-xs text-muted-foreground">
@@ -1299,7 +1299,7 @@ function SortableBlock({
                             event.stopPropagation();
                             onToggle();
                         }}
-                        className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                         {collapsed ? (
                             <ChevronRight
@@ -1315,7 +1315,7 @@ function SortableBlock({
                     </button>
                     <button
                         type="button"
-                        className="flex cursor-grab items-center gap-1 text-xs text-muted-foreground"
+                        className="flex cursor-grab items-center gap-1 text-xs text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         aria-label={t('Drag to reorder')}
                         {...attributes}
                         {...listeners}
