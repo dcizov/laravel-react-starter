@@ -3,9 +3,9 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Check, ShieldAlert, Trash2 } from 'lucide-react';
 import * as React from 'react';
 import { DataTable } from '@/components/data-table/data-table';
+import type { DataTableBulkAction } from '@/components/data-table/data-table-bulk-actions';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
-import type { DataTableBulkAction } from '@/components/data-table/data-table-bulk-actions';
 import { useServerTable } from '@/components/data-table/use-server-table';
 import type { ServerTableQuery } from '@/components/data-table/use-server-table';
 import PageHeader from '@/components/page-header';
@@ -226,7 +226,6 @@ export default function AdminComments({
                 enableHiding: false,
             },
         ],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [t, timezone],
     );
 

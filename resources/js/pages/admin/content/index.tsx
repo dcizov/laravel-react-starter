@@ -11,16 +11,16 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 import { DataTable } from '@/components/data-table/data-table';
+import type { DataTableBulkAction } from '@/components/data-table/data-table-bulk-actions';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
-import type { DataTableBulkAction } from '@/components/data-table/data-table-bulk-actions';
 import { useServerTable } from '@/components/data-table/use-server-table';
 import type { ServerTableQuery } from '@/components/data-table/use-server-table';
 import PageHeader from '@/components/page-header';
-import { formatDateTime } from '@/components/users/data';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { formatDateTime } from '@/components/users/data';
 import { useTrans } from '@/hooks/use-trans';
 import type { ContentTypeInfo } from '@/types/cms';
 
@@ -190,7 +190,7 @@ export default function AdminContentIndex({
             },
         ],
         // The handlers only use stable values from this page, so the columns are built once per type.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line @eslint-react/exhaustive-deps
         [type.key, t, timezone],
     );
 

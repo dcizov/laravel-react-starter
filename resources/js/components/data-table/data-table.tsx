@@ -309,7 +309,7 @@ export function DataTable<TData extends RowData>({
 
         return () => window.clearTimeout(timer);
         // The server callback is recreated on each render; only the typed text should restart the pause.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line @eslint-react/exhaustive-deps
     }, [searchDraft, serverSearch]);
 
     const serverFilters = React.useMemo<ColumnFiltersState>(

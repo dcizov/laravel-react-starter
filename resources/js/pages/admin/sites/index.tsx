@@ -1,14 +1,14 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { AlertTriangle } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
+import { AlertTriangle } from 'lucide-react';
 import { ExternalLink, Pencil, Plus, Star, Trash2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { FormEvent } from 'react';
 import { useMemo, useState } from 'react';
 import { DataTable } from '@/components/data-table/data-table';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
 import PageHeader from '@/components/page-header';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -223,7 +223,7 @@ export default function AdminSites({
                 enableHiding: false,
             },
         ],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line @eslint-react/exhaustive-deps
         [t],
     );
 

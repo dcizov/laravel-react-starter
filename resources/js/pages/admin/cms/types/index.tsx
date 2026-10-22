@@ -1,8 +1,8 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useMemo, useState } from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/data-table/data-table';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
 import type { DataTableFeatures } from '@/components/data-table/data-table-features';
@@ -199,7 +199,7 @@ export default function CmsTypes({
                 enableHiding: false,
             },
         ],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line @eslint-react/exhaustive-deps
         [t],
     );
 

@@ -23,6 +23,9 @@ export default [
             },
         },
         rules: {
+            // Hook dependency checks. The react-hooks plugin is not installed; this rule is its equivalent.
+            // A place that must leave a dependency out keeps a local disable comment with the reason.
+            '@eslint-react/exhaustive-deps': 'error',
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/consistent-type-imports': [
                 'error',
