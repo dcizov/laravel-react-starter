@@ -78,13 +78,14 @@ Discovery reports:
 
 ## Lifecycle
 
-| Command                    | What it does                                                                                                                                                                                                 |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `addons:install <slug>`    | Records the addon as `installed` and recompiles the manifest. The addon stays switched off.                                                                                                                  |
-| `addons:activate <slug>`   | Runs pending migrations, records each one, syncs permissions, sets `active` and `enabled`, and recompiles.                                                                                                   |
-| `addons:deactivate <slug>` | Sets `inactive` and `enabled = false`, removes the addon's permissions from every role, and recompiles. Code, tables and data are kept. No down-migrations run. Refused while an active addon depends on it. |
-| `addons:compile`           | Rewrites `bootstrap/cache/addons.php` from the database and the addon folders.                                                                                                                               |
-| `addons:list [--check]`    | Lists installed addons. With `--check`, exits non-zero if the compiled manifest is missing, unreadable or out of date, or if an addon's `addon.json` changed after install.                                  |
+| Command                          | What it does                                                                                                                                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `addons:install <slug>`          | Records the addon as `installed` and recompiles the manifest. The addon stays switched off.                                                                                                                  |
+| `addons:activate <slug>`         | Runs pending migrations, records each one, syncs permissions, sets `active` and `enabled`, and recompiles.                                                                                                   |
+| `addons:activate <slug> --adopt` | For tables that already exist. Checks that each declared table exists, records every migration as run without running it, then activates as above. Fails and records nothing if a table is missing.          |
+| `addons:deactivate <slug>`       | Sets `inactive` and `enabled = false`, removes the addon's permissions from every role, and recompiles. Code, tables and data are kept. No down-migrations run. Refused while an active addon depends on it. |
+| `addons:compile`                 | Rewrites `bootstrap/cache/addons.php` from the database and the addon folders.                                                                                                                               |
+| `addons:list [--check]`          | Lists installed addons. With `--check`, exits non-zero if the compiled manifest is missing, unreadable or out of date, or if an addon's `addon.json` changed after install.                                  |
 
 Statuses are the strings `installed`, `active`, `inactive` and `failed`. The database column is a plain string, validated in code.
 

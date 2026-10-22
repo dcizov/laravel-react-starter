@@ -69,6 +69,47 @@ final class AddonMigrator
     }
 
     /**
+     * Record the migrations of an addon whose tables already exist, without running them. Used when the addon's
+     * tables were created before it became an addon, so its migrations must not run again. Every declared table must
+     * exist, or nothing is recorded.
+     *
+     * @return list<string> The migrations that were recorded now, in order.
+     *
+     * @throws AddonLifecycleException
+     */
+    public function adopt(AddonManifest $manifest): array
+    {
+        foreach ($manifest->tables as $table) {
+            if (! Schema::hasTable($table)) {
+                throw new AddonLifecycleException("Cannot adopt [{$manifest->slug}]: the table [{$table}] does not exist. Run activation without --adopt to create it.");
+            }
+        }
+
+        $applied = AddonMigration::query()->where('addon_slug', $manifest->slug)->pluck('migration')->all();
+        $batch = (int) AddonMigration::query()->where('addon_slug', $manifest->slug)->max('batch') + 1;
+        $recorded = [];
+
+        DB::transaction(function () use ($manifest, $applied, $batch, &$recorded): void {
+            foreach ($this->files($manifest) as $name => $file) {
+                if (in_array($name, $applied, true)) {
+                    continue;
+                }
+
+                AddonMigration::query()->create([
+                    'addon_slug' => $manifest->slug,
+                    'migration' => $name,
+                    'batch' => $batch,
+                    'applied_at' => now(),
+                ]);
+
+                $recorded[] = $name;
+            }
+        });
+
+        return $recorded;
+    }
+
+    /**
      * @return array<string, string> Migration name => file, in the order they run.
      */
     private function files(AddonManifest $manifest): array

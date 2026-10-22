@@ -353,3 +353,30 @@ test('restoring a snapshot brings back the last good state after a failed operat
 
     expect(AddonSandbox::compiled(addonRoot())['addons'][FIXTURE_SLUG]['enabled'])->toBeTrue();
 });
+
+test('adopting an addon records its migrations as run and runs none of them', function () {
+    $lifecycle = app(AddonLifecycle::class);
+    $lifecycle->install(FIXTURE_SLUG);
+
+    // The table already exists, as it would for tables created before the addon. Running the migration would fail.
+    Schema::create('lifecycle_fixture_items', function ($table) {
+        $table->id();
+    });
+
+    $addon = $lifecycle->activate(FIXTURE_SLUG, adopt: true);
+
+    expect($addon->status)->toBe(Addon::STATUS_ACTIVE)
+        ->and(AddonMigration::query()->where('addon_slug', FIXTURE_SLUG)->pluck('migration')->all())->toBe([FIXTURE_MIGRATION])
+        ->and(AuditLog::query()->where('action', 'addon.activated')->latest('id')->first()->properties['adopted'] ?? null)->toBeTrue();
+});
+
+test('adopting an addon whose table is missing fails and records nothing', function () {
+    $lifecycle = app(AddonLifecycle::class);
+    $lifecycle->install(FIXTURE_SLUG);
+
+    expect(fn () => $lifecycle->activate(FIXTURE_SLUG, adopt: true))
+        ->toThrow(AddonLifecycleException::class, 'does not exist');
+
+    expect(Addon::query()->where('slug', FIXTURE_SLUG)->value('status'))->toBe(Addon::STATUS_INSTALLED)
+        ->and(AddonMigration::query()->where('addon_slug', FIXTURE_SLUG)->count())->toBe(0);
+});

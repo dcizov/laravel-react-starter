@@ -80,11 +80,14 @@ final class AddonLifecycle
     /**
      * Switch an installed addon on: run its pending migrations, sync its permissions, and recompile the manifest.
      *
+     * With $adopt, the addon's tables must already exist. Its migrations are recorded as run and are not executed.
+     * Use it once for an addon that took over tables an existing installation already has.
+     *
      * @throws AddonException
      */
-    public function activate(string $slug): Addon
+    public function activate(string $slug, bool $adopt = false): Addon
     {
-        return $this->operate($slug, 'activate', function () use ($slug): Addon {
+        return $this->operate($slug, 'activate', function () use ($slug, $adopt): Addon {
             $addon = $this->installed($slug);
 
             if ($addon->status === Addon::STATUS_ACTIVE) {
@@ -93,12 +96,19 @@ final class AddonLifecycle
 
             $manifest = $this->installedManifest($addon);
             $this->assertDependencies($manifest, activeRequired: true);
-            $this->assertTablesAvailable($manifest);
+
+            if (! $adopt) {
+                $this->assertTablesAvailable($manifest);
+            }
 
             try {
-                $this->migrator->migrate($manifest);
+                if ($adopt) {
+                    $this->migrator->adopt($manifest);
+                } else {
+                    $this->migrator->migrate($manifest);
+                }
 
-                return DB::transaction(function () use ($addon, $manifest): Addon {
+                return DB::transaction(function () use ($addon, $manifest, $adopt): Addon {
                     $addon->forceFill([
                         'status' => Addon::STATUS_ACTIVE,
                         'enabled' => true,
@@ -109,7 +119,7 @@ final class AddonLifecycle
                     $this->compiler->compile();
                     Rbac::syncFeaturePermissions();
 
-                    AuditLog::record('addon.activated', null, ['addon' => $manifest->slug, 'version' => $manifest->version]);
+                    AuditLog::record('addon.activated', null, ['addon' => $manifest->slug, 'version' => $manifest->version, 'adopted' => $adopt]);
 
                     return $addon;
                 });

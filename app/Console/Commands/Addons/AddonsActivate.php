@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class AddonsActivate extends Command
 {
-    protected $signature = 'addons:activate {slug : The slug of an installed addon}';
+    protected $signature = 'addons:activate {slug : The slug of an installed addon} {--adopt : Record the migrations as run, for tables that already exist, instead of running them}';
 
     protected $description = 'Activate an installed addon: run its pending migrations, sync its permissions and switch it on';
 
@@ -16,7 +16,7 @@ class AddonsActivate extends Command
     {
         try {
             $slug = $this->argument('slug');
-            $addon = $lifecycle->activate(is_string($slug) ? $slug : '');
+            $addon = $lifecycle->activate(is_string($slug) ? $slug : '', (bool) $this->option('adopt'));
         } catch (AddonException $e) {
             $this->error($e->getMessage());
 
