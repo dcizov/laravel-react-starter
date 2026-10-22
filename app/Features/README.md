@@ -54,8 +54,9 @@ site. Content types are shared by all sites.
 Rules for public code, so that path mode keeps working:
 
 - Routes for public pages are registered with `App\Support\Sites\PublicRoutes::register()`, which registers each route
-  twice: at the root and under `/s/{site}`. Both copies share one name, and Laravel keeps the first registration, so the
-  root copy is registered first. Use `route('blog.index')` and similar names as usual.
+  twice: at the root and under `/s/{site}`. The root copy has the name, such as `blog.index`, and the `/s/{site}` copy
+  has the same name with a `site.` prefix, such as `site.blog.index`. Names must be unique, because Wayfinder generates
+  one typed helper per name. Use `route('blog.index')` and similar names as usual.
 - In the browser, build links to public pages with the site's base path (`useSiteBase()` in
   `resources/js/hooks/use-site-base.ts`), never with a hard-coded `/blog`. The newsletter pages are global and keep their URLs.
 - The `{site}` segment is removed from the route parameters once it has been read, so a controller's `$slug` is still the
