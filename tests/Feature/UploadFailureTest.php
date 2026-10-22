@@ -16,12 +16,17 @@ beforeEach(function () {
     Rbac::sync();
 });
 
-/** A public disk whose writes all fail, the way putFileAs() reports a failed write. */
+/**
+ * A public disk whose writes all fail, the way putFileAs() reports a failed write.
+ * url() is allowed too: HandleInertiaRequests::share() builds the logo URL on every request, so a
+ * request made while a logo path is set would otherwise fail on the mock before the upload runs.
+ */
 function failingPublicDisk(): void
 {
     $disk = Mockery::mock(FilesystemAdapter::class);
     $disk->shouldReceive('putFileAs')->andReturn(false);
     $disk->shouldReceive('exists')->andReturn(false);
+    $disk->shouldReceive('url')->andReturnUsing(fn (string $path) => '/storage/'.$path);
 
     Storage::set('public', $disk);
 }
@@ -74,6 +79,7 @@ test('a failed logo upload reports an error and keeps the current logo', functio
             'default_role' => 'user',
             'logo' => UploadedFile::fake()->image('logo.png', 120, 120),
         ])
+        ->assertRedirect()
         ->assertSessionHasErrors(['logo' => 'The file could not be saved. Please try again.']);
 
     expect(app(AppSettings::class)->app_logo_path)->toBe('branding/current.png');
@@ -168,7 +174,7 @@ test('a failed cms image upload returns a validation error and no url', function
     failingPublicDisk();
 
     $this->actingAs(uploadTestAdmin())
-        ->postJson(route('cms.images.store'), [
+        ->postJson(route('admin.cms.images.store'), [
             'image' => UploadedFile::fake()->image('photo.png'),
         ])
         ->assertUnprocessable()
