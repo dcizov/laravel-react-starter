@@ -94,7 +94,18 @@ Statuses are the strings `installed`, `active`, `inactive` and `failed`. The dat
 3. Runs the work. Install and deactivate change the database and recompile in one transaction. Activation runs each migration in its own transaction together with its `addon_migrations` row, then changes the addon's status and recompiles in a second transaction.
 4. On failure: restores the last-good manifest, writes an `addon.failed` audit entry, and, for an activation that failed, sets `status = failed` with `last_error` and keeps it switched off. Migrations that finished before the failure stay recorded and are not run again.
 
+If no last-good copy exists, the operation had no compiled manifest to return to. A failed operation then removes the manifest it wrote, so the app is back to "no manifest", which enables no addons and logs a warning. It never leaves an empty or half-written manifest behind.
+
 Install refuses an addon whose folder is invalid. Activation refuses a table that already exists but is not recorded as this addon's, so an addon cannot silently take over another table.
+
+### Errors
+
+Every lifecycle operation throws an `AddonException`, which the commands print as a message:
+
+- Refusals and addon problems keep their own type: `AddonLifecycleException` (for example "already active"), or `AddonManifestException` (for example a changed `addon.json`).
+- Any other failure, such as a failing listener, a filesystem error or a database error, is wrapped in an `AddonLifecycleException` with the message `Could not {install|activate|deactivate} [{slug}]. {original message}`. The original exception is kept as the previous exception, so it can be read in logs and tests.
+
+Both kinds are audited as `addon.failed`, and the database and the manifest are restored as described above.
 
 ## Compiled manifest
 
