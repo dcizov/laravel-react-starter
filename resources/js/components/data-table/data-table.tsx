@@ -217,6 +217,15 @@ function SortableRow({
     );
 }
 
+// Placeholder rows shown while server data loads. The keys are fixed, so they never depend on the row's position.
+const SKELETON_ROW_KEYS = [
+    'skeleton-row-1',
+    'skeleton-row-2',
+    'skeleton-row-3',
+    'skeleton-row-4',
+    'skeleton-row-5',
+] as const;
+
 // A reusable table with sorting, filtering (with facets), column visibility,
 // row selection, bulk actions, optional row dragging, and pagination. Columns and the toolbar come from the caller.
 // The same API serves a table of rows already in the page (client mode) and a table whose rows come from the server
@@ -556,10 +565,11 @@ export function DataTable<TData extends RowData>({
                         </TableHeader>
                         <TableBody>
                             {server && loading && rows.length === 0 ? (
-                                Array.from({
-                                    length: Math.min(server.perPage, 5),
-                                }).map((_, index) => (
-                                    <TableRow key={`skeleton-${index}`}>
+                                SKELETON_ROW_KEYS.slice(
+                                    0,
+                                    Math.max(0, Math.min(server.perPage, 5)),
+                                ).map((rowKey) => (
+                                    <TableRow key={rowKey}>
                                         <TableCell colSpan={allColumns.length}>
                                             <Skeleton className="h-6 w-full" />
                                         </TableCell>
