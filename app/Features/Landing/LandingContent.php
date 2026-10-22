@@ -50,7 +50,7 @@ final class LandingContent
     /**
      * The newest live posts, as the public blog shows them. Used for the posts blocks and for the editor's preview.
      *
-     * @return list<array{id: int, title: string, slug: string, excerpt: string|null, featuredImage: string|null, publishedAt: string|null, url: string}>
+     * @return list<array{id: int, title: string, slug: string, excerpt: string|null, featuredImage: string|null, publishedAt: string|null, author: array{name: string, url: string|null}, url: string}>
      */
     public static function latest(int $count): array
     {
@@ -60,7 +60,13 @@ final class LandingContent
             ->orderByDesc('published_at')
             ->limit($count)
             ->get()
-            ->map(fn (ContentEntry $entry) => ContentPresenter::summary($entry))
+            ->map(function (ContentEntry $entry): array {
+                // summary() builds these keys, but its declared return type is a generic array.
+                /** @var array{id: int, title: string, slug: string, excerpt: string|null, featuredImage: string|null, publishedAt: string|null, author: array{name: string, url: string|null}, url: string} $summary */
+                $summary = ContentPresenter::summary($entry);
+
+                return $summary;
+            })
             ->values()
             ->all());
     }

@@ -33,6 +33,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $timezone
  * @property string|null $locale
+ * @property Carbon|null $date_of_birth
+ * @property list<string>|null $hidden_display_items
+ * @property array<string, string|bool>|null $notification_settings
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -83,6 +86,16 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    /**
+     * The name of the user's first role, or null when the user has none.
+     */
+    public function primaryRoleName(): ?string
+    {
+        $name = $this->roles->pluck('name')->first();
+
+        return is_string($name) ? $name : null;
     }
 
     /**

@@ -21,7 +21,10 @@ class SetLocale
     {
         $guestLocale = $request->hasSession() ? $request->session()->get('locale') : null;
 
-        $locale = Locales::resolve($request->user()?->locale ?? (is_string($guestLocale) ? $guestLocale : null));
+        $user = $request->user();
+        $userLocale = $user === null ? null : $user->locale;
+
+        $locale = Locales::resolve($userLocale ?? (is_string($guestLocale) ? $guestLocale : null));
 
         App::setLocale($locale);
 

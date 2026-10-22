@@ -26,8 +26,9 @@ class ResolveSite
         $current = app(CurrentSite::class);
 
         if ($request->is('admin') || $request->is('admin/*')) {
-            $site = $request->hasSession()
-                ? Site::query()->find($request->session()->get(self::SESSION_KEY))
+            $siteId = $request->hasSession() ? $request->session()->get(self::SESSION_KEY) : null;
+            $site = is_int($siteId) || is_string($siteId)
+                ? Site::query()->find($siteId)
                 : null;
 
             $current->use($site ?? Site::default(), CurrentSite::MODE_ADMIN);

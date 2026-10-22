@@ -66,7 +66,9 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => app()->getLocale(),
             'translations' => Locales::translations(app()->getLocale()),
-            'timezone' => $request->user()?->timezone ?? Timezones::defaultFor(app()->getLocale()),
+            'timezone' => $request->user() === null
+                ? Timezones::defaultFor(app()->getLocale())
+                : ($request->user()->timezone ?? Timezones::defaultFor(app()->getLocale())),
             'displayItems' => DisplaySettings::forUser($request->user()),
             'features' => app(FeatureRegistry::class)->enabled(),
             // The slugs of the addons that are active right now. Addon pages and links check this, not features.

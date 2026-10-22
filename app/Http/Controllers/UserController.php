@@ -30,7 +30,7 @@ class UserController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->roles->first()?->name ?? Rbac::DEFAULT_ROLE,
+                'role' => $user->primaryRoleName() ?? Rbac::DEFAULT_ROLE,
             ]);
 
         return Inertia::render('users', [

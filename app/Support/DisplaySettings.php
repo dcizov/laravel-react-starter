@@ -43,7 +43,7 @@ final class DisplaySettings
      */
     public static function forUser(?User $user): array
     {
-        $hidden = array_intersect(self::ITEMS, $user?->hidden_display_items ?? []);
+        $hidden = array_intersect(self::ITEMS, $user === null ? [] : ($user->hidden_display_items ?? []));
         $visible = array_values(array_diff(self::ITEMS, $hidden));
 
         return $visible === [] ? self::ITEMS : $visible;

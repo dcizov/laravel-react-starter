@@ -52,7 +52,7 @@ class AdminSettingsController extends Controller
             }
 
             $settings->app_logo_path = $request->hasFile('logo')
-                ? $request->file('logo')->store('branding', 'public')
+                ? (string) $request->file('logo')->store('branding', 'public')
                 : null;
         }
 

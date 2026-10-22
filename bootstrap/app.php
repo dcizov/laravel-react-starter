@@ -14,6 +14,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -46,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         // These errors get the app's own pages instead of Laravel's, except where the exceptions below apply.
-        $exceptions->respond(function ($response, Throwable $exception, Request $request) {
+        $exceptions->respond(function (Response $response, Throwable $exception, Request $request) {
             $status = $response->getStatusCode();
             $errorPages = [
                 401 => 'errors/unauthorized-error',

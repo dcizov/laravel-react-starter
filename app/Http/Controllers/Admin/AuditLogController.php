@@ -21,8 +21,8 @@ class AuditLogController extends Controller
             ->get()
             ->map(fn (AuditLog $entry) => [
                 'id' => $entry->id,
-                'createdAt' => $entry->created_at?->toIso8601String(),
-                'actor' => $entry->actor?->name ?? '—',
+                'createdAt' => $entry->created_at->toIso8601String(),
+                'actor' => $entry->actor === null ? '—' : $entry->actor->name,
                 'impersonator' => $entry->impersonator?->name,
                 'action' => $entry->action,
                 'subject' => $entry->subject_label ?? '—',

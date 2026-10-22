@@ -60,6 +60,8 @@ class SiteRequest extends FormRequest
 
     /**
      * The home page must be a page of the same site, so the site never points at another site's content.
+     *
+     * @return list<\Closure(Validator): void>
      */
     public function after(): array
     {
@@ -76,7 +78,7 @@ class SiteRequest extends FormRequest
 
                 $exists = ContentEntry::query()
                     ->withoutGlobalScope(SiteScope::class)
-                    ->where('site_id', $site?->id ?? 0)
+                    ->where('site_id', $site === null ? 0 : $site->id)
                     ->where('content_type', 'page')
                     ->where('slug', $slug)
                     ->exists();

@@ -27,18 +27,21 @@ class AppSettings extends Settings
     public bool $custom_error_pages;
 
     // The landing page blocks being edited. Null means never saved, so the published page is used.
-    // Plain comments, not a docblock: Spatie reads @var tags to pick the cast, and it cannot parse
-    // array shapes such as array{id: string}.
+    // Spatie reads @var tags to pick the cast, so these types use @phpstan-var, which only PHPStan reads.
+    /** @phpstan-var list<array{id: string, type: string, data: array<string, mixed>}>|null */
     public ?array $landing_draft;
 
     // The landing page blocks visitors see. Null means never published, so the built-in default page is used.
     // An empty list is a deliberately empty page.
+    /** @phpstan-var list<array{id: string, type: string, data: array<string, mixed>}>|null */
     public ?array $landing_published;
 
     // The page theme being edited, and the theme visitors see. Null means never saved, so the default theme is used.
     // Stored as the same fields as the blocks: primary, background, foreground, radius, font, and text_size.
+    /** @phpstan-var array<string, mixed>|null */
     public ?array $landing_theme_draft;
 
+    /** @phpstan-var array<string, mixed>|null */
     public ?array $landing_theme;
 
     // SEO settings, used while the seo feature is on. The description and image are the defaults for pages

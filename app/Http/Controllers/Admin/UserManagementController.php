@@ -33,7 +33,7 @@ class UserManagementController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->roles->first()?->name ?? Rbac::DEFAULT_ROLE,
+                'role' => $user->primaryRoleName() ?? Rbac::DEFAULT_ROLE,
                 'verified' => $user->hasVerifiedEmail(),
                 'verifiedAt' => $user->email_verified_at?->toIso8601String(),
                 'suspended' => $user->isSuspended(),
@@ -172,6 +172,10 @@ class UserManagementController extends Controller
         return response()->streamDownload(function () {
             $output = fopen('php://output', 'w');
 
+            if ($output === false) {
+                throw new \RuntimeException('The export stream could not be opened.');
+            }
+
             fputcsv($output, ['id', 'name', 'email', 'role', 'email_verified_at', 'suspended', 'created_at', 'tasks']);
 
             User::query()
@@ -184,7 +188,7 @@ class UserManagementController extends Controller
                             $user->id,
                             self::csvSafe($user->name),
                             self::csvSafe($user->email),
-                            $user->roles->first()?->name ?? Rbac::DEFAULT_ROLE,
+                            $user->primaryRoleName() ?? Rbac::DEFAULT_ROLE,
                             $user->email_verified_at?->toIso8601String() ?? '',
                             $user->isSuspended() ? 'yes' : 'no',
                             $user->created_at?->toIso8601String() ?? '',
