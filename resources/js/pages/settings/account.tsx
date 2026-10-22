@@ -81,7 +81,9 @@ export default function Account({
                 )}
             >
                 <form onSubmit={submit} className="space-y-6">
-                    <Field data-invalid={!!form.errors.date_of_birth || undefined}>
+                    <Field
+                        data-invalid={!!form.errors.date_of_birth || undefined}
+                    >
                         <FieldLabel htmlFor="date_of_birth">
                             {t('Date of birth')}
                         </FieldLabel>

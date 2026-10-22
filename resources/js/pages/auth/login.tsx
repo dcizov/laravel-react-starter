@@ -52,7 +52,9 @@ export default function Login({ status, canResetPassword }: Props) {
                                 <FieldError>{errors.email}</FieldError>
                             </Field>
 
-                            <Field data-invalid={!!errors.password || undefined}>
+                            <Field
+                                data-invalid={!!errors.password || undefined}
+                            >
                                 <div className="flex items-center">
                                     <FieldLabel htmlFor="password">
                                         {t('Password')}

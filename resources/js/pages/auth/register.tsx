@@ -61,7 +61,9 @@ export default function Register({ passwordRules }: Props) {
                                 <FieldError>{errors.email}</FieldError>
                             </Field>
 
-                            <Field data-invalid={!!errors.password || undefined}>
+                            <Field
+                                data-invalid={!!errors.password || undefined}
+                            >
                                 <FieldLabel htmlFor="password">
                                     {t('Password')}
                                 </FieldLabel>
@@ -78,7 +80,9 @@ export default function Register({ passwordRules }: Props) {
                             </Field>
 
                             <Field
-                                data-invalid={!!errors.password_confirmation || undefined}
+                                data-invalid={
+                                    !!errors.password_confirmation || undefined
+                                }
                             >
                                 <FieldLabel htmlFor="password_confirmation">
                                     {t('Confirm password')}

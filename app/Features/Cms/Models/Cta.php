@@ -2,7 +2,9 @@
 
 namespace App\Features\Cms\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Features\Cms\Factories\CtaFactory;
 
 /**
  * A reusable call to action. Blocks on pages, posts and the landing page refer to it by id, so an edit here
@@ -17,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Cta extends Model
 {
+    use HasFactory;
+
     protected $table = 'cms_ctas';
 
     protected $fillable = [
@@ -26,4 +30,9 @@ class Cta extends Model
         'button_label',
         'button_url',
     ];
+
+    protected static function newFactory(): CtaFactory
+    {
+        return CtaFactory::new();
+    }
 }

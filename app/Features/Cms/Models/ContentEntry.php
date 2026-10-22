@@ -4,10 +4,12 @@ namespace App\Features\Cms\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Features\Cms\Factories\ContentEntryFactory;
 
 /**
  * One piece of content: a page, a post, or an entry of a custom post type.
@@ -27,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class ContentEntry extends Model
 {
+    use HasFactory;
+
     public const STATUS_DRAFT = 'draft';
 
     public const STATUS_PUBLISHED = 'published';
@@ -92,5 +96,10 @@ class ContentEntry extends Model
     {
         return $this->status === self::STATUS_PUBLISHED
             && ($this->published_at === null || $this->published_at->lte(now()));
+    }
+
+    protected static function newFactory(): ContentEntryFactory
+    {
+        return ContentEntryFactory::new();
     }
 }

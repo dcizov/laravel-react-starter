@@ -1,6 +1,5 @@
 <?php
 
-use App\Features\Feature;
 use App\Features\FeatureManager;
 use App\Features\FeatureRegistry;
 use App\Features\Landing\LandingFeature;
@@ -8,48 +7,8 @@ use App\Features\Newsletter\NewsletterFeature;
 use App\Models\User;
 use App\Support\Rbac;
 use Spatie\Permission\Models\Role;
-
-// Two small features used to check dependencies. They are declared here so the tests do not depend on real features.
-final class FakeBaseFeature extends Feature
-{
-    public static function slug(): string
-    {
-        return 'fake-base';
-    }
-
-    public static function label(): string
-    {
-        return 'Fake base';
-    }
-
-    public static function providers(): array
-    {
-        return [];
-    }
-}
-
-final class FakeDependentFeature extends Feature
-{
-    public static function slug(): string
-    {
-        return 'fake-dependent';
-    }
-
-    public static function label(): string
-    {
-        return 'Fake dependent';
-    }
-
-    public static function providers(): array
-    {
-        return [];
-    }
-
-    public static function dependsOn(): array
-    {
-        return ['fake-base'];
-    }
-}
+use Tests\Support\Features\FakeBaseFeature;
+use Tests\Support\Features\FakeDependentFeature;
 
 test('the registry lists every feature the code provides, by slug', function () {
     $available = app(FeatureRegistry::class)->available();

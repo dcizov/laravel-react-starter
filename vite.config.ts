@@ -18,6 +18,15 @@ const FEATURE_PAGES: Record<string, string[]> = {
     landing: ['./pages/welcome.tsx', './pages/admin/landing.tsx'],
     newsletter: ['./pages/newsletter/**', './pages/admin/newsletter.tsx'],
     integrations: ['./pages/admin/integrations/**'],
+    // The cms feature also owns the moderation page for comments, which is under admin/blog.
+    cms: [
+        './pages/admin/content/**',
+        './pages/admin/cms/**',
+        './pages/admin/blog/**',
+        './pages/content/**',
+    ],
+    blog: ['./pages/blog/**'],
+    seo: ['./pages/admin/seo/**'],
 };
 
 // Placeholder in app.tsx, replaced at build time by the exclusions for disabled features.

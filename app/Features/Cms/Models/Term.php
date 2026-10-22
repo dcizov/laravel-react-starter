@@ -3,8 +3,10 @@
 namespace App\Features\Cms\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Features\Cms\Factories\TermFactory;
 
 /**
  * A category or tag. Each term belongs to one content type, and entries of that type can use it.
@@ -17,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Term extends Model
 {
+    use HasFactory;
+
     public const CATEGORY = 'category';
 
     public const TAG = 'tag';
@@ -44,5 +48,10 @@ class Term extends Model
     public function entries(): BelongsToMany
     {
         return $this->belongsToMany(ContentEntry::class, 'cms_entry_terms', 'term_id', 'entry_id');
+    }
+
+    protected static function newFactory(): TermFactory
+    {
+        return TermFactory::new();
     }
 }

@@ -132,7 +132,9 @@ export function TaskFormDialog({
                             <FieldError>{form.errors.status}</FieldError>
                         </Field>
 
-                        <Field data-invalid={!!form.errors.priority || undefined}>
+                        <Field
+                            data-invalid={!!form.errors.priority || undefined}
+                        >
                             <FieldLabel htmlFor="task-priority">
                                 {t('Priority')}
                             </FieldLabel>

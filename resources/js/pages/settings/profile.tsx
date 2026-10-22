@@ -236,7 +236,9 @@ export default function Profile({
                                     {t('Personal')}
                                 </h2>
 
-                                <Field data-invalid={!!errors.name || undefined}>
+                                <Field
+                                    data-invalid={!!errors.name || undefined}
+                                >
                                     <FieldLabel htmlFor="name">
                                         {t('Name')}
                                     </FieldLabel>
@@ -251,7 +253,9 @@ export default function Profile({
                                     <FieldError>{errors.name}</FieldError>
                                 </Field>
 
-                                <Field data-invalid={!!errors.email || undefined}>
+                                <Field
+                                    data-invalid={!!errors.email || undefined}
+                                >
                                     <FieldLabel htmlFor="email">
                                         {t('Email address')}
                                     </FieldLabel>
@@ -304,7 +308,11 @@ export default function Profile({
                                     {t('Work')}
                                 </h2>
 
-                                <Field data-invalid={!!errors.job_title || undefined}>
+                                <Field
+                                    data-invalid={
+                                        !!errors.job_title || undefined
+                                    }
+                                >
                                     <FieldLabel htmlFor="job_title">
                                         {t('Job title')}
                                     </FieldLabel>
@@ -318,7 +326,9 @@ export default function Profile({
                                     <FieldError>{errors.job_title}</FieldError>
                                 </Field>
 
-                                <Field data-invalid={!!errors.company || undefined}>
+                                <Field
+                                    data-invalid={!!errors.company || undefined}
+                                >
                                     <FieldLabel htmlFor="company">
                                         {t('Company')}
                                     </FieldLabel>
@@ -332,7 +342,11 @@ export default function Profile({
                                     <FieldError>{errors.company}</FieldError>
                                 </Field>
 
-                                <Field data-invalid={!!errors.location || undefined}>
+                                <Field
+                                    data-invalid={
+                                        !!errors.location || undefined
+                                    }
+                                >
                                     <FieldLabel htmlFor="location">
                                         {t('Location')}
                                     </FieldLabel>
@@ -346,7 +360,9 @@ export default function Profile({
                                     <FieldError>{errors.location}</FieldError>
                                 </Field>
 
-                                <Field data-invalid={!!errors.website || undefined}>
+                                <Field
+                                    data-invalid={!!errors.website || undefined}
+                                >
                                     <FieldLabel htmlFor="website">
                                         {t('Website')}
                                     </FieldLabel>

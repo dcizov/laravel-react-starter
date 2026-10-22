@@ -3,8 +3,10 @@
 namespace App\Features\Cms\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Features\Cms\Factories\CommentFactory;
 
 /**
  * A visitor's comment on an entry whose type has the comments support. Visitors only see approved comments.
@@ -18,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Comment extends Model
 {
+    use HasFactory;
+
     public const PENDING = 'pending';
 
     public const APPROVED = 'approved';
@@ -45,5 +49,10 @@ class Comment extends Model
     public function entry(): BelongsTo
     {
         return $this->belongsTo(ContentEntry::class, 'entry_id');
+    }
+
+    protected static function newFactory(): CommentFactory
+    {
+        return CommentFactory::new();
     }
 }
