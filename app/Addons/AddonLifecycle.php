@@ -192,7 +192,13 @@ final class AddonLifecycle
                     'error' => Str::limit($e->getMessage(), 500),
                 ]));
 
-                throw $e;
+                if ($e instanceof AddonException) {
+                    throw $e;
+                }
+
+                // Anything else (a failing listener, the filesystem, the database) reaches the caller as a lifecycle
+                // error, so the command prints it instead of a stack trace. The original stays as the previous exception.
+                throw new AddonLifecycleException("Could not {$action} [{$slug}]. {$e->getMessage()}", 0, $e);
             }
         } finally {
             $lock->release();
