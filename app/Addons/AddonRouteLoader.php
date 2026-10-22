@@ -46,7 +46,7 @@ final class AddonRouteLoader
             $loaded[(string) $slug] = true;
         }
 
-        self::$loaded[$router] = $loaded;
+        self::loadedMap()[$router] = $loaded;
     }
 
     /**
@@ -85,7 +85,7 @@ final class AddonRouteLoader
             $added = true;
         }
 
-        self::$loaded[$router] = $loaded;
+        self::loadedMap()[$router] = $loaded;
 
         if ($added) {
             // Names given to a route after it was added are indexed only by refreshNameLookups(), so route() and
@@ -101,8 +101,14 @@ final class AddonRouteLoader
      */
     private static function loadedOn(Router $router): array
     {
-        self::$loaded ??= new WeakMap;
+        return self::loadedMap()[$router] ?? [];
+    }
 
-        return self::$loaded[$router] ?? [];
+    /**
+     * @return WeakMap<Router, array<string, true>>
+     */
+    private static function loadedMap(): WeakMap
+    {
+        return self::$loaded ??= new WeakMap;
     }
 }
