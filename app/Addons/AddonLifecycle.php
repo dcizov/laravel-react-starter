@@ -107,7 +107,10 @@ final class AddonLifecycle
             $manifest = $this->installedManifest($addon);
             $this->assertDependencies($manifest, activeRequired: true);
 
-            if (! $adopt) {
+            // Both checks run before anything changes, so a refused activation leaves the addon as it was.
+            if ($adopt) {
+                $this->assertTablesExist($manifest);
+            } else {
                 $this->assertTablesAvailable($manifest);
             }
 
@@ -315,6 +318,20 @@ final class AddonLifecycle
         foreach ($manifest->tables as $table) {
             if (Schema::hasTable($table)) {
                 throw new AddonLifecycleException("The table [{$table}] already exists and is not managed by [{$manifest->slug}]. Rename the table in the addon, or remove it by hand.");
+            }
+        }
+    }
+
+    /**
+     * Adopting takes over tables that already exist. A missing one means the addon has never been run here.
+     *
+     * @throws AddonLifecycleException
+     */
+    private function assertTablesExist(AddonManifest $manifest): void
+    {
+        foreach ($manifest->tables as $table) {
+            if (! Schema::hasTable($table)) {
+                throw new AddonLifecycleException("Cannot adopt [{$manifest->slug}]: the table [{$table}] does not exist. Run activation without --adopt to create it.");
             }
         }
     }
