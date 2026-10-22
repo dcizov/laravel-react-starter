@@ -22,6 +22,15 @@ test('the newsletter addon is installed and active, and admin gets its permissio
 });
 
 test('the public pages and the admin page answer while the addon is active', function () {
+    expect(app('router')->has([
+        'newsletter.create',
+        'newsletter.store',
+        'newsletter.unsubscribe',
+        'admin.newsletter.index',
+        'admin.newsletter.destroy',
+        'admin.newsletter.csv',
+    ]))->toBeTrue();
+
     $this->get(route('newsletter.create'))->assertOk();
 
     $admin = User::factory()->create();
@@ -55,6 +64,12 @@ test('deactivating gates the routes, removes the permission, and keeps the data 
     $this->actingAs($admin)
         ->get(route('admin.newsletter.index'))
         ->assertNotFound();
+});
+
+test('a guest gets the same 404 for the admin page of an inactive addon, not a login redirect', function () {
+    app(AddonLifecycle::class)->deactivate('newsletter');
+
+    $this->get(route('admin.newsletter.index'))->assertNotFound();
 });
 
 test('reactivating restores the routes and the permission, with the stored data', function () {
