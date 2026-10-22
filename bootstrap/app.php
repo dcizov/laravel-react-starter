@@ -7,6 +7,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveSite;
 use App\Http\Middleware\SetLocale;
 use App\Support\ErrorPages;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Routes of an addon that is not active answer 404. See App\Addons\AddonRouteLoader.
         $middleware->alias(['addon.active' => EnsureAddonActive::class]);
+
+        // The addon gate runs before authentication, so a guest gets the same 404 as a signed-in user, not a login redirect.
+        $middleware->prependToPriorityList(before: AuthenticatesRequests::class, prepend: EnsureAddonActive::class);
 
         $middleware->web(append: [
             // Before the shared props, which describe the site.
