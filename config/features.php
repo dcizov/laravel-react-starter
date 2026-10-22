@@ -4,7 +4,6 @@ use App\Features\Blog\BlogFeature;
 use App\Features\Cms\CmsFeature;
 use App\Features\Integrations\IntegrationsFeature;
 use App\Features\Landing\LandingFeature;
-use App\Features\Newsletter\NewsletterFeature;
 use App\Features\Seo\SeoFeature;
 
 return [
@@ -23,7 +22,7 @@ return [
 
     'enabled' => array_values(array_filter(array_map(
         'trim',
-        explode(',', (string) env('FEATURES', 'landing,newsletter,integrations')),
+        explode(',', (string) env('FEATURES', 'landing,integrations')),
     ))),
 
     /*
@@ -32,7 +31,6 @@ return [
 
     'available' => [
         LandingFeature::class,
-        NewsletterFeature::class,
         IntegrationsFeature::class,
         CmsFeature::class,
         BlogFeature::class,

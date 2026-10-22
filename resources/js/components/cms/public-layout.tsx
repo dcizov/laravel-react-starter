@@ -2,8 +2,8 @@ import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
-import { create as newsletterCreate } from '@/routes/newsletter';
 import { dashboard, login } from '@/routes';
+import { create as newsletterCreate } from '@/routes/newsletter';
 
 // Computed once when the module loads, so rendering stays pure.
 const YEAR = new Date().getFullYear();
@@ -11,8 +11,9 @@ const YEAR = new Date().getFullYear();
 // The shell for public content pages, posts and archives: site name, a few links, and the content below.
 export default function PublicLayout({ children }: { children: ReactNode }) {
     const t = useTrans();
-    const { name, auth, features, site } = usePage().props;
+    const { name, auth, features, addons, site } = usePage().props;
     const has = (slug: string) => (features as string[]).includes(slug);
+    const hasAddon = (slug: string) => addons.includes(slug);
     // Links on a site reached by path start with /s/{slug}. Wayfinder links do not know that, so these are built here.
     const href = (path: string) => `${site.basePath}${path}`;
     // The landing page belongs to the default site. Any other site's home is its own home page.
@@ -35,7 +36,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                             {t('Blog')}
                         </Link>
                     )}
-                    {has('newsletter') && (
+                    {hasAddon('newsletter') && (
                         <Link
                             href={newsletterCreate()}
                             className="hover:underline"

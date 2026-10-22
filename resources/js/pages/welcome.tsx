@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/button';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
+import { dashboard, login, register } from '@/routes';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
 import { create as newsletterCreate } from '@/routes/newsletter';
 import type { SeoData } from '@/types/cms';
-import { dashboard, login, register } from '@/routes';
 
 // The landing page. Its blocks and theme come from the admin's published page, or the built-in default.
 // In preview the admin's draft is shown, with a banner so it is not mistaken for the public page.
@@ -29,8 +29,8 @@ export default function Welcome({
     seo?: SeoData;
 }) {
     const t = useTrans();
-    const { auth, features } = usePage().props;
-    const hasNewsletter = (features as string[]).includes('newsletter');
+    const { auth, addons } = usePage().props;
+    const hasNewsletter = addons.includes('newsletter');
     // The page follows the visitor's light or dark appearance.
     const { resolvedAppearance } = useAppearance();
     // A navigation bar block has its own place for sign-in links, so the default header is left out.

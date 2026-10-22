@@ -21,6 +21,8 @@ declare module '@inertiajs/core' {
             displayItems: string[];
             // The features switched on for this installation (see config/features.php), by slug.
             features: string[];
+            // The slugs of the addons that are active right now (see config/addons.php).
+            addons: string[];
             // Set while an administrator is signed in as this user.
             impersonating: { name: string } | null;
             sidebarVariant: 'inset' | 'floating';

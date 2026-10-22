@@ -37,7 +37,13 @@
         @fonts
 
         @viteReactRefresh
-        @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @php
+            // An addon page is named "<slug>::<page>" and lives in addons/<slug>/resources/js/pages.
+            $pageEntry = str_contains($page['component'], '::')
+                ? 'addons/'.str_replace('::', '/resources/js/pages/', $page['component']).'.tsx'
+                : "resources/js/pages/{$page['component']}.tsx";
+        @endphp
+        @vite(['resources/css/app.css', 'resources/js/app.tsx', $pageEntry])
         <x-inertia::head>
             <title>{{ config('app.name', 'Laravel') }}</title>
         </x-inertia::head>

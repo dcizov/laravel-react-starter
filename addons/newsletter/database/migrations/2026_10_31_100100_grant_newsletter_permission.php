@@ -5,7 +5,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-// Adds newsletter.manage to the existing admin role only, as the landing grant does. Runs when the feature is enabled.
+// Adds newsletter.manage to the existing admin role only, as the landing grant does. Runs when the addon is activated, or is recorded by addons:activate --adopt.
 return new class extends Migration
 {
     public function up(): void

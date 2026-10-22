@@ -41,11 +41,12 @@ function hrefOf(link: SidebarLink): string {
 // Search over the visible pages and a few actions. Opened from the top bar.
 export function CommandSearch({ open, onOpenChange, onToggleTheme }: Props) {
     const t = useTrans();
-    const { displayItems, auth, features } = usePage().props;
+    const { displayItems, auth, features, addons } = usePage().props;
     const groups = visibleSidebarGroups(
         displayItems,
         auth.permissions,
         features,
+        addons,
     );
 
     const run = (action: () => void) => {

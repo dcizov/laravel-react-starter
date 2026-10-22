@@ -1,7 +1,7 @@
 <?php
 
-use App\Features\Newsletter\Http\Controllers\Admin\SubscriberController;
-use App\Features\Newsletter\Http\Controllers\SubscribeController;
+use Addons\Newsletter\Http\Controllers\Admin\SubscriberController;
+use Addons\Newsletter\Http\Controllers\SubscribeController;
 use Illuminate\Support\Facades\Route;
 
 // Public pages. The sign-up form is throttled to slow down scripted sign-ups.

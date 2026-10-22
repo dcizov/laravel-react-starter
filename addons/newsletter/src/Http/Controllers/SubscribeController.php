@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Features\Newsletter\Http\Controllers;
+namespace Addons\Newsletter\Http\Controllers;
 
-use App\Features\Newsletter\Models\NewsletterSubscriber;
+use Addons\Newsletter\Models\NewsletterSubscriber;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ class SubscribeController extends Controller
 {
     public function create(): Response
     {
-        return Inertia::render('newsletter/subscribe');
+        return Inertia::render('newsletter::subscribe');
     }
 
     public function store(Request $request): RedirectResponse
@@ -56,6 +56,6 @@ class SubscribeController extends Controller
             $subscriber->save();
         }
 
-        return Inertia::render('newsletter/unsubscribed');
+        return Inertia::render('newsletter::unsubscribed');
     }
 }

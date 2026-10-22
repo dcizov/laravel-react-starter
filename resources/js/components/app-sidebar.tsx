@@ -17,12 +17,14 @@ import { dashboard } from '@/routes';
 
 export function AppSidebar() {
     // Users choose which items show here in Display settings.
-    const { displayItems, sidebarVariant, auth, features } = usePage().props;
+    const { displayItems, sidebarVariant, auth, features, addons } =
+        usePage().props;
 
     const visibleGroups = visibleSidebarGroups(
         displayItems,
         auth.permissions,
         features,
+        addons,
     );
 
     return (

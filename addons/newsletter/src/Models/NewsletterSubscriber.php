@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Features\Newsletter\Models;
+namespace Addons\Newsletter\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $email
  * @property string $status
  * @property string $token
- * @property \Illuminate\Support\Carbon|null $subscribed_at
- * @property \Illuminate\Support\Carbon|null $unsubscribed_at
+ * @property Carbon|null $subscribed_at
+ * @property Carbon|null $unsubscribed_at
  */
 class NewsletterSubscriber extends Model
 {

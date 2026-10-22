@@ -29,6 +29,16 @@ const sources = [
         exts: ['.php'],
         pattern: /\b(?:__|trans)\(\s*(['"])((?:\\.|(?!\1).)*?)\1/g,
     },
+    {
+        dir: 'addons',
+        exts: ['.ts', '.tsx'],
+        pattern: /\bt\(\s*(['"`])((?:\\.|(?!\1).)*?)\1/g,
+    },
+    {
+        dir: 'addons',
+        exts: ['.php'],
+        pattern: /\b(?:__|trans)\(\s*(['"])((?:\\.|(?!\1).)*?)\1/g,
+    },
 ];
 
 // Test files and generated output do not ship UI text.

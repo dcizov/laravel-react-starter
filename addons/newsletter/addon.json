@@ -1,0 +1,18 @@
+{
+    "name": "addons/newsletter",
+    "slug": "newsletter",
+    "version": "1.0.0",
+    "label": "Newsletter",
+    "core": "^1.0",
+    "provider": "Addons\\Newsletter\\NewsletterServiceProvider",
+    "requires": {
+        "addons": {}
+    },
+    "provides": {
+        "routes": "routes/web.php",
+        "routes_mount": "root",
+        "permissions": ["newsletter.manage"],
+        "migrations": "database/migrations",
+        "tables": ["newsletter_subscribers"]
+    }
+}

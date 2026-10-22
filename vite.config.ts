@@ -10,13 +10,12 @@ import type { Plugin } from 'vite';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
 // The default matches config/features.php.
-const DEFAULT_FEATURES = 'landing,newsletter,integrations';
+const DEFAULT_FEATURES = 'landing,integrations';
 
 // The page files of each feature, relative to resources/js. Pages of a feature that is switched off are left
 // out of the bundle. Keep this in step with the feature folders under app/Features.
 const FEATURE_PAGES: Record<string, string[]> = {
     landing: ['./pages/welcome.tsx', './pages/admin/landing.tsx'],
-    newsletter: ['./pages/newsletter/**', './pages/admin/newsletter.tsx'],
     integrations: ['./pages/admin/integrations/**'],
     // The cms feature also owns the moderation page for comments, which is under admin/blog.
     cms: [

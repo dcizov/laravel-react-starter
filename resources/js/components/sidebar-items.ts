@@ -23,6 +23,7 @@ import {
     Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { dashboard } from '@/routes';
 import { index as indexAuditLog } from '@/routes/admin/audit-log';
 import { index as indexAdminIntegrations } from '@/routes/admin/integrations';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
@@ -34,7 +35,6 @@ import { index as indexTasks } from '@/routes/tasks';
 import { show as showUserProfile } from '@/routes/user-profile';
 import { index as indexUsers } from '@/routes/users';
 import type { NavItem } from '@/types';
-import { dashboard } from '@/routes';
 
 export type SidebarLink = NavItem & {
     id: string;
@@ -43,6 +43,8 @@ export type SidebarLink = NavItem & {
     permission?: string;
     // The feature this link belongs to (see config/features.php). Hidden while the feature is switched off.
     feature?: string;
+    // The addon this link belongs to. Hidden while the addon is not active.
+    addon?: string;
 };
 
 export type SidebarEntry = SidebarLink;
@@ -179,7 +181,7 @@ export const sidebarGroups: SidebarGroupDef[] = [
                 href: indexAdminNewsletter(),
                 icon: Mail,
                 permission: 'newsletter.manage',
-                feature: 'newsletter',
+                addon: 'newsletter',
             },
             {
                 id: 'admin-seo',
@@ -262,11 +264,13 @@ export function visibleSidebarGroups(
     displayItems: string[],
     permissions: string[],
     features: string[],
+    addons: string[],
 ): SidebarGroupDef[] {
     const allowed = (link: SidebarLink) =>
         displayItems.includes(link.id) &&
         (!link.permission || permissions.includes(link.permission)) &&
-        (!link.feature || features.includes(link.feature));
+        (!link.feature || features.includes(link.feature)) &&
+        (!link.addon || addons.includes(link.addon));
 
     return sidebarGroups
         .map((group): SidebarGroupDef => ({

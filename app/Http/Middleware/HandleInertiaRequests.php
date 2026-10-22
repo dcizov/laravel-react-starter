@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Addons\AddonRegistry;
 use App\Features\FeatureRegistry;
 use App\Http\Controllers\ImpersonationController;
 use App\Models\Site;
@@ -68,6 +69,8 @@ class HandleInertiaRequests extends Middleware
             'timezone' => $request->user()?->timezone ?? Timezones::defaultFor(app()->getLocale()),
             'displayItems' => DisplaySettings::forUser($request->user()),
             'features' => app(FeatureRegistry::class)->enabled(),
+            // The slugs of the addons that are active right now. Addon pages and links check this, not features.
+            'addons' => array_keys(app(AddonRegistry::class)->active()),
             'sidebarVariant' => SidebarVariant::forUser($request->user()),
             'locales' => Locales::options(),
             'font' => Fonts::forUser($request->user()),

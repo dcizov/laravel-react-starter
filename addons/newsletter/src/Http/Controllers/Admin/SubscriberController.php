@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Features\Newsletter\Http\Controllers\Admin;
+namespace Addons\Newsletter\Http\Controllers\Admin;
 
-use App\Features\Newsletter\Models\NewsletterSubscriber;
+use Addons\Newsletter\Models\NewsletterSubscriber;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -44,7 +44,7 @@ class SubscriberController extends Controller
                 'unsubscribedAt' => $subscriber->unsubscribed_at?->toIso8601String(),
             ]);
 
-        return Inertia::render('admin/newsletter', [
+        return Inertia::render('newsletter::admin/newsletter', [
             'subscribers' => $subscribers,
             'query' => [
                 'q' => $search,
