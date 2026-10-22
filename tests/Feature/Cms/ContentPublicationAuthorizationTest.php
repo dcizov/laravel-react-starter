@@ -279,10 +279,10 @@ test('an author without publish permission can restore a revision that keeps the
 
 /* Access to the update route */
 
-test('guests cannot update an entry', function () {
+test('guests are redirected to log in before updating an entry', function () {
     $entry = publicationLivePage(User::factory()->create());
 
-    $this->put(publicationUpdateUrl($entry), publicationPayload($entry))->assertForbidden();
+    $this->put(publicationUpdateUrl($entry), publicationPayload($entry))->assertRedirect(route('login'));
 
     expect(publicationFresh($entry)->title)->toBe('Original');
 });
