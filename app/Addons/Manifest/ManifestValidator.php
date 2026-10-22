@@ -22,6 +22,12 @@ final class ManifestValidator
     /** Capabilities an addon may declare under "provides". */
     public const CAPABILITIES = ['routes', 'permissions', 'migrations', 'tables', 'config', 'translations'];
 
+    /**
+     * Where an addon's routes are mounted. "addon" puts them under /addons/{slug}. "root" keeps the URLs the routes
+     * already have, for an addon that replaces a built-in feature. Its routes still need the addon.active middleware.
+     */
+    public const ROUTE_MOUNTS = ['addon', 'root'];
+
     private const SLUG_PATTERN = '/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/';
 
     private const PACKAGE_PATTERN = '/^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9]([_.-]?[a-z0-9]+)*$/';
@@ -278,7 +284,7 @@ final class ManifestValidator
 
         $errors = [];
 
-        foreach (array_diff(array_keys($provides), self::CAPABILITIES) as $unknown) {
+        foreach (array_diff(array_keys($provides), [...self::CAPABILITIES, 'routes_mount']) as $unknown) {
             $errors[] = "Unknown capability \"{$unknown}\". Allowed capabilities: ".implode(', ', self::CAPABILITIES).'.';
         }
 
@@ -291,6 +297,14 @@ final class ManifestValidator
         foreach (['routes' => 'file', 'config' => 'file', 'migrations' => 'directory', 'translations' => 'directory'] as $key => $kind) {
             if (array_key_exists($key, $provides)) {
                 $errors = [...$errors, ...$this->checkPath($key, $provides[$key], $directory, $kind)];
+            }
+        }
+
+        if (array_key_exists('routes_mount', $provides)) {
+            if (! in_array($provides['routes_mount'], self::ROUTE_MOUNTS, true)) {
+                $errors[] = '"provides.routes_mount" must be "addon" or "root".';
+            } elseif (! array_key_exists('routes', $provides)) {
+                $errors[] = '"provides.routes_mount" needs "provides.routes".';
             }
         }
 

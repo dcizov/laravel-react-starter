@@ -190,3 +190,19 @@ it('reports a dependency cycle between addons', function () {
         @rmdir($root);
     }
 });
+
+test('routes_mount accepts root and addon, rejects other values, and needs routes', function () {
+    $data = fixtureManifest();
+    $data['provides']['routes_mount'] = 'root';
+    expect(addonValidator()->errors($data, FIXTURE_DIR, 'lifecycle-fixture'))->toBe([]);
+
+    $data['provides']['routes_mount'] = 'everywhere';
+    expect(implode("\n", addonValidator()->errors($data, FIXTURE_DIR, 'lifecycle-fixture')))
+        ->toContain('"provides.routes_mount" must be "addon" or "root".');
+
+    $data = fixtureManifest();
+    unset($data['provides']['routes']);
+    $data['provides']['routes_mount'] = 'root';
+    expect(implode("\n", addonValidator()->errors($data, FIXTURE_DIR, 'lifecycle-fixture')))
+        ->toContain('"provides.routes_mount" needs "provides.routes".');
+});

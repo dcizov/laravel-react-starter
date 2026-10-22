@@ -10,7 +10,8 @@ use Illuminate\Routing\Router;
  * when addons are switched on and off, because only installing or removing an addon changes the route set.
  *
  * Every addon's routes live under /addons/{slug} and are named addons.{slug}.*, so they cannot collide with the
- * core's routes.
+ * core's routes. An addon that sets provides.routes_mount to "root" is mounted at the root instead, with the names
+ * its route file gives. Only use that for an addon that replaces a built-in page and keeps its URLs.
  */
 final class AddonRouteLoader
 {
@@ -23,10 +24,14 @@ final class AddonRouteLoader
                 continue;
             }
 
-            $router->middleware(['web', 'addon.active:'.$slug])
-                ->prefix('addons/'.$slug)
-                ->name('addons.'.$slug.'.')
-                ->group($routes);
+            $group = $router->middleware(['web', 'addon.active:'.$slug]);
+
+            // A root-mounted addon keeps the URLs and route names its routes already have. See ManifestValidator::ROUTE_MOUNTS.
+            if (($entry['routes_mount'] ?? 'addon') !== 'root') {
+                $group = $group->prefix('addons/'.$slug)->name('addons.'.$slug.'.');
+            }
+
+            $group->group($routes);
         }
     }
 }

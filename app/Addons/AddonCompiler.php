@@ -151,6 +151,7 @@ final class AddonCompiler
                 'tables' => [],
                 'config' => null,
                 'translations' => null,
+                'routes_mount' => 'addon',
                 'status' => $row->status,
                 'enabled' => false,
                 'missing' => true,

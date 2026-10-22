@@ -29,6 +29,7 @@ final readonly class AddonManifest
         public array $tables,
         public ?string $config,
         public ?string $translations,
+        public string $routesMount = 'addon',
     ) {}
 
     /**
@@ -60,6 +61,7 @@ final readonly class AddonManifest
             tables: array_values(array_map('strval', (array) ($provides['tables'] ?? []))),
             config: $path('config'),
             translations: $path('translations'),
+            routesMount: ($provides['routes_mount'] ?? 'addon') === 'root' ? 'root' : 'addon',
         );
     }
 
@@ -92,6 +94,7 @@ final readonly class AddonManifest
             'tables' => $this->tables,
             'config' => $this->config,
             'translations' => $this->translations,
+            'routes_mount' => $this->routesMount,
         ];
     }
 }

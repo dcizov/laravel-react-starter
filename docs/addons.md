@@ -57,6 +57,7 @@ The folder list comes from `config/addons.php` (`paths`, default `base_path('add
 | `requires.addons`       | Map of addon slug to version constraint. Dependencies must be installed, have a matching version, and be active before activation. Cycles are reported.                                                       |
 | `provides.routes`       | Relative path to a PHP file inside the addon folder.                                                                                                                                                          |
 | `provides.permissions`  | List. Each name starts with `<slug>.` followed by an action, for example `lifecycle-fixture.view`. Must not clash with a core or feature permission.                                                          |
+| `provides.routes_mount` | Optional. `addon` (default) mounts the routes under `/addons/<slug>`. `root` keeps the URLs and route names the routes file gives, for an addon that replaces a built-in page. Needs `provides.routes`.       |
 | `provides.migrations`   | Relative path to a folder of migration files.                                                                                                                                                                 |
 | `provides.tables`       | List. Each name starts with the slug, with hyphens turned into underscores, followed by `_`. Lowercase, at most 63 characters (PostgreSQL's identifier limit).                                                |
 | `provides.config`       | Relative path to a PHP file that returns an array.                                                                                                                                                            |
@@ -122,6 +123,8 @@ The file is generated. Do not edit it by hand. It is in `bootstrap/cache/`, whic
 ## Routes and middleware
 
 The routes of every installed addon are registered under `/addons/<slug>` with the name prefix `addons.<slug>.`. Each group uses the middleware `addon.active:<slug>`, which returns 404 while the addon is not active. Because the routes stay registered, switching an addon on or off does not change the route set, so the route cache stays valid. Only installing a new addon changes the route set.
+
+When `provides.routes_mount` is `root`, the routes are mounted at the root and keep the URLs and names their file gives. Use it only for an addon that takes over a page with a fixed URL, such as the newsletter pages at `/newsletter` and `/admin/newsletter`. The `addon.active` middleware still applies, so the page answers 404 while the addon is inactive.
 
 Addon routes must use controller classes, not closures, or `php artisan route:cache` fails. The routes are registered only when the routes are not cached.
 
