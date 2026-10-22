@@ -13,6 +13,7 @@ use App\Features\FeatureRegistry;
 use App\Support\Rbac;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\FileViewFinder;
 
 /**
  * Loads the addons the compiled manifest says are enabled: their config, their service provider and their
@@ -37,6 +38,17 @@ final class AddonServiceProvider extends ServiceProvider
         $this->app->bind(AddonCompiler::class);
         $this->app->bind(AddonMigrator::class);
         $this->app->bind(AddonLifecycle::class);
+
+        // Inertia checks that a page component exists by looking for its file. A page of an addon is named
+        // <slug>::<page>, so the finder needs the addon's pages folder as a namespace. The folders are read
+        // each time the finder is made, so every addon folder on disk is found, as the Vite build finds them.
+        $this->app->extend('inertia.view-finder', function (FileViewFinder $finder): FileViewFinder {
+            foreach ($this->addonPageFolders() as $slug => $folder) {
+                $finder->addNamespace($slug, $folder);
+            }
+
+            return $finder;
+        });
 
         $registry = $this->app->make(AddonRegistry::class);
 
@@ -75,6 +87,28 @@ final class AddonServiceProvider extends ServiceProvider
         } else {
             AddonRouteLoader::load($router, $this->routeEntries($registry));
         }
+    }
+
+    /**
+     * The pages folder of every addon folder, by slug. The folder name is the slug, as the addon folder rules say.
+     *
+     * @return array<string, string>
+     */
+    private function addonPageFolders(): array
+    {
+        $folders = [];
+
+        foreach (array_values((array) config('addons.paths', [])) as $root) {
+            foreach (glob(rtrim((string) $root, '/').'/*', GLOB_ONLYDIR) ?: [] as $addonFolder) {
+                $pages = $addonFolder.'/resources/js/pages';
+
+                if (is_dir($pages)) {
+                    $folders[basename($addonFolder)] = $pages;
+                }
+            }
+        }
+
+        return $folders;
     }
 
     /**
