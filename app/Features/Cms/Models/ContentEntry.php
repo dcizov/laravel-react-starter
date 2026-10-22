@@ -32,6 +32,7 @@ use Illuminate\Support\Carbon;
  * @property array{title?: string|null, description?: string|null, noindex?: bool}|null $seo
  * @property int $site_id
  * @property Carbon|null $deleted_at
+ * @property Carbon|null $updated_at
  */
 class ContentEntry extends Model
 {

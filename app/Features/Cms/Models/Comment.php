@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A visitor's comment on an entry whose type has the comments support. Visitors only see approved comments.
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $author_email
  * @property string $body
  * @property string $status
+ * @property Carbon|null $created_at
  */
 class Comment extends Model
 {
