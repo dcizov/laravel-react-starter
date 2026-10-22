@@ -15,15 +15,24 @@ class FeatureEnable extends Command
 
     public function handle(FeatureManager $manager): int
     {
+        $feature = $this->argument('feature');
+
+        // The argument is required, so this only guards the type. It is always a slug from the command line.
+        if (! is_string($feature)) {
+            $this->error('The feature slug must be text.');
+
+            return self::FAILURE;
+        }
+
         try {
-            $manager->enable((string) $this->argument('feature'), ! $this->option('no-migrate'));
+            $manager->enable($feature, ! $this->option('no-migrate'));
         } catch (InvalidArgumentException|RuntimeException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
         }
 
-        $this->info("Feature [{$this->argument('feature')}] is enabled.");
+        $this->info("Feature [{$feature}] is enabled.");
         $this->line('Rebuild the frontend so its pages are included: npm run build');
 
         return self::SUCCESS;

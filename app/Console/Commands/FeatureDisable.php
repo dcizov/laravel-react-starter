@@ -15,15 +15,24 @@ class FeatureDisable extends Command
 
     public function handle(FeatureManager $manager): int
     {
+        $feature = $this->argument('feature');
+
+        // The argument is required, so this only guards the type. It is always a slug from the command line.
+        if (! is_string($feature)) {
+            $this->error('The feature slug must be text.');
+
+            return self::FAILURE;
+        }
+
         try {
-            $manager->disable((string) $this->argument('feature'));
+            $manager->disable($feature);
         } catch (InvalidArgumentException|RuntimeException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
         }
 
-        $this->info("Feature [{$this->argument('feature')}] is disabled. Its tables and data were kept.");
+        $this->info("Feature [{$feature}] is disabled. Its tables and data were kept.");
         $this->line('Rebuild the frontend so its pages are removed: npm run build');
 
         return self::SUCCESS;
