@@ -186,9 +186,9 @@ class BlogDemoSeeder extends Seeder
      */
     private function paragraphs(string ...$texts): array
     {
-        return array_map(
+        return array_values(array_map(
             fn (string $text) => ['id' => Str::random(8), 'type' => 'paragraph', 'data' => ['text' => $text]],
             $texts,
-        );
+        ));
     }
 }

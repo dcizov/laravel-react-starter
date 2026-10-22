@@ -120,7 +120,7 @@ class BlogController extends Controller
                 .'      <guid isPermaLink="true">'.e(ContentPresenter::url($post))."</guid>\n"
                 .'      <description>'.e((string) $post->excerpt)."</description>\n"
                 .($post->published_at ? '      <pubDate>'.$post->published_at->toRfc2822String()."</pubDate>\n" : '')
-                .($post->author ? '      <author>'.e($post->author->name)."</author>\n" : '')
+                .($post->author instanceof User ? '      <author>'.e($post->author->name)."</author>\n" : '')
                 ."    </item>\n";
         }
 
