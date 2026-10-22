@@ -10,10 +10,16 @@ class TaskSeeder extends Seeder
 {
     /**
      * Give the test account a full task list and the other users a few tasks each.
+     *
+     * Only runs where the test accounts exist (see UserSeeder), and only once: it does nothing if tasks already exist.
      */
     public function run(): void
     {
-        $testUser = User::where('email', 'test@example.com')->firstOrFail();
+        $testUser = User::query()->where('email', 'test@example.com')->first();
+
+        if ($testUser === null || Task::query()->exists()) {
+            return;
+        }
 
         Task::factory()->count(40)->for($testUser)->create();
 

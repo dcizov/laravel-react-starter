@@ -2,6 +2,15 @@ import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import type { PaginatorLink } from '@/types/cms';
 
+// Laravel labels can contain HTML entities such as &laquo;. Decode them to plain text
+// (DOMParser never runs scripts, and only textContent is read) so labels are never inserted as HTML.
+function plainLabel(label: string): string {
+    return (
+        new DOMParser().parseFromString(label, 'text/html').body.textContent ??
+        ''
+    );
+}
+
 // Previous and next links from Laravel's paginator. Labels come from the server, which already translates them.
 export default function Pagination({ links }: { links: PaginatorLink[] }) {
     if (links.length <= 3) {
@@ -22,18 +31,14 @@ export default function Pagination({ links }: { links: PaginatorLink[] }) {
                         nativeButton={false}
                         render={<Link href={link.url} preserveScroll />}
                     >
-                        <span
-                            dangerouslySetInnerHTML={{ __html: link.label }}
-                        />
+                        {plainLabel(link.label)}
                     </Button>
                 ) : (
                     <span
                         key={index}
                         className="px-3 py-1.5 text-sm text-muted-foreground"
                     >
-                        <span
-                            dangerouslySetInnerHTML={{ __html: link.label }}
-                        />
+                        {plainLabel(link.label)}
                     </span>
                 ),
             )}
