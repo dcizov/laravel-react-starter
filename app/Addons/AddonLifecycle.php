@@ -189,11 +189,14 @@ final class AddonLifecycle
     /**
      * Run one operation under the lock. If it fails, the manifest is restored and the failure is audited.
      *
-     * @param  Closure(): Addon  $work
+     * @template T
+     *
+     * @param  Closure(): T  $work
+     * @return T
      *
      * @throws AddonException
      */
-    private function operate(string $slug, string $action, Closure $work): Addon
+    private function operate(string $slug, string $action, Closure $work)
     {
         $lock = Cache::lock(self::LOCK_NAME, self::LOCK_SECONDS);
 
@@ -226,6 +229,172 @@ final class AddonLifecycle
         } finally {
             $lock->release();
         }
+    }
+
+    /**
+     * Accept a changed addon.json for an installed addon: record its new version and checksum, run its pending
+     * migrations if it is active, sync permissions, and recompile. A dry run returns the same plan and changes
+     * nothing. Running it again with nothing changed does nothing.
+     *
+     * Declared tables and package names are not changed by a routine update: a changed table set needs
+     * $allowTables, a changed package name is refused. A version lower than the recorded one needs $force.
+     *
+     * @throws AddonException
+     */
+    public function update(string $slug, bool $dryRun = false, bool $allowTables = false, bool $force = false): AddonUpdate
+    {
+        $plan = $this->planUpdate($slug, $allowTables, $force);
+
+        if ($plan->unchanged || $dryRun) {
+            return $plan;
+        }
+
+        return $this->operate($slug, 'update', function () use ($slug, $allowTables, $force): AddonUpdate {
+            // Planned again under the lock, so a change made since the first look is seen.
+            $plan = $this->planUpdate($slug, $allowTables, $force);
+
+            if ($plan->unchanged) {
+                return $plan;
+            }
+
+            $addon = $plan->addon;
+            $manifest = $plan->manifest;
+
+            // Migrations run before the new checksum is recorded, as activation does. If they fail, the old record stays,
+            // so the addon still reads as drifted until the problem is fixed.
+            if ($addon->status === Addon::STATUS_ACTIVE) {
+                $this->migrator->migrate($manifest);
+            }
+
+            DB::transaction(function () use ($addon, $manifest, $plan, $slug): void {
+                $addon->forceFill([
+                    'version' => $manifest->version,
+                    'manifest_checksum' => $manifest->checksum,
+                ])->save();
+
+                $this->compiler->compile();
+                Rbac::syncFeaturePermissions();
+
+                AuditLog::record('addon.updated', null, [
+                    'addon' => $slug,
+                    'from' => $plan->fromVersion,
+                    'to' => $manifest->version,
+                    'changes' => $plan->changes,
+                    'downgrade' => $plan->downgrade,
+                ]);
+            });
+
+            $this->forgetStaleRouteCache();
+
+            return new AddonUpdate($addon, $manifest, $plan->fromVersion, $plan->changes, unchanged: false, downgrade: $plan->downgrade, applied: true);
+        });
+    }
+
+    /**
+     * Read addon.json as it is now, and decide whether it is an update. Writes nothing.
+     *
+     * @throws AddonException
+     */
+    private function planUpdate(string $slug, bool $allowTables, bool $force): AddonUpdate
+    {
+        $addon = $this->installed($slug);
+
+        // Validated like a fresh read. An invalid file is refused before anything is recorded.
+        $manifest = $this->discovery->readManifest($addon->path.'/addon.json');
+
+        if ($manifest->slug !== $addon->slug) {
+            throw new AddonLifecycleException("addon.json names [{$manifest->slug}], but the installed addon is [{$addon->slug}]. That is not an update, so it is refused.");
+        }
+
+        if ($manifest->name !== $addon->name) {
+            throw new AddonLifecycleException("The package name changed from [{$addon->name}] to [{$manifest->name}]. That is not an update, so it is refused. Restore the installed name.");
+        }
+
+        $recorded = $this->compiler->recordedEntry($slug);
+
+        if ($manifest->version === $addon->version && $manifest->checksum === $addon->manifest_checksum) {
+            return new AddonUpdate($addon, $manifest, $addon->version, [], unchanged: true, downgrade: false);
+        }
+
+        $changes = $this->changesFrom($recorded, $manifest);
+
+        $tablesChanged = $this->tablesChanged($recorded, $manifest);
+
+        if ($tablesChanged !== false && ! $allowTables) {
+            throw new AddonLifecycleException($tablesChanged === null
+                ? 'The declared tables cannot be compared, because the compiled manifest has no record of this addon. Check addon.json, then run again with --allow-tables.'
+                : 'The declared tables changed. Changing tables is a data-safety event, so it needs --allow-tables. Run with --dry-run to see the change first.');
+        }
+
+        if ($manifest->version === $addon->version) {
+            $changes[] = "addon.json changed, but the version is still {$addon->version}. Consider bumping the version.";
+        }
+
+        $downgrade = version_compare($manifest->version, $addon->version, '<');
+
+        if ($downgrade && ! $force) {
+            throw new AddonLifecycleException("addon.json says version {$manifest->version}, which is lower than the recorded {$addon->version}. Downgrades are refused. Use --force only if the database matches the older code, because migrations are not reversed.");
+        }
+
+        if ($downgrade) {
+            $changes[] = "Forced downgrade from {$addon->version} to {$manifest->version}. Migrations are not reversed, so the database can hold tables or columns that the older code does not expect.";
+        }
+
+        return new AddonUpdate($addon, $manifest, $addon->version, $changes, unchanged: false, downgrade: $downgrade);
+    }
+
+    /**
+     * What the new file changes, compared with the last compiled record. Without a record, only the new version is shown.
+     *
+     * @param  array<string, mixed>|null  $recorded
+     * @return list<string>
+     */
+    private function changesFrom(?array $recorded, AddonManifest $manifest): array
+    {
+        if ($recorded === null) {
+            return ["The compiled manifest has no record of this addon, so the changes cannot be listed. The new file declares version {$manifest->version}."];
+        }
+
+        $now = $manifest->toArray();
+        $changes = [];
+
+        foreach (['version', 'label', 'core', 'requires', 'provider', 'routes', 'routes_mount', 'permissions', 'migrations', 'tables', 'config', 'translations', 'pages'] as $key) {
+            $was = $recorded[$key] ?? null;
+            $new = $now[$key] ?? null;
+
+            if ($was !== $new) {
+                $changes[] = $key.': '.$this->showValue($was).' -> '.$this->showValue($new);
+            }
+        }
+
+        return $changes;
+    }
+
+    /**
+     * Whether the declared tables differ from the recorded ones. Null when there is no record to compare with.
+     *
+     * @param  array<string, mixed>|null  $recorded
+     */
+    private function tablesChanged(?array $recorded, AddonManifest $manifest): ?bool
+    {
+        if ($recorded === null) {
+            return null;
+        }
+
+        $was = array_map(strval(...), (array) ($recorded['tables'] ?? []));
+        $now = array_map(strval(...), $manifest->tables);
+        sort($was);
+        sort($now);
+
+        return $was !== $now;
+    }
+
+    /**
+     * @param  array<array-key, mixed>|string|null  $value
+     */
+    private function showValue(array|string|null $value): string
+    {
+        return $value === null ? 'none' : (string) json_encode($value, JSON_UNESCAPED_SLASHES);
     }
 
     /**
