@@ -9,9 +9,9 @@ import { themeStyle } from '@/components/landing/theme';
 import { Button } from '@/components/ui/button';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useTrans } from '@/hooks/use-trans';
+import { addonPageUrl } from '@/lib/addon-pages';
 import { cn } from '@/lib/utils';
 import { index as indexAdminLanding } from '@/routes/admin/landing';
-import { create as newsletterCreate } from '@/routes/newsletter';
 import type { SeoData } from '@/types/cms';
 import { dashboard, login, register } from '@/routes';
 
@@ -30,7 +30,8 @@ export default function Welcome({
 }) {
     const t = useTrans();
     const { auth, addons } = usePage().props;
-    const hasNewsletter = addons.includes('newsletter');
+    // The newsletter sign-up link exists only while the addon is active; see addonPageUrl.
+    const newsletterUrl = addonPageUrl('newsletter::subscribe', addons);
     // The page follows the visitor's light or dark appearance.
     const { resolvedAppearance } = useAppearance();
     // A navigation bar block has its own place for sign-in links, so the default header is left out.
@@ -91,13 +92,11 @@ export default function Welcome({
                             </Button>
                         ) : (
                             <>
-                                {hasNewsletter && (
+                                {newsletterUrl !== null && (
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        render={
-                                            <Link href={newsletterCreate()} />
-                                        }
+                                        render={<Link href={newsletterUrl} />}
                                         nativeButton={false}
                                     >
                                         {t('Newsletter')}

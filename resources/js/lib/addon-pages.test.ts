@@ -6,12 +6,14 @@ import {
     renderArtifacts,
 } from '../../../tools/generate-addon-pages';
 import {
+    addonPageUrl,
     addonSlugOf,
     isPublicAddonPage,
     resolveAddonPage,
 } from './addon-pages';
 import { publicAddonPages } from '@/generated/public-addon-pages';
 import { appAddonPages } from '@/generated/app-addon-pages';
+import { addonPageUrls } from '@/generated/addon-page-urls';
 
 const repoRoot = process.cwd();
 const generated = (name: string) =>
@@ -46,6 +48,14 @@ describe('addon page artefacts agree with the manifests', () => {
                 `${page.addon}::${page.page}`,
             );
         }
+    });
+
+    it('the url map lists exactly the pages that declare a url', () => {
+        const declared = collected.pages
+            .filter((page) => page.url !== undefined)
+            .map((page) => [`${page.addon}::${page.page}`, page.url]);
+
+        expect(Object.entries(addonPageUrls)).toEqual(declared);
     });
 });
 
@@ -93,5 +103,26 @@ describe('resolving an addon page at runtime', () => {
         expect(addonSlugOf('dashboard')).toBeNull();
         expect(isPublicAddonPage('newsletter::subscribe')).toBe(true);
         expect(isPublicAddonPage('newsletter::admin/newsletter')).toBe(false);
+    });
+});
+
+describe('the public url of an addon page, for links from core', () => {
+    it('gives the declared url while the addon is active', () => {
+        expect(addonPageUrl('newsletter::subscribe', ['newsletter'])).toBe(
+            '/newsletter',
+        );
+    });
+
+    it('gives nothing for an inactive addon, even though the url is in the build', () => {
+        // The url map still has the entry. The active-addon list is what hides the link.
+        expect(addonPageUrls['newsletter::subscribe']).toBe('/newsletter');
+        expect(addonPageUrl('newsletter::subscribe', [])).toBeNull();
+        expect(addonPageUrl('newsletter::subscribe', undefined)).toBeNull();
+    });
+
+    it('gives nothing for a page that declares no url', () => {
+        expect(
+            addonPageUrl('newsletter::unsubscribed', ['newsletter']),
+        ).toBeNull();
     });
 });

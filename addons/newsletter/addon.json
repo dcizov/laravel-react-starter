@@ -15,7 +15,7 @@
         "migrations": "database/migrations",
         "tables": ["newsletter_subscribers"],
         "pages": [
-            { "page": "subscribe", "layout": "public" },
+            { "page": "subscribe", "layout": "public", "url": "/newsletter" },
             { "page": "unsubscribed", "layout": "public" },
             { "page": "admin/newsletter", "layout": "app" }
         ]

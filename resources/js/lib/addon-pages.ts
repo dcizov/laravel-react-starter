@@ -1,3 +1,4 @@
+import { addonPageUrls } from '@/generated/addon-page-urls';
 import { appAddonPages } from '@/generated/app-addon-pages';
 import { publicAddonPages } from '@/generated/public-addon-pages';
 
@@ -45,4 +46,18 @@ export function resolveAddonPage(
     }
 
     return undefined;
+}
+
+/**
+ * The public URL of an addon page, for a link from core, or null. Null when the addon is not active (the addons shared
+ * prop), or when the page declares no url. A link to a deactivated addon's page is therefore not rendered.
+ */
+export function addonPageUrl(name: string, addons: unknown): string | null {
+    const slug = addonSlugOf(name);
+
+    if (slug === null || !activeSlugs(addons).includes(slug)) {
+        return null;
+    }
+
+    return Object.hasOwn(addonPageUrls, name) ? addonPageUrls[name] : null;
 }

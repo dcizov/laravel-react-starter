@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
-import { create as newsletterCreate } from '@/routes/newsletter';
+import { addonPageUrl } from '@/lib/addon-pages';
 import { dashboard, login } from '@/routes';
 
 // Computed once when the module loads, so rendering stays pure.
@@ -13,7 +13,8 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     const t = useTrans();
     const { name, auth, features, addons, site } = usePage().props;
     const has = (slug: string) => (features as string[]).includes(slug);
-    const hasAddon = (slug: string) => addons.includes(slug);
+    // The newsletter link exists only while the addon is active; see addonPageUrl.
+    const newsletterUrl = addonPageUrl('newsletter::subscribe', addons);
     // Links on a site reached by path start with /s/{slug}. Wayfinder links do not know that, so these are built here.
     const href = (path: string) => `${site.basePath}${path}`;
     // The landing page belongs to the default site. Any other site's home is its own home page.
@@ -36,11 +37,8 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                             {t('Blog')}
                         </Link>
                     )}
-                    {hasAddon('newsletter') && (
-                        <Link
-                            href={newsletterCreate()}
-                            className="hover:underline"
-                        >
+                    {newsletterUrl !== null && (
+                        <Link href={newsletterUrl} className="hover:underline">
                             {t('Newsletter')}
                         </Link>
                     )}

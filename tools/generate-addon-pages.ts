@@ -25,6 +25,8 @@ export const GENERATED_DIR = 'resources/js/generated';
 export const ADDONS_DIR = 'addons';
 
 const PAGE_PATTERN = /^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/;
+// The optional page url: a static path with no parameters, query or fragment. Matches URL_PATTERN in PHP.
+const URL_PATTERN = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/;
 const SLUG_PATTERN = /^[a-z][a-z0-9-]*$/;
 
 export type Layout = (typeof LAYOUTS)[number];
@@ -33,6 +35,8 @@ export interface AddonPage {
     addon: string;
     page: string;
     layout: Layout;
+    /** A static public path such as "/newsletter", when the page is linked from core. */
+    url?: string;
     /** Path from the repository root, for example addons/newsletter/resources/js/pages/subscribe.tsx. */
     file: string;
 }
@@ -139,16 +143,17 @@ export function collectAddonPages(repoRoot: string): Collected {
             if (
                 !isRecord(entry) ||
                 Object.keys(entry).some(
-                    (key) => key !== 'page' && key !== 'layout',
+                    (key) =>
+                        key !== 'page' && key !== 'layout' && key !== 'url',
                 )
             ) {
                 errors.push(
-                    `${where} must have exactly a "page" and a "layout".`,
+                    `${where} must have a "page" and a "layout", and may have a "url".`,
                 );
                 return;
             }
 
-            const { page, layout } = entry;
+            const { page, layout, url } = entry;
 
             if (typeof page !== 'string' || !PAGE_PATTERN.test(page)) {
                 errors.push(
@@ -162,6 +167,15 @@ export function collectAddonPages(repoRoot: string): Collected {
                 !(LAYOUTS as readonly string[]).includes(layout)
             ) {
                 errors.push(`${where}.layout must be "public" or "app".`);
+            }
+
+            if (
+                url !== undefined &&
+                (typeof url !== 'string' || !URL_PATTERN.test(url))
+            ) {
+                errors.push(
+                    `${where}.url must be a static path that starts with "/", such as "/newsletter".`,
+                );
             }
 
             if (declared.includes(page)) {
@@ -200,6 +214,7 @@ export function collectAddonPages(repoRoot: string): Collected {
                     page,
                     layout: layout as Layout,
                     file: `${rel}/${PAGE_ROOT}/${page}.tsx`,
+                    ...(typeof url === 'string' ? { url } : {}),
                 });
             }
         });
@@ -242,12 +257,23 @@ function moduleFor(
     return `${HEADER}\nexport const ${exportName}: Record<string, () => Promise<unknown>> = {\n${entries}};\n`;
 }
 
+// The public URLs of the pages that declare one. Core links are built from these, and only for an active addon.
+function urlModule(pages: AddonPage[]): string {
+    const entries = pages
+        .filter((page) => page.url !== undefined)
+        .map((page) => `    '${page.addon}::${page.page}': '${page.url}',\n`)
+        .join('');
+
+    return `${HEADER}\nexport const addonPageUrls: Record<string, string> = {\n${entries}};\n`;
+}
+
 /** The file name to content, relative to resources/js/generated. */
 export function renderArtifacts(pages: AddonPage[]): Record<string, string> {
     return {
         'addon-pages.json': `${JSON.stringify(pages, null, 4)}\n`,
         'public-addon-pages.ts': moduleFor('publicAddonPages', pages, 'public'),
         'app-addon-pages.ts': moduleFor('appAddonPages', pages, 'app'),
+        'addon-page-urls.ts': urlModule(pages),
     };
 }
 

@@ -9,7 +9,8 @@
         "addon": "newsletter",
         "page": "subscribe",
         "layout": "public",
-        "file": "addons/newsletter/resources/js/pages/subscribe.tsx"
+        "file": "addons/newsletter/resources/js/pages/subscribe.tsx",
+        "url": "/newsletter"
     },
     {
         "addon": "newsletter",
