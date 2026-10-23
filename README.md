@@ -1,6 +1,6 @@
 # StructurePlan
 
-A calm, connected practice workspace for psychotherapists supporting adults with ADHD and depression. Built with Laravel, Inertia, React, TypeScript, and Tailwind CSS.
+A calm, connected practice workspace for psychotherapists supporting adults with ADHD and depression. Built with Laravel, Inertia, React, TypeScript, Tailwind CSS, and PostgreSQL.
 
 ## Features
 
@@ -10,9 +10,17 @@ A calm, connected practice workspace for psychotherapists supporting adults with
 - Session scheduling and documentation, including mood ratings and between-session experiments
 - Patient wellbeing check-ins for mood, energy, focus, and sleep with trend visualization
 - Responsive dashboard, search/filter states, empty states, loading indicators, confirmations, and toast feedback
-- User-scoped persistent storage and rich fictional demo data
+- User-scoped PostgreSQL persistence and rich fictional demo data
 
-## Run locally
+## Run locally with PostgreSQL
+
+Create a PostgreSQL database named `structureplan`, then copy the environment file:
+
+```bash
+cp .env.example .env
+```
+
+The included defaults are for the starter's Sail service. For PostgreSQL running directly on your machine, set `DB_HOST=127.0.0.1` and update `DB_USERNAME` / `DB_PASSWORD` to match your local database. Then run:
 
 ```bash
 composer setup
@@ -20,20 +28,43 @@ php artisan db:seed
 composer run dev
 ```
 
-For an existing installation:
+For an existing installation, use:
 
 ```bash
-cp .env.example .env
-touch database/database.sqlite
+composer install
 php artisan key:generate
 php artisan migrate --seed
 npm install
 npm run dev
 ```
 
-Open the URL printed by Vite/Laravel. Choose **Explore the demo workspace** on the login page, or use:
+### Using the included Sail PostgreSQL service
+
+The default `.env` values match `compose.yaml` (`pgsql:5432`, database `structureplan`, user `sail`). With Docker running:
+
+```bash
+composer install
+cp .env.example .env
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run dev
+```
+
+The named `sail-pgsql` volume preserves application data between container restarts.
+
+Open the URL printed by Vite/Laravel (or `http://localhost` with Sail). Choose **Explore the demo workspace** on the login page, or use:
 
 - Email: `demo@structureplan.test`
 - Password: `password`
+
+## Tests
+
+```bash
+composer ci:check
+```
+
+Tests use an isolated in-memory SQLite database for speed and never touch your PostgreSQL development data. The application itself defaults to PostgreSQL.
 
 All seeded names and clinical details are fictional. StructurePlan is a practice-organization demo, not a diagnostic tool, medical device, or emergency service.
