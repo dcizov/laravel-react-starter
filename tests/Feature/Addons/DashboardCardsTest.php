@@ -90,7 +90,12 @@ test('an active addon contributes its card with the subscribed count, for users 
         ->get(route('dashboard'))
         ->assertInertia(fn ($page) => $page
             ->loadDeferredProps(fn ($reload) => $reload
-                ->has('overview.newsletter.subscribed', 2)));
+                ->has('overview.newsletter')
+                ->where('overview.newsletter.subscribed', 2)));
+});
+
+test('a user without the newsletter permission gets no newsletter card', function () {
+    activateNewsletterAddon();
 
     $reader = User::factory()->create();
     $reader->givePermissionTo(['comments.moderate']);
