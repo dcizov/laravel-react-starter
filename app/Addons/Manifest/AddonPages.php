@@ -31,7 +31,7 @@ final class AddonPages
      * reported as warnings, not errors: an addon may ship a page it does not want mounted.
      *
      * @param  list<string>  $declared  Page names from provides.pages.
-     * @return list<string>  Paths such as "resources/js/pages/admin/extra.tsx".
+     * @return list<string> Paths such as "resources/js/pages/admin/extra.tsx".
      */
     public static function undeclared(string $directory, array $declared): array
     {
