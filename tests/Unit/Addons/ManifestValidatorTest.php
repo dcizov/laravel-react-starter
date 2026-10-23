@@ -413,4 +413,3 @@ it('refuses a page url that is not a plain static path', function (mixed $url) {
     'absolute url' => ['https://example.com/newsletter'],
     'not a string' => [42],
 ]);
-
