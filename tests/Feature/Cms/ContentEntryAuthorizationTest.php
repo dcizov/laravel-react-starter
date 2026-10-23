@@ -203,7 +203,7 @@ test('an author can edit a live entry without changing its status', function () 
         ->status->toBe(ContentEntry::STATUS_PUBLISHED);
 });
 
-test('a user without edit permission cannot update, and guests are forbidden', function () {
+test('a user without edit permission cannot update an entry', function () {
     $entry = cmsPage(User::factory()->create(), ['title' => 'Original']);
     $viewOnly = cmsUserWith([Rbac::PERMISSION_CONTENT_VIEW]);
 
@@ -211,8 +211,27 @@ test('a user without edit permission cannot update, and guests are forbidden', f
         ->put(route('admin.content.update', ['type' => 'page', 'entry' => $entry]), cmsEntryPayload($entry))
         ->assertForbidden();
 
+    expect(cmsFresh($entry)->title)->toBe('Original');
+});
+
+test('a guest updating an entry is sent to log in and the entry is unchanged', function () {
+    $entry = cmsPage(User::factory()->create(), ['title' => 'Original']);
+
+    $this->assertGuest();
+
     $this->put(route('admin.content.update', ['type' => 'page', 'entry' => $entry]), cmsEntryPayload($entry))
-        ->assertForbidden();
+        ->assertRedirect(route('login'));
+
+    expect(cmsFresh($entry)->title)->toBe('Original');
+});
+
+test('a guest updating an entry as JSON gets 401 and the entry is unchanged', function () {
+    $entry = cmsPage(User::factory()->create(), ['title' => 'Original']);
+
+    $this->assertGuest();
+
+    $this->putJson(route('admin.content.update', ['type' => 'page', 'entry' => $entry]), cmsEntryPayload($entry))
+        ->assertUnauthorized();
 
     expect(cmsFresh($entry)->title)->toBe('Original');
 });
@@ -387,7 +406,7 @@ test('bulk actions reject an unknown action', function () {
     expect(cmsFresh($entry)->trashed())->toBeFalse();
 });
 
-test('bulk actions need the content view permission, and guests are forbidden', function () {
+test('bulk actions need the content view permission', function () {
     $entry = cmsPage(User::factory()->create());
     $payload = ['action' => 'trash', 'ids' => [$entry->id]];
 
@@ -395,8 +414,29 @@ test('bulk actions need the content view permission, and guests are forbidden', 
         ->post(route('admin.content.bulk', ['type' => 'page']), $payload)
         ->assertForbidden();
 
+    expect(cmsFresh($entry)->trashed())->toBeFalse();
+});
+
+test('a guest submitting a bulk action is sent to log in and nothing is trashed', function () {
+    $entry = cmsPage(User::factory()->create());
+    $payload = ['action' => 'trash', 'ids' => [$entry->id]];
+
+    $this->assertGuest();
+
     $this->post(route('admin.content.bulk', ['type' => 'page']), $payload)
-        ->assertForbidden();
+        ->assertRedirect(route('login'));
+
+    expect(cmsFresh($entry)->trashed())->toBeFalse();
+});
+
+test('a guest submitting a bulk action as JSON gets 401 and nothing is trashed', function () {
+    $entry = cmsPage(User::factory()->create());
+    $payload = ['action' => 'trash', 'ids' => [$entry->id]];
+
+    $this->assertGuest();
+
+    $this->postJson(route('admin.content.bulk', ['type' => 'page']), $payload)
+        ->assertUnauthorized();
 
     expect(cmsFresh($entry)->trashed())->toBeFalse();
 });
