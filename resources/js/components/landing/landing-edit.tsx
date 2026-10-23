@@ -10,6 +10,7 @@ import {
     usePrefersReducedMotion,
     useInViewOnce,
 } from '@/components/landing/motion-hooks';
+import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 
 // Only the visual editor provides this. On the public page it is null, so text is plain and nothing is editable.
@@ -58,6 +59,7 @@ export function EditableText({
 }) {
     const edit = use(LandingEditContext);
     const textEffect = use(TextEffectContext);
+    const t = useTrans();
 
     if (!edit || value === undefined) {
         if (
@@ -98,7 +100,7 @@ export function EditableText({
             contentEditable
             suppressContentEditableWarning
             spellCheck={false}
-            data-placeholder="Text"
+            data-placeholder={t('Text')}
             onBlur={(event: FocusEvent<HTMLElement>) =>
                 commit(event.currentTarget)
             }
