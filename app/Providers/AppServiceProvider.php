@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Support\Dashboard\DashboardCards;
 use App\Support\Sites\CurrentSite;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -20,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // One per request, so each request chooses its own site (see App\Http\Middleware\ResolveSite).
         $this->app->scoped(CurrentSite::class);
+
+        // One registry per application. Optional modules add their dashboard cards to it from their own boot().
+        $this->app->singleton(DashboardCards::class);
     }
 
     /**

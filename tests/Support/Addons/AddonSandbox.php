@@ -69,6 +69,16 @@ final class AddonSandbox
         $lifecycle->install($slug);
         $lifecycle->activate($slug);
 
+        // In production, AddonServiceProvider registers the provider of every active addon when the app boots. The
+        // sandbox boots the application first, so the provider is registered here, the same way, so its boot() runs.
+        // Laravel returns the existing registration if the provider is already loaded.
+        app(AddonRegistry::class)->reload();
+        $provider = app(AddonRegistry::class)->entry($slug)['provider'] ?? null;
+
+        if (is_string($provider) && class_exists($provider)) {
+            app()->register($provider);
+        }
+
         return $root;
     }
 

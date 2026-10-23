@@ -7,6 +7,12 @@ arch('addon infrastructure does not depend on App\Features')
     ->expect('App\Addons')
     ->not->toUse('App\Features');
 
+// Core never names an optional addon. An addon adds itself through a registry such as DashboardCards, from its own
+// provider. Without this rule the coupling could return unnoticed.
+arch('no core code outside the addon folders refers to the newsletter addon namespace')
+    ->expect('App')
+    ->not->toUse('Addons\Newsletter');
+
 arch('addon infrastructure does not depend on the HTTP or console layers')
     ->expect('App\Addons')
     ->not->toUse(['App\Http', 'App\Console']);

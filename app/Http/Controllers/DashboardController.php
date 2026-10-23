@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Addons\Newsletter\Models\NewsletterSubscriber;
-use App\Addons\AddonRegistry;
 use App\Features\Cms\Models\Comment;
 use App\Features\Cms\Models\ContentEntry;
 use App\Features\Cms\Models\ContentType;
@@ -12,6 +10,7 @@ use App\Models\Site;
 use App\Models\Task;
 use App\Models\User;
 use App\Settings\AppSettings;
+use App\Support\Dashboard\DashboardCards;
 use App\Support\Rbac;
 use App\Support\Sites\CurrentSite;
 use Illuminate\Http\Request;
@@ -141,12 +140,6 @@ class DashboardController extends Controller
             ];
         }
 
-        if (app(AddonRegistry::class)->isActive('newsletter') && $user->can(Rbac::PERMISSION_NEWSLETTER_MANAGE)) {
-            $overview['newsletter'] = [
-                'subscribed' => NewsletterSubscriber::query()->where('status', NewsletterSubscriber::SUBSCRIBED)->count(),
-            ];
-        }
-
         if ($features->isEnabled('seo') && $user->can(Rbac::PERMISSION_SEO_MANAGE)) {
             $overview['seo'] = [
                 'indexing' => (bool) app(AppSettings::class)->seo_allow_indexing,
@@ -164,7 +157,11 @@ class DashboardController extends Controller
             ];
         }
 
-        return $overview;
+        // Cards from optional modules. Each one is computed only when its module is active and the user may see it.
+        return [...$overview, ...app(DashboardCards::class)->collect(
+            fn (string $permission): bool => $user->can($permission),
+            $overview,
+        )];
     }
 
     /**
