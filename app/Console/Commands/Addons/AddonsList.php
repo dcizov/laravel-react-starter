@@ -56,7 +56,7 @@ class AddonsList extends Command
         }
 
         if ($this->option('check')) {
-            $this->error('The addon state is stale. Run php artisan addons:compile, then check again.');
+            $this->error('The addon state needs attention. Each problem above names the command that fixes it. Run it, then check again.');
 
             return self::FAILURE;
         }

@@ -130,8 +130,44 @@ final class AddonRegistry
         return [
             'status' => self::STATUS_OK,
             'checksum' => is_string($data['state_checksum'] ?? null) ? $data['state_checksum'] : null,
-            'addons' => $data['addons'],
+            'addons' => $this->withDriftChecked($data['addons']),
         ];
+    }
+
+    /**
+     * An enabled addon whose addon.json changed since the compile is switched off for this process. The file is not
+     * read or run differently; it is only not trusted. One warning names every such addon. Nothing is thrown.
+     *
+     * @param  array<string, array<string, mixed>>  $addons
+     * @return array<string, array<string, mixed>>
+     */
+    private function withDriftChecked(array $addons): array
+    {
+        $drifted = [];
+
+        foreach ($addons as $slug => $entry) {
+            $file = $entry['manifest_path'] ?? null;
+            $checksum = $entry['checksum'] ?? null;
+
+            if (($entry['enabled'] ?? false) !== true || ! is_string($file) || ! is_string($checksum) || ! is_file($file)) {
+                continue;
+            }
+
+            if (hash_equals($checksum, hash('sha256', (string) file_get_contents($file)))) {
+                continue;
+            }
+
+            $addons[$slug]['recorded'] = $entry;
+            $addons[$slug]['enabled'] = false;
+            $addons[$slug]['drifted'] = true;
+            $drifted[] = (string) $slug;
+        }
+
+        if ($drifted !== []) {
+            Log::warning('These addons changed on disk after they were installed, and are switched off until php artisan addons:update runs: '.implode(', ', $drifted).'.');
+        }
+
+        return $addons;
     }
 
     /**

@@ -30,8 +30,12 @@ final class AddonCompiler
         $rows = AddonStore::rows();
         $addons = [];
 
+        // What the previous compile recorded. A drifted addon keeps this, so `addons:update` can show what changed.
+        $this->registry->reload();
+        $previous = $this->registry->installed();
+
         foreach ($rows as $row) {
-            $addons[$row->slug] = $this->entryFor($row);
+            $addons[$row->slug] = $this->entryFor($row, $previous[$row->slug] ?? null);
         }
 
         $payload = [
@@ -123,7 +127,7 @@ final class AddonCompiler
             if (! is_file($file)) {
                 $problems[] = "[{$row->slug}] is missing from disk at {$row->path}.";
             } elseif (! hash_equals($row->manifest_checksum, hash('sha256', (string) file_get_contents($file)))) {
-                $problems[] = "[{$row->slug}] has an addon.json that changed on disk after it was installed.";
+                $problems[] = "[{$row->slug}] has an addon.json that changed on disk after it was installed. It is switched off until php artisan addons:update {$row->slug} is run.";
             }
         }
 
@@ -131,11 +135,84 @@ final class AddonCompiler
     }
 
     /**
+     * The entry an addon was last compiled with, for comparison. Null when the compiled manifest has no record of it.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function recordedEntry(string $slug): ?array
+    {
+        $this->registry->reload();
+
+        $entry = $this->registry->entry($slug);
+
+        if ($entry === null) {
+            return null;
+        }
+
+        if (($entry['drifted'] ?? false) === true) {
+            return is_array($entry['recorded'] ?? null) ? $entry['recorded'] : null;
+        }
+
+        return $entry;
+    }
+
+    /**
+     * An addon whose addon.json changed after install is not read, and not enabled. Its record is kept, so the
+     * compiled manifest still names it, and the other addons compile as usual.
+     *
+     * @param  array<string, mixed>|null  $previous  The entry from the last compile, if any.
      * @return array<string, mixed>
      */
-    private function entryFor(Addon $row): array
+    private function driftedEntry(Addon $row, ?array $previous): array
+    {
+        if ($previous === null) {
+            $recorded = null;
+        } elseif (($previous['drifted'] ?? false) === true) {
+            $recorded = is_array($previous['recorded'] ?? null) ? $previous['recorded'] : null;
+        } else {
+            $recorded = $previous;
+        }
+
+        Log::warning("Addon [{$row->slug}] has an addon.json that changed on disk after it was installed. It is switched off until php artisan addons:update {$row->slug} is run.");
+
+        return [
+            'name' => $row->name,
+            'slug' => $row->slug,
+            'version' => $row->version,
+            'label' => $row->name,
+            'core' => null,
+            'directory' => $row->path,
+            'manifest_path' => $row->path.'/addon.json',
+            'checksum' => $row->manifest_checksum,
+            'requires' => [],
+            'provider' => null,
+            'routes' => null,
+            'permissions' => [],
+            'migrations' => null,
+            'tables' => [],
+            'config' => null,
+            'translations' => null,
+            'routes_mount' => 'addon',
+            'pages' => [],
+            'status' => $row->status,
+            'enabled' => false,
+            'missing' => false,
+            'drifted' => true,
+            'recorded' => $recorded,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $previous
+     * @return array<string, mixed>
+     */
+    private function entryFor(Addon $row, ?array $previous): array
     {
         $file = $row->path.'/addon.json';
+
+        if (is_file($file) && ! hash_equals($row->manifest_checksum, hash('sha256', (string) file_get_contents($file)))) {
+            return $this->driftedEntry($row, $previous);
+        }
 
         if (! is_file($file)) {
             // The folder was removed. Keep the record, so the addon can still be deactivated, but never enable it.

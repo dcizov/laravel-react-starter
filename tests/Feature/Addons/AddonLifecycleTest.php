@@ -306,16 +306,20 @@ test('an addon error raised during a lifecycle operation reaches the caller unch
     expect(Addon::query()->where('slug', FIXTURE_SLUG)->firstOrFail()->status)->toBe(Addon::STATUS_INSTALLED);
 });
 
-test('a changed addon.json blocks compile and is reported as out of date', function () {
+test('a changed addon.json is drift: compile keeps the addon switched off, and problems() names the fix', function () {
     $lifecycle = app(AddonLifecycle::class);
     $lifecycle->install(FIXTURE_SLUG);
 
     file_put_contents(AddonSandbox::addonPath(addonRoot()).'/addon.json', json_encode(['changed' => true]));
 
-    expect(fn () => app(AddonCompiler::class)->compile())
-        ->toThrow(AddonManifestException::class, 'changed on disk after the addon was installed');
+    $payload = app(AddonCompiler::class)->compile();
 
-    expect(implode("\n", app(AddonCompiler::class)->problems()))->toContain('changed on disk');
+    expect($payload['addons'][FIXTURE_SLUG]['drifted'])->toBeTrue()
+        ->and($payload['addons'][FIXTURE_SLUG]['enabled'])->toBeFalse();
+
+    expect(implode("\n", app(AddonCompiler::class)->problems()))
+        ->toContain('changed on disk')
+        ->toContain('php artisan addons:update '.FIXTURE_SLUG);
 });
 
 test('a missing or unreadable compiled manifest enables no addons and logs a warning', function () {
