@@ -309,7 +309,7 @@ it('requires a layout on every page entry', function () {
 
     $text = implode("\n", addonValidator()->errors(pagesManifest([['page' => 'subscribe']]), $dir, 'lifecycle-fixture'));
 
-    expect($text)->toContain('"provides.pages[0]" must have exactly a "page" and a "layout".');
+    expect($text)->toContain('"provides.pages[0]" must have a "page" and a "layout", and may have a "url".');
 });
 
 it('gives a manifest without provides.pages an empty page list, not just no errors', function () {
@@ -383,5 +383,34 @@ it('rejects a pages value that is not a list of page and layout objects', functi
     expect(implode("\n", addonValidator()->errors($notAList, $dir, 'lifecycle-fixture')))
         ->toContain('"provides.pages" must be a list of {"page", "layout"} objects.')
         ->and(implode("\n", addonValidator()->errors($extraKey, $dir, 'lifecycle-fixture')))
-        ->toContain('"provides.pages[0]" must have exactly a "page" and a "layout".');
+        ->toContain('"provides.pages[0]" must have a "page" and a "layout", and may have a "url".');
 });
+
+it('accepts an optional static url and carries it into the manifest', function () {
+    $dir = pagesAddonFixture(['subscribe' => '', 'unsubscribed' => '']);
+
+    $declared = [
+        ['page' => 'subscribe', 'layout' => 'public', 'url' => '/newsletter'],
+        ['page' => 'unsubscribed', 'layout' => 'public'],
+    ];
+
+    expect(addonValidator()->errors(pagesManifest($declared), $dir, 'lifecycle-fixture'))->toBe([])
+        ->and(AddonManifest::fromValidated(pagesManifest($declared), $dir, 'checksum')->pages)->toBe($declared);
+});
+
+it('refuses a page url that is not a plain static path', function (mixed $url) {
+    $dir = pagesAddonFixture(['subscribe' => '']);
+
+    $text = implode("\n", addonValidator()->errors(pagesManifest([['page' => 'subscribe', 'layout' => 'public', 'url' => $url]]), $dir, 'lifecycle-fixture'));
+
+    expect($text)->toContain('"provides.pages[0].url" must be a static path that starts with "/"');
+})->with([
+    'relative path' => ['newsletter'],
+    'parent traversal' => ['/../admin'],
+    'query string' => ['/newsletter?x=1'],
+    'route parameter' => ['/newsletter/{token}'],
+    'double slash' => ['//newsletter'],
+    'absolute url' => ['https://example.com/newsletter'],
+    'not a string' => [42],
+]);
+

@@ -27,6 +27,12 @@ final class AddonPages
     public const PAGE_PATTERN = '/^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/';
 
     /**
+     * The optional public URL of a page: a static path, such as "/newsletter". It has no parameters, query or
+     * fragment, because the link is built from it without a router. A page with a parameterised URL declares none.
+     */
+    public const URL_PATTERN = '/^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/';
+
+    /**
      * The page files in an addon that no provides.pages entry declares, relative to the addon folder. These are
      * reported as warnings, not errors: an addon may ship a page it does not want mounted.
      *

@@ -453,10 +453,10 @@ final class ManifestValidator
             $where = "provides.pages[{$index}]";
 
             if (! is_array($entry)
-                || array_diff(array_keys($entry), ['page', 'layout']) !== []
+                || array_diff(array_keys($entry), ['page', 'layout', 'url']) !== []
                 || ! array_key_exists('page', $entry)
                 || ! array_key_exists('layout', $entry)) {
-                $errors[] = "\"{$where}\" must have exactly a \"page\" and a \"layout\".";
+                $errors[] = "\"{$where}\" must have a \"page\" and a \"layout\", and may have a \"url\".";
 
                 continue;
             }
@@ -471,6 +471,11 @@ final class ManifestValidator
 
             if (! in_array($entry['layout'], AddonPages::LAYOUTS, true)) {
                 $errors[] = "\"{$where}.layout\" must be \"public\" or \"app\".";
+            }
+
+            if (array_key_exists('url', $entry)
+                && (! is_string($entry['url']) || preg_match(AddonPages::URL_PATTERN, $entry['url']) !== 1)) {
+                $errors[] = "\"{$where}.url\" must be a static path that starts with \"/\", such as \"/newsletter\". Use letters, digits, hyphens and underscores, with \"/\" between segments.";
             }
 
             if (in_array($page, $declared, true)) {
