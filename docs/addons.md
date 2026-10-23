@@ -79,14 +79,15 @@ Discovery reports:
 
 ## Lifecycle
 
-| Command                          | What it does                                                                                                                                                                                                 |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `addons:install <slug>`          | Records the addon as `installed` and recompiles the manifest. The addon stays switched off.                                                                                                                  |
-| `addons:activate <slug>`         | Runs pending migrations, records each one, syncs permissions, sets `active` and `enabled`, and recompiles.                                                                                                   |
-| `addons:activate <slug> --adopt` | For tables that already exist. Checks that each declared table exists, records every migration as run without running it, then activates as above. Fails and records nothing if a table is missing.          |
-| `addons:deactivate <slug>`       | Sets `inactive` and `enabled = false`, removes the addon's permissions from every role, and recompiles. Code, tables and data are kept. No down-migrations run. Refused while an active addon depends on it. |
-| `addons:compile`                 | Rewrites `bootstrap/cache/addons.php` from the database and the addon folders.                                                                                                                               |
-| `addons:list [--check]`          | Lists installed addons. With `--check`, exits non-zero if the compiled manifest is missing, unreadable or out of date, or if an addon's `addon.json` changed after install.                                  |
+| Command                          | What it does                                                                                                                                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addons:install <slug>`          | Records the addon as `installed` and recompiles the manifest. The addon stays switched off.                                                                                                                               |
+| `addons:activate <slug>`         | Runs pending migrations, records each one, syncs permissions, sets `active` and `enabled`, and recompiles.                                                                                                                |
+| `addons:activate <slug> --adopt` | For tables that already exist. Checks that each declared table exists, records every migration as run without running it, then activates as above. Fails and records nothing if a table is missing.                       |
+| `addons:deactivate <slug>`       | Sets `inactive` and `enabled = false`, removes the addon's permissions from every role, and recompiles. Code, tables and data are kept. No down-migrations run. Refused while an active addon depends on it.              |
+| `addons:compile`                 | Rewrites `bootstrap/cache/addons.php` from the database and the addon folders.                                                                                                                                            |
+| `addons:update <slug>`           | Accepts a changed `addon.json`: records its new version and checksum, runs pending migrations if the addon is active, syncs permissions, and recompiles. See [Changed `addon.json`](#changed-addonjson).                  |
+| `addons:list [--check]`          | Lists installed addons. With `--check`, exits non-zero if the compiled manifest is missing, unreadable or out of date, or if an addon's `addon.json` changed after install. Each problem names the command that fixes it. |
 
 Statuses are the strings `installed`, `active`, `inactive` and `failed`. The database column is a plain string, validated in code.
 
@@ -114,13 +115,28 @@ Both kinds are audited as `addon.failed`, and the database and the manifest are 
 
 `bootstrap/cache/addons.php` is a PHP array returned by a file, with:
 
-- `addons`: every installed addon keyed by slug, with its manifest fields, `status`, and `enabled`;
+- `addons`: every installed addon keyed by slug, with its manifest fields, `status`, and `enabled`. An addon whose `addon.json` changed after install has `enabled = false`, `drifted = true`, no routes, pages or permissions, and the entry it was last compiled with under `recorded`;
 - `state_checksum`: a hash of the slug, version, enabled flag and manifest checksum of each addon;
 - `generated_at`, `format`.
 
 Web requests read only this file through `AddonRegistry`. They never query the `addons` table. If the file is missing or unreadable, no addons are enabled and a warning is logged once per process. The file is written through a temporary file and a rename, so readers see either the old or the new version.
 
 The file is generated. Do not edit it by hand. It is in `bootstrap/cache/`, which is git-ignored.
+
+## Changed `addon.json`
+
+An installed addon is recorded with the SHA-256 of its `addon.json` bytes. A reformat counts as a change. When the file changes:
+
+- **That addon is switched off, and no other addon is affected.** `compile()` records it as drifted, and the other addons compile and activate or deactivate as usual. Boot checks the file of each enabled addon once per process. A drifted addon is off for that process, and one warning names it. Boot never throws.
+- **Nothing accepts the new file automatically.** The only way forward is `php artisan addons:update {slug}`.
+- **`addons:update` reads the file again and validates it.** An invalid file is refused, and nothing is recorded. A changed slug or package name is refused, because it is not an update. A changed set of declared tables needs `--allow-tables`, because it is a data-safety change. A version lower than the recorded one needs `--force`, which prints that migrations are not reversed. `--dry-run` prints the changes and writes nothing.
+- **Applied, it runs under the same lock and rollback as every lifecycle operation.** Pending migrations run first if the addon is active, then the version and checksum are recorded with the recompile, the permission sync and an `addon.updated` audit entry. Running it again with nothing changed does nothing and exits 0.
+
+### Versions
+
+The `version` in `addon.json` and the installed version move together, and `addons:update` is what moves the installed one. A version bump in the file alone does not change the installation until the command runs.
+
+A release that changes an addon's manifest is a release note with these steps: `git pull`, rebuild the frontend, run `php artisan addons:update {slug}` for each changed addon, run `php artisan addons:list --check`, then `php artisan route:cache` if routes are cached. Until the command runs, the changed addon is off.
 
 ## Routes and middleware
 
@@ -147,6 +163,8 @@ Addon routes must use controller classes, not closures, or `php artisan route:ca
 - A page is shown only while its addon is active. The build includes every declared page. The browser loads an addon page only when the `addons` shared prop lists the addon, so deactivating an addon takes its pages off without a rebuild.
 - A page file under `resources/js/pages` that is not declared is not built or mounted. The compiler logs a warning naming the file.
 - An addon without `provides.pages` contributes no pages.
+- `url` is optional. It is a static path such as `"/newsletter"`, the public address of the page. Core links to the page through it, and only while the addon is active. A `url` may not contain a query string, a route parameter, `//`, `..`, or a full URL. Each declared `url` must reach a route whose controller lives in the addon's folder. `AddonPageRoutes` checks this in the test suite, so a renamed route fails a test instead of leaving a dead link.
+- A `POST` form action is not a page, so it is not declared here. It stays in the addon's routes file.
 
 The build reads the page list from `resources/js/generated`, which `npm run addons:pages` writes from every `addons/*/addon.json`. Run it after adding or changing a page, and commit the result. `npm run build` fails when the generated files are stale, and `npm run test:js` checks them against the manifests.
 
@@ -168,6 +186,8 @@ On a server that uses route caching:
 
 Install and activation run only from the command line, during a controlled deployment. There is no admin upload and no remote fetch.
 
+`bootstrap/cache/` is git-ignored, so a fresh checkout, a new container, or a deploy that wipes `bootstrap/cache/` has no compiled manifest. Until `php artisan addons:compile` runs, no addon is enabled, the newsletter card and sign-up links are gone, and one warning is logged. The database still records the addons as active. Run `addons:compile` as the last step of every deploy. `optimize:clear`, `config:clear` and `cache:clear` do not remove `bootstrap/cache/addons.php`: they remove Laravel's own cache files, as listed in the framework's `OptimizeClearCommand` and `ClearCompiledCommand`.
+
 Do not run `php artisan migrate:fresh` on an installation that has addons. It drops the `addons` table but leaves the compiled manifest and the addon folders in place. `addons:list --check` reports this as out of date.
 
 ## Recovery
@@ -175,7 +195,7 @@ Do not run `php artisan migrate:fresh` on an installation that has addons. It dr
 - **Activation failed:** the command prints the error. Fix the cause, then run `addons:activate` again. Migrations that finished are not run twice.
 - **Compiled manifest is missing or corrupt:** run `php artisan addons:compile`. Until then no addons are enabled, and a warning is logged.
 - **Manifest is out of date:** `addons:list --check` says so. Run `addons:compile`.
-- **An addon's `addon.json` changed after install:** compile and activation refuse it. Restore the installed file. Updating addons is not supported yet.
+- **An addon's `addon.json` changed after install:** that addon is switched off, and the others keep working. Check the file with `git diff`. If the change is intended, run `php artisan addons:update {slug}`. If it is not, restore the installed file, then run `php artisan addons:compile`.
 - **Restore the last good state by hand:** copy `bootstrap/cache/addons.last-good.php` over `bootstrap/cache/addons.php`. Note that the database still holds the failed state, so run `addons:compile` afterwards.
 
 ## Testing
@@ -187,14 +207,25 @@ Do not run `php artisan migrate:fresh` on an installation that has addons. It dr
 - `tests/Feature/Addons/AddonCommandsTest.php`: exit codes of the commands.
 - `tests/Fixtures/addons/lifecycle-fixture/`: the test-only addon. Its namespace `Fixtures\LifecycleFixture\` is mapped in `autoload-dev`. It is not shipped. Its migration has a test seam: `config('addons.lifecycle-fixture.fail_at') === 'migrate'` makes it throw after creating its table.
 
+- `tests/Feature/Addons/AddonDriftTest.php`: one drifted addon does not stop another from being activated or deactivated; a drifted addon's routes and pages are not compiled; boot-time drift switches an addon off with one warning; boot does not throw.
+- `tests/Feature/Addons/AddonUpdateTest.php`: `addons:update` records a change and is a no-op the second time; a dry run writes nothing; an invalid file, a changed name, a changed table set without `--allow-tables`, and a downgrade without `--force` are refused; the command's exit codes.
+- `tests/Feature/Addons/PageUrlRoutesTest.php`: every declared `url` of the newsletter addon reaches a route of that addon; a missing route, a core route and a page without a url are handled.
+- `tests/Feature/Addons/CoreWithoutAddonsTest.php`: core boots and renders with no addons folder and no compiled manifest, reads no addon table, and warns once.
+- `resources/js/lib/addon-boundary.test.ts`: the frontend guard. Core frontend code must not import an addon's generated routes.
+
 Run them with `php artisan test --filter=Addon` (or `composer test`).
+
+**In a checkout with `addons/newsletter` removed, these newsletter-named tests fail, by design.** They are about the newsletter addon, which ships in this repository. A suite that passes with the addon deleted would prove nothing about it. They are `resources/js/lib/addon-pages.test.ts` and `resources/js/components/cms/public-layout.test.tsx`, and the newsletter cases of the Pest suites, which are expected to fail there but were not run in a stripped tree. The frontend guard test was run in one, and passes. Do not read these failures as breakage.
 
 ## Limitations
 
 - No remove, uninstall or purge. Deactivated addons keep their code, tables and data indefinitely.
-- No updates. A changed `addon.json` blocks compile until it is restored.
+- Updates are local and explicit. `addons:update` is the only way to accept a changed `addon.json`. Nothing fetches a new version.
 - Local folders only. No Composer, npm, VCS or Packagist discovery.
-- Migrations are not reversed. Addon migrations must be written to be safe to re-run after a partial failure on databases without transactional DDL. PostgreSQL, the production database, rolls back DDL with the transaction.
+- Migrations are not reversed. Addon migrations must be written to be safe to re-run after a partial failure on databases without transactional DDL.
+- **Supported database: PostgreSQL.** CI runs on PostgreSQL, and `.env.example` selects it. SQLite is for local and test convenience only.
+- **MySQL is not supported for addon migration rollback.** MySQL commits DDL implicitly, so a failed addon migration cannot be rolled back there. Do not run addons on MySQL. This is a stated limitation, not a tested one. CI does not test MySQL, and no MySQL job is planned.
+- `composer.json` still maps `Addons\\Newsletter\\` to `addons/newsletter/src/`. Removing the addon leaves that mapping in place until it is removed by hand. Not verified here whether that is harmless in practice; check it on the user's machine.
 - Built-in features are not managed by addons. `FeatureManager` and `FEATURES` are unchanged.
 - `addons/` is not git-ignored. Commit addons deliberately, as code.
 
