@@ -1,4 +1,5 @@
-import { globSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import inertia from '@inertiajs/vite';
 import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import babel from '@rolldown/plugin-babel';
@@ -9,6 +10,7 @@ import { bunny } from 'laravel-vite-plugin/fonts';
 import { loadEnv } from 'vite';
 import type { Plugin } from 'vite';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+import { collectAddonPages } from './tools/generate-addon-pages.ts';
 
 // The default matches config/features.php.
 const DEFAULT_FEATURES = 'landing,integrations';
@@ -53,13 +55,99 @@ function featurePages(features: string[]): Plugin {
     };
 }
 
-// Every page of every addon is its own build entry. Blade asks the manifest for the page by its path
-// (addons/<slug>/resources/js/pages/<page>.tsx), and only a build input is guaranteed to have a manifest key.
-// Lazy glob imports in app.tsx alone do not. Addons are built whether or not they are installed, so a clean
-// checkout gets the same manifest as one with addons active.
-const addonPageEntries = globSync('addons/*/resources/js/pages/**/*.tsx', {
-    cwd: process.cwd(),
-}).map((file) => file.replace(/\\/g, '/'));
+// Addon pages are build entries, so Blade can find them in the manifest by path (addons/<slug>/resources/js/pages/
+// <page>.tsx). The list comes from the artefact the generator writes from each addon's provides.pages, not from a glob,
+// so a page that no manifest declares is not built. Addons are built whether or not they are installed, so a clean
+// checkout gets the same manifest as one with addons active. Run "npm run addons:pages" after changing an addon.json.
+const ADDON_PAGES_ARTEFACT = 'resources/js/generated/addon-pages.json';
+
+interface AddonPageRecord {
+    addon: string;
+    page: string;
+    layout: 'public' | 'app';
+    file: string;
+}
+
+const addonPages = JSON.parse(
+    readFileSync(resolve(process.cwd(), ADDON_PAGES_ARTEFACT), 'utf8'),
+) as AddonPageRecord[];
+const addonPageEntries = addonPages.map((record) => record.file);
+
+// After the bundle is written. The artefact must match the manifests (a stale one fails here, as well as in the
+// agreement test under resources/js/lib). Every artefact page must have a build entry. A public page must not import
+// an app page, so the admin shell does not reach the public chunks. The import check reads direct imports only.
+function addonPageAgreement(): Plugin {
+    let buildFailed = false;
+
+    return {
+        name: 'addon-page-agreement',
+        apply: 'build',
+        buildEnd(error) {
+            buildFailed = error !== undefined;
+        },
+        closeBundle() {
+            // A failed build writes no manifest. Stay quiet so the build's own error is the one that shows.
+            if (buildFailed) {
+                return;
+            }
+
+            const fromManifests = collectAddonPages(process.cwd());
+
+            if (fromManifests.errors.length > 0) {
+                throw new Error(
+                    `Addon manifests are invalid:\n${fromManifests.errors.join('\n')}`,
+                );
+            }
+
+            if (
+                JSON.stringify(fromManifests.pages) !==
+                JSON.stringify(addonPages)
+            ) {
+                throw new Error(
+                    `${ADDON_PAGES_ARTEFACT} is stale. Run npm run addons:pages and commit the result.`,
+                );
+            }
+
+            const manifest = JSON.parse(
+                readFileSync(
+                    resolve(process.cwd(), 'public/build/manifest.json'),
+                    'utf8',
+                ),
+            ) as Record<string, { imports?: string[] }>;
+
+            const missing = addonPageEntries.filter(
+                (file) => !Object.hasOwn(manifest, file),
+            );
+
+            if (missing.length > 0) {
+                throw new Error(
+                    `The build has no entry for these addon pages: ${missing.join(', ')}`,
+                );
+            }
+
+            const appPages = new Set(
+                addonPages
+                    .filter((record) => record.layout === 'app')
+                    .map((record) => record.file),
+            );
+            const leaks = addonPages
+                .filter((record) => record.layout === 'public')
+                .flatMap((record) =>
+                    (manifest[record.file]?.imports ?? [])
+                        .filter((imported) => appPages.has(imported))
+                        .map(
+                            (imported) => `${record.file} imports ${imported}`,
+                        ),
+                );
+
+            if (leaks.length > 0) {
+                throw new Error(
+                    `Public addon pages import app pages: ${leaks.join('; ')}`,
+                );
+            }
+        },
+    };
+}
 
 const env = loadEnv('production', process.cwd(), '');
 const enabledFeatures = (
@@ -74,6 +162,7 @@ const enabledFeatures = (
 export default defineConfig({
     plugins: lazyPlugins(() => [
         featurePages(enabledFeatures),
+        addonPageAgreement(),
         laravel({
             input: [
                 'resources/css/app.css',
@@ -161,6 +250,7 @@ export default defineConfig({
             'tailwind.config.js',
             'resources/js/actions/**',
             'resources/js/components/ui/*',
+            'resources/js/generated/**',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
         ],
@@ -180,6 +270,7 @@ export default defineConfig({
             '.github/**',
             'composer.json',
             'resources/js/components/ui/*',
+            'resources/js/generated/**',
             'resources/views/mail/*',
         ],
         sortTailwindcss: {

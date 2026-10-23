@@ -9,6 +9,7 @@
         "check:fix": "vp check --fix",
         "types:check": "tsc --noEmit",
         "check:translations": "node scripts/check-translations.mjs",
+        "addons:pages": "node tools/generate-addon-pages.ts",
         "test:js": "vp test run",
         "prepare": "husky"
     },

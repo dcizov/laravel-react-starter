@@ -62,6 +62,7 @@ The folder list comes from `config/addons.php` (`paths`, default `base_path('add
 | `provides.tables`       | List. Each name starts with the slug, with hyphens turned into underscores, followed by `_`. Lowercase, at most 63 characters (PostgreSQL's identifier limit).                                                |
 | `provides.config`       | Relative path to a PHP file that returns an array.                                                                                                                                                            |
 | `provides.translations` | Relative path to a folder containing `<locale>/` subfolders.                                                                                                                                                  |
+| `provides.pages`        | Optional list of `{"page": "<name>", "layout": "public" or "app"}`. `page` is a file under `resources/js/pages` without `.tsx`. Both keys are required; names are unique within the addon. See Pages.         |
 
 Only these top-level fields and these `provides` keys are accepted. Anything else is reported as unknown. Validation reports every problem found in one pass, so a manifest can be fixed in one edit. The rules live in `App\Addons\Manifest\ManifestValidator`.
 
@@ -128,6 +129,26 @@ The routes of every installed addon are registered under `/addons/<slug>` with t
 When `provides.routes_mount` is `root`, the routes are mounted at the root and keep the URLs and names their file gives. Use it only for an addon that takes over a page with a fixed URL, such as the newsletter pages at `/newsletter` and `/admin/newsletter`. The `addon.active` middleware still applies, so the page answers 404 while the addon is inactive.
 
 Addon routes must use controller classes, not closures, or `php artisan route:cache` fails. The routes are registered only when the routes are not cached.
+
+## Pages
+
+`provides.pages` lists the front-end pages an addon adds. Each entry names a file under `resources/js/pages` and the layout it uses:
+
+```json
+"pages": [
+    {"page": "subscribe", "layout": "public"},
+    {"page": "admin/newsletter", "layout": "app"}
+]
+```
+
+- `page` is the path under `resources/js/pages`, without the `.tsx` extension. Use letters, digits, hyphens and underscores, with `/` between folders. Dots, `..`, and absolute paths are refused. The file is resolved, so a symlink that leaves the pages folder is refused too.
+- `layout` is required. `public` has no app shell. `app` uses the admin shell.
+- Names are unique within one addon. There is no cross-addon rule: Inertia names an addon page `<slug>::<page>`, so two addons cannot collide.
+- A page is shown only while its addon is active. The build includes every declared page. The browser loads an addon page only when the `addons` shared prop lists the addon, so deactivating an addon takes its pages off without a rebuild.
+- A page file under `resources/js/pages` that is not declared is not built or mounted. The compiler logs a warning naming the file.
+- An addon without `provides.pages` contributes no pages.
+
+The build reads the page list from `resources/js/generated`, which `npm run addons:pages` writes from every `addons/*/addon.json`. Run it after adding or changing a page, and commit the result. `npm run build` fails when the generated files are stale, and `npm run test:js` checks them against the manifests.
 
 ## Permissions
 

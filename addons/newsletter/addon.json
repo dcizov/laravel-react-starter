@@ -13,6 +13,11 @@
         "routes_mount": "root",
         "permissions": ["newsletter.manage"],
         "migrations": "database/migrations",
-        "tables": ["newsletter_subscribers"]
+        "tables": ["newsletter_subscribers"],
+        "pages": [
+            { "page": "subscribe", "layout": "public" },
+            { "page": "unsubscribed", "layout": "public" },
+            { "page": "admin/newsletter", "layout": "app" }
+        ]
     }
 }

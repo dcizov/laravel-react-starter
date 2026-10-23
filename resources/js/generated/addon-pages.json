@@ -1,0 +1,20 @@
+[
+    {
+        "addon": "newsletter",
+        "page": "admin/newsletter",
+        "layout": "app",
+        "file": "addons/newsletter/resources/js/pages/admin/newsletter.tsx"
+    },
+    {
+        "addon": "newsletter",
+        "page": "subscribe",
+        "layout": "public",
+        "file": "addons/newsletter/resources/js/pages/subscribe.tsx"
+    },
+    {
+        "addon": "newsletter",
+        "page": "unsubscribed",
+        "layout": "public",
+        "file": "addons/newsletter/resources/js/pages/unsubscribed.tsx"
+    }
+]
