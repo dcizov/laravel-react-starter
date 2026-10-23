@@ -2,6 +2,7 @@
 
 use App\Addons\Discovery\AddonDiscovery;
 use App\Addons\Exceptions\AddonManifestException;
+use App\Addons\Manifest\AddonManifest;
 use App\Addons\Manifest\ManifestValidator;
 use Illuminate\Support\Str;
 
@@ -256,33 +257,66 @@ function removePagesTree(string $path): void
     @rmdir($path);
 }
 
-/** @return array<string, mixed> */
-function pagesManifest(array $pages): array
+/**
+ * The minimum manifest for a pages fixture: the required fields and nothing else. The pages fixture folder holds
+ * only page files, so a manifest that also declared routes, config, migrations or translations would fail for
+ * reasons unrelated to pages.
+ *
+ * @return array<string, mixed>
+ */
+function pagesBaseManifest(): array
 {
-    $data = fixtureManifest();
-    $data['provides']['pages'] = $pages;
-
-    return $data;
+    return [
+        'name' => 'fixtures/lifecycle-fixture',
+        'slug' => 'lifecycle-fixture',
+        'version' => '1.0.0',
+        'label' => 'Pages fixture',
+        'core' => '^1.0',
+    ];
 }
 
-it('accepts declared pages in both layouts, including a nested one', function () {
+/** @param  list<array<string, mixed>>  $pages */
+function pagesManifest(array $pages): array
+{
+    return [...pagesBaseManifest(), 'provides' => ['pages' => $pages]];
+}
+
+it('accepts declared pages in both layouts, including a nested one, and keeps their layouts', function () {
     $dir = pagesAddonFixture([
         'subscribe' => '',
         'admin/newsletter' => '',
     ]);
 
-    $data = pagesManifest([
+    $declared = [
         ['page' => 'subscribe', 'layout' => 'public'],
         ['page' => 'admin/newsletter', 'layout' => 'app'],
-    ]);
+    ];
 
-    expect(addonValidator()->errors($data, $dir, 'lifecycle-fixture'))->toBe([]);
+    expect(addonValidator()->errors(pagesManifest($declared), $dir, 'lifecycle-fixture'))->toBe([])
+        ->and(AddonManifest::fromValidated(pagesManifest($declared), $dir, 'checksum')->pages)->toBe($declared);
 });
 
-it('treats a manifest without provides.pages as declaring no pages', function () {
+it('refuses a nested page whose file sits at the top level instead', function () {
+    $dir = pagesAddonFixture(['newsletter' => '']);
+
+    $text = implode("\n", addonValidator()->errors(pagesManifest([['page' => 'admin/newsletter', 'layout' => 'app']]), $dir, 'lifecycle-fixture'));
+
+    expect($text)->toContain('"provides.pages" declares "admin/newsletter", but resources/js/pages/admin/newsletter.tsx does not exist.');
+});
+
+it('requires a layout on every page entry', function () {
     $dir = pagesAddonFixture(['subscribe' => '']);
 
-    expect(addonValidator()->errors(fixtureManifest(), $dir, 'lifecycle-fixture'))->toBe([]);
+    $text = implode("\n", addonValidator()->errors(pagesManifest([['page' => 'subscribe']]), $dir, 'lifecycle-fixture'));
+
+    expect($text)->toContain('"provides.pages[0]" must have exactly a "page" and a "layout".');
+});
+
+it('gives a manifest without provides.pages an empty page list, not just no errors', function () {
+    $dir = pagesAddonFixture(['subscribe' => '']);
+
+    expect(addonValidator()->errors(pagesBaseManifest(), $dir, 'lifecycle-fixture'))->toBe([])
+        ->and(AddonManifest::fromValidated(pagesBaseManifest(), $dir, 'checksum')->pages)->toBe([]);
 });
 
 it('rejects a declared page whose file is missing', function () {
