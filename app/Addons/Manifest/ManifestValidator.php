@@ -20,7 +20,7 @@ final class ManifestValidator
     public const REQUIRED_FIELDS = ['name', 'slug', 'version', 'label', 'core'];
 
     /** Capabilities an addon may declare under "provides". */
-    public const CAPABILITIES = ['routes', 'permissions', 'migrations', 'tables', 'config', 'translations'];
+    public const CAPABILITIES = ['routes', 'permissions', 'migrations', 'tables', 'config', 'translations', 'pages'];
 
     /**
      * Where an addon's routes are mounted. "addon" puts them under /addons/{slug}. "root" keeps the URLs the routes
@@ -292,6 +292,7 @@ final class ManifestValidator
             ...$errors,
             ...$this->checkPermissions($provides['permissions'] ?? null, $slug),
             ...$this->checkTables($provides['tables'] ?? null, $slug),
+            ...$this->checkPages($provides['pages'] ?? null, $directory),
         ];
 
         foreach (['routes' => 'file', 'config' => 'file', 'migrations' => 'directory', 'translations' => 'directory'] as $key => $kind) {
@@ -424,6 +425,82 @@ final class ManifestValidator
         }
 
         return [];
+    }
+
+    /**
+     * Each entry of provides.pages names a page file, with the layout it is shown in. The name is checked as text
+     * first, then the file is resolved: realpath() follows symlinks, so a link that leaves the pages folder is refused
+     * even though its name is plain. Undeclared files are not an error here; AddonCompiler warns about them.
+     *
+     * @return list<string>
+     */
+    private function checkPages(mixed $pages, string $directory): array
+    {
+        if ($pages === null) {
+            return [];
+        }
+
+        if (! is_array($pages) || ! array_is_list($pages)) {
+            return ['"provides.pages" must be a list of {"page", "layout"} objects.'];
+        }
+
+        $errors = [];
+        $declared = [];
+        $root = rtrim($directory, '/').'/'.AddonPages::ROOT;
+        $realRoot = is_dir($root) ? realpath($root) : false;
+
+        foreach ($pages as $index => $entry) {
+            $where = "provides.pages[{$index}]";
+
+            if (! is_array($entry)
+                || array_diff(array_keys($entry), ['page', 'layout']) !== []
+                || ! array_key_exists('page', $entry)
+                || ! array_key_exists('layout', $entry)) {
+                $errors[] = "\"{$where}\" must have exactly a \"page\" and a \"layout\".";
+
+                continue;
+            }
+
+            $page = $entry['page'];
+
+            if (! is_string($page) || preg_match(AddonPages::PAGE_PATTERN, $page) !== 1) {
+                $errors[] = "\"{$where}.page\" must be a page name without an extension, such as \"subscribe\" or \"admin/index\". Use letters, digits, hyphens and underscores, with \"/\" between folders.";
+
+                continue;
+            }
+
+            if (! in_array($entry['layout'], AddonPages::LAYOUTS, true)) {
+                $errors[] = "\"{$where}.layout\" must be \"public\" or \"app\".";
+            }
+
+            if (in_array($page, $declared, true)) {
+                $errors[] = "Page \"{$page}\" is declared more than once in \"provides.pages\".";
+            }
+
+            $declared[] = $page;
+
+            if ($realRoot === false) {
+                $errors[] = '"provides.pages" declares "'.$page.'", but '.AddonPages::ROOT.' does not exist.';
+
+                continue;
+            }
+
+            $file = $root.'/'.$page.'.tsx';
+
+            if (! is_file($file)) {
+                $errors[] = '"provides.pages" declares "'.$page.'", but '.AddonPages::ROOT.'/'.$page.'.tsx does not exist.';
+
+                continue;
+            }
+
+            $real = realpath($file);
+
+            if ($real === false || ! str_starts_with($real, $realRoot.DIRECTORY_SEPARATOR)) {
+                $errors[] = '"provides.pages" declares "'.$page.'", which resolves outside the addon\'s '.AddonPages::ROOT.' folder.';
+            }
+        }
+
+        return $errors;
     }
 
     /**

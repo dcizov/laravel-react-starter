@@ -5,7 +5,9 @@ namespace App\Addons;
 use App\Addons\Discovery\AddonDiscovery;
 use App\Addons\Events\AddonManifestCompiling;
 use App\Addons\Exceptions\AddonException;
+use App\Addons\Manifest\AddonPages;
 use App\Models\Addon;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Writes the compiled manifest the app reads at boot, from the lifecycle state in the database and the addon
@@ -155,6 +157,7 @@ final class AddonCompiler
                 'config' => null,
                 'translations' => null,
                 'routes_mount' => 'addon',
+                'pages' => [],
                 'status' => $row->status,
                 'enabled' => false,
                 'missing' => true,
@@ -162,6 +165,11 @@ final class AddonCompiler
         }
 
         $manifest = $this->discovery->readManifest($file, $row->manifest_checksum);
+
+        // A page file that provides.pages does not declare is neither built nor mounted. Say so, so it is not a silent miss.
+        foreach (AddonPages::undeclared($manifest->directory, array_column($manifest->pages, 'page')) as $pageFile) {
+            Log::warning("Addon [{$row->slug}] ships {$pageFile}, but provides.pages does not declare it, so it is not mounted.");
+        }
 
         return [
             ...$manifest->toArray(),

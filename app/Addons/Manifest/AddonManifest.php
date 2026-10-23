@@ -12,6 +12,7 @@ final readonly class AddonManifest
      * @param  array<string, string>  $requires  Addon slug => version constraint.
      * @param  list<string>  $permissions
      * @param  list<string>  $tables
+     * @param  list<array{page: string, layout: string}>  $pages  From provides.pages. Empty when the addon has none.
      */
     public function __construct(
         public string $name,
@@ -30,6 +31,7 @@ final readonly class AddonManifest
         public ?string $config,
         public ?string $translations,
         public string $routesMount = 'addon',
+        public array $pages = [],
     ) {}
 
     /**
@@ -62,6 +64,10 @@ final readonly class AddonManifest
             config: $path('config'),
             translations: $path('translations'),
             routesMount: ($provides['routes_mount'] ?? 'addon') === 'root' ? 'root' : 'addon',
+            pages: array_values(array_map(
+                static fn (array $entry): array => ['page' => (string) $entry['page'], 'layout' => (string) $entry['layout']],
+                array_filter(is_array($provides['pages'] ?? null) ? $provides['pages'] : [], is_array(...)),
+            )),
         );
     }
 
@@ -95,6 +101,7 @@ final readonly class AddonManifest
             'config' => $this->config,
             'translations' => $this->translations,
             'routes_mount' => $this->routesMount,
+            'pages' => $this->pages,
         ];
     }
 }
