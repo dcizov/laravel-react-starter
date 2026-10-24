@@ -132,8 +132,14 @@ return [
     | `lattice:discover` writes the page and section registries that the
     | frontend imports. JS is resolved at build time, never at runtime.
     |
+    | Point `LATTICE_GENERATED_PATH` somewhere else when the command must not
+    | touch the working tree — the test suite writes into storage/framework so
+    | that running Pest never leaves `resources/js/lib/generated` dirty.
+    |
     */
 
-    'generated_path' => resource_path('js/lib/generated'),
+    'generated_path' => env('LATTICE_GENERATED_PATH')
+        ? base_path((string) env('LATTICE_GENERATED_PATH'))
+        : resource_path('js/lib/generated'),
 
 ];

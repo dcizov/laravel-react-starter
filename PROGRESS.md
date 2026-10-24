@@ -817,3 +817,28 @@ workflows work: `sail composer dev` → `http://localhost:8000`, or `sail up -d`
 `sail npm run dev` → `http://localhost`. `.env.example` and the README explain
 the choice next to `APP_URL`.
 
+### S8.7 — Generated registries stay out of the way
+
+`git pull` on a working clone refused to fast-forward because
+`resources/js/lib/generated/{addons,navigation}.ts` were modified. Two causes,
+both real:
+
+- `addons.ts` embedded `generatedAt: now()`, so *every* run of
+  `lattice:discover` produced different bytes. The field was not read by
+  anything. Dropped — the registry is now a pure function of the addon table.
+- The test suite ran `lattice:discover` against `resources/js/lib/generated`
+  too, so `vendor/bin/pest` left the working tree dirty and could even commit a
+  registry generated from the *testing* database (that is how the committed
+  `addons.ts` ended up saying `PostCraft: inactive`).
+
+**Fixed:** `config('lattice.generated_path')` now honours
+`LATTICE_GENERATED_PATH` (absolute, relative to `base_path`), `phpunit.xml`
+points it at `storage/framework/testing/generated`, and
+`storage/framework/.gitignore` ignores `testing/`. Running Pest no longer
+touches the working tree; a second `lattice:discover` is byte-identical
+(checked with `md5sum -c`).
+
+The committed registries were regenerated from the demo install, so they now
+match what `lattice:install --demo` produces (`PostCraft` active, `Posts` in the
+Content nav).
+

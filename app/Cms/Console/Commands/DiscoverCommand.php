@@ -109,8 +109,9 @@ class DiscoverCommand extends Command
 
     private function writeAddons(string $path, AddonRepository $addons): void
     {
+        // No timestamp: the file is committed, so identical state has to
+        // produce identical bytes or every install leaves a dirty tree.
         $manifest = [
-            'generatedAt' => now()->toIso8601String(),
             'addons' => array_map(fn ($row): array => [
                 'handle' => $row->handle,
                 'name' => $row->name,

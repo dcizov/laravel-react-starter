@@ -26,6 +26,7 @@
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value="database/testing.sqlite"/>
         <env name="DB_URL" value=""/>
+        <env name="LATTICE_GENERATED_PATH" value="storage/framework/testing/generated"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
