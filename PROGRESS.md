@@ -147,3 +147,62 @@ the invited role; last admin cannot be demoted or deactivated; addon permission
 **Next: S3 — pages, editor, publishing** (`pages`, `page_revisions`,
 `page_slugs`, section registry, three-panel editor, autosave, publish/schedule,
 signed preview, slug 301s).
+
+## S3 — Pages, editor, publishing
+
+Split into S3.1 (pages backend + first editor pass) and S3.2 (editor polish:
+media picker wiring, drag-to-reorder, section picker modal) to stay inside the
+file budget.
+
+**Done (S3.1)**
+
+- `media`, `pages`, `page_revisions`, `page_slugs` migrations; models `Page`,
+  `PageRevision`, `PageSlug`, `Media` (pages are soft-deletable, content is a
+  JSON column, `version` bumps on every write).
+- Section contract: `Cms\Sections\{Field,Section,SectionRegistry,CoreSections}`.
+  PHP is the source of truth (fields, defaults, validation rules, editor
+  schema); the TS mirror is `resources/js/lib/sections.ts`. Core sections:
+  `hero`, `rich-text`, `feature-grid`, `cta`; addons and themes can register
+  more through the registry at boot.
+- Validation: the registry owns structural rules, `SectionRegistry::validate()`
+  re-checks each block against its own section after normalisation — a block
+  with an unknown `section` key is **dropped**, not rejected, and missing keys
+  are filled from defaults.
+- `Cms\Pages\Slugger` (unique slugs, history kept in `page_slugs`, historical
+  slugs never reused) and `Cms\Pages\PageRepository` (create/update, revision
+  snapshots with a one-minute dedupe, restore-revision that snapshots the
+  current state first — forced, so a restore can always be undone, publish,
+  unpublish, schedule, duplicate).
+- `PagePolicy`: authors edit only their own pages; publish and delete need
+  `pages.publish` / `pages.delete` (editors+). Requests: `StorePageRequest`,
+  `UpdatePageRequest` (registry-derived rules, section rule failures land on
+  `content.{index}.content.{field}` so the editor can scroll to the block).
+- `PageController` (index/create/store/edit/update/autosave/publish/unpublish/
+  schedule/duplicate/destroy/restore/restore-revision) and
+  `PublicPageController` (home, published pages at `/{slug}`, historical slug →
+  301, signed six-hour draft preview). Autosave answers JSON, never redirects.
+- Preview is a signed route only: the admin page hands out
+  `URL::temporarySignedRoute('preview.pages.show', 6h)`; unsigned hits 403.
+- The `{slug}` catch-all is the last route in `web.php` and refuses reserved
+  first segments, so `/settings/*` keeps working and `POST /register` is still
+  a 404 rather than a 405 from the catch-all.
+- Frontend: `pages/admin/pages/index.tsx` (filters, status counts, optimistic
+  publish toggle, delete with undo, trash view), `pages/admin/pages/edit.tsx`
+  (three panels: outline / live canvas / inspector, add–move–hide–remove
+  sections, 1.5 s debounced autosave through Inertia v3 `useHttp`, save-state
+  indicator, `beforeunload` guard, SEO dialog with snippet preview and length
+  meters, revision sheet with restore, schedule dialog), plus
+  `section-renderer.tsx`, `field-control.tsx` (text/textarea/richtext/select/
+  boolean/url/color/media/repeater) and the public renderer
+  (`pages/public/page.tsx`, `not-found.tsx`, `pages/preview/page.tsx`).
+
+**Accept:** 18 feature tests for pages and publishing — CRUD, registry-driven
+validation, unknown sections dropped, autosave without redirect, publish /
+unpublish, author refused publish, schedule in the future only, duplicate as a
+draft copy, soft delete + trash + restore, revision restore with a
+"Before restore" snapshot, editor render, public serving, drafts 404, scheduled
+pages hidden until their time, 301 on a renamed slug, historical slug never
+reused, signed-preview only. Full suite: 88 tests / 432 assertions. pint
+(133 files) + tsc + eslint (0 warnings) + build green.
+
+**Next: S3.2 — editor polish**, then S4 media library.

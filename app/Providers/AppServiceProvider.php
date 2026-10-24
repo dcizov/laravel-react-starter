@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Page;
 use App\Models\User;
+use App\Policies\PagePolicy;
 use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
@@ -40,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
     private function registerPolicies(): void
     {
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Page::class, PagePolicy::class);
     }
 
     /**
