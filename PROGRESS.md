@@ -550,5 +550,27 @@ Full suite: **164 tests / 1142 assertions**; pint (188 files), tsc, eslint and
 build green. The dev database carries eight weeks of seeded traffic and two
 bell rows, so the preview shows a real chart.
 
-**Next: S7.3 — activity timeline polish** (causer/log/date filters, empty and
-loading states).
+**Done (S7.3)**
+
+- `ActivityController` now filters on log, event, causer, free text and a date
+  range (`from`/`to`), ignores malformed dates instead of erroring, and answers
+  in one query: the causer name comes from a join, not an eager load.
+- Rows come back **grouped by day** — `Today`, `Yesterday`, then `12 October` —
+  so the client never re-derives days from ISO strings. The payload carries the
+  paginator links, `total/from/to`, all filter values, an `active` flag and the
+  option lists (logs, events, people).
+- `admin/activity/index.tsx` rebuilt around a filter card (search, log, event,
+  person, from/to, Apply), a skeleton while a filtered request is in flight, a
+  paginated `Previous / Page n / Next` footer, and **two** empty states: "nothing
+  has happened yet" versus "no activity matches these filters" with a Clear
+  filters action.
+
+**Accept (S7.3):** 7 feature tests — day grouping and labels, every filter
+(log, event, causer, search, from, to), malformed dates ignored, the two empty
+states distinguished by the `active` flag, 30-per-page pagination, author read
+access and the login wall.
+Full suite: **171 tests / 1278 assertions**; pint (189 files), tsc, eslint and
+build green. Smoke: `/admin/activity`, a filtered query and a malformed date all
+answer 200 for admin and author.
+
+**Next: S8 — seed, polish, docs, QA.**
