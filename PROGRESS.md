@@ -243,5 +243,32 @@ usage rows created/rewritten/removed as pages change, folder tree slugs and
 non-empty folder protection, role matrix. Full suite: 99 tests / 486
 assertions; pint clean (139 files).
 
-**Next: S4.2 — media HTTP layer** (`MediaController`, upload/update/destroy/
-restore/folder routes, grid + list UI with folders, search and detail drawer).
+**Done (S4.2)**
+
+- `MediaController` + routes: `admin.media.index/upload/update/destroy/restore`
+  and `admin.media.folders.{store,update,destroy}`. Every action authorizes
+  through `MediaPolicy` or the FormRequest, never the route middleware alone.
+- `UploadMediaRequest` (max 12 MB, 10 files, JPG/PNG/WebP/GIF/PDF),
+  `UpdateMediaRequest` (alt/caption/folder only — replacing bytes is a new
+  upload, not an edit) and `MediaFolderRequest` (sibling folders compared by
+  slug, a folder can never be moved inside itself).
+- Library screen `pages/admin/media/index.tsx`: folder rail with counts, search
+  (enter or blur), type/trash filters, grid and list views, drag-and-drop
+  uploads with **one progress bar per file** (files are posted one visit each,
+  so a rejected file names itself), detail drawer with inline alt/caption
+  editing and folder moves, usage list linking straight to the page editor, and
+  delete with an Undo toast that warns how many places used the file.
+- Usage details ship with the index (eager-loaded `usages.usable`), so opening
+  the drawer costs no request and no client-side data fetching.
+
+**Accept (S4.2):** 9 HTTP feature tests — library render for editor and author
+with correct `can` flags, three-file multi-upload into a folder (two thumbnails
+written), rejection of PHP/oversized/empty uploads, guest redirect and
+permission 403, alt editing (author refused), delete-with-usage warning +
+restore, usage list on the index, folder create/rename/duplicate-name/
+non-empty-delete guard, and search/type/trash filters. Full suite: 108 tests /
+624 assertions; pint (144 files), tsc, eslint (0 warnings) and build green;
+`/admin/media` renders 200 for admin, editor and author.
+
+**Next: S4.3 — `MediaPicker`** shared by the editor's `media` fields, then
+S5 themes and the public site.

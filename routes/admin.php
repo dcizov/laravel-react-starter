@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\InvitationController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,15 @@ Route::middleware(['auth', 'verified', 'active'])->prefix('admin')->group(functi
     Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 
     Route::get('activity', [ActivityController::class, 'index'])->name('admin.activity.index');
+
+    Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
+    Route::post('media', [MediaController::class, 'upload'])->name('admin.media.upload');
+    Route::patch('media/{media}', [MediaController::class, 'update'])->name('admin.media.update');
+    Route::delete('media/{media}', [MediaController::class, 'destroy'])->name('admin.media.destroy');
+    Route::post('media/{id}/restore', [MediaController::class, 'restore'])->whereNumber('id')->name('admin.media.restore');
+    Route::post('media/folders', [MediaController::class, 'storeFolder'])->name('admin.media.folders.store');
+    Route::patch('media/folders/{folder}', [MediaController::class, 'updateFolder'])->name('admin.media.folders.update');
+    Route::delete('media/folders/{folder}', [MediaController::class, 'destroyFolder'])->name('admin.media.folders.destroy');
 
     Route::get('pages', [PageController::class, 'index'])->name('admin.pages.index');
     Route::get('pages/create', [PageController::class, 'create'])->name('admin.pages.create');
