@@ -1,30 +1,18 @@
 import { Head, Link, router } from '@inertiajs/react';
-import {
-    Copy,
-    Eye,
-    FileText,
-    MoreHorizontal,
-    Plus,
-    RotateCcw,
-    Search,
-    Trash2,
-} from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+
 import { useBreadcrumbs } from '@/components/breadcrumbs-context';
+import {
+    DataTable,
+    DataTableFilterTabs,
+    DataTableSearch,
+    DataTableToolbar,
+} from '@/components/data-table';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
-import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
@@ -33,13 +21,17 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import type { BreadcrumbItem, PageRow } from '@/types';
+
+import { createPageColumns } from './columns';
+import type { PageSortToken } from './columns';
 
 type Paginated<T> = {
     data: T[];
-    links: { url: string | null; label: string; active: boolean }[];
     total: number;
+    current_page: number;
+    last_page: number;
+    per_page: number;
     from: number | null;
     to: number | null;
 };
@@ -63,34 +55,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Pages', href: '/admin/pages' },
 ];
 
-/** Laravel paginator labels arrive HTML-escaped (`&laquo; Previous`). */
-function plainLabel(label: string): string {
-    return label
-        .replace(/&laquo;/g, '«')
-        .replace(/&raquo;/g, '»')
-        .replace(/&amp;/g, '&');
-}
-
-function formatDate(value: string | null): string {
-    if (!value) {
-        return '—';
-    }
-
-    return new Date(value).toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    });
-}
-
 export default function PagesIndex({ pages, filters, counts, can }: Props) {
-    // Gap links ("...") repeat their label, so the position is part of the key.
-    const pagination = pages.links.map((link, position) => ({
-        link,
-        key: link.url ?? `gap-${position}`,
-    }));
-
-    const [search, setSearch] = useState(filters.q);
     const [busyId, setBusyId] = useState<number | null>(null);
     const [pending, setPending] = useState<number[]>([]);
 
@@ -206,10 +171,26 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
         );
     };
 
+    const restore = (page: PageRow) => {
+        router.post(
+            page.urls.restore,
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+            },
+        );
+    };
+
+    const sort = (token: PageSortToken) => {
+        visit({ ...filters, sort: token, page: undefined });
+    };
+
     const visiblePages = pages.data.filter(
         (page) => !pending.includes(page.id),
     );
-    const isEmpty = visiblePages.length === 0;
+    const isFiltered =
+        filters.q !== '' || filters.status !== '' || filters.trashed;
 
     useBreadcrumbs(breadcrumbs);
 
@@ -233,401 +214,191 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                     }
                 />
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        {(
-                            [
-                                ['', 'All', counts.all],
-                                ['published', 'Published', counts.published],
-                                ['scheduled', 'Scheduled', counts.scheduled],
-                                ['draft', 'Drafts', counts.draft],
-                            ] as const
-                        ).map(([value, label, count]) => (
-                            <Button
-                                key={label}
-                                size="sm"
-                                variant={
-                                    !filters.trashed && filters.status === value
-                                        ? 'secondary'
-                                        : 'ghost'
-                                }
-                                onClick={() =>
-                                    visit({
-                                        ...filters,
-                                        status: value,
-                                        trashed: undefined,
-                                    })
-                                }
-                            >
-                                {label}
-                                <span className="ml-1 text-xs text-muted-foreground">
-                                    {count}
-                                </span>
-                            </Button>
-                        ))}
+                <DataTable
+                    caption="Pages"
+                    columns={createPageColumns({
+                        sort: filters.sort,
+                        can,
+                        busyId,
+                        onSort: sort,
+                        onTogglePublish: togglePublish,
+                        onDuplicate: duplicate,
+                        onDestroy: destroy,
+                        onRestore: restore,
+                    })}
+                    data={visiblePages}
+                    getRowId={(page) => String(page.id)}
+                    rowClassName={(page) =>
+                        busyId === page.id ? 'opacity-60' : undefined
+                    }
+                    serverPagination={{
+                        pageIndex: Math.max(0, pages.current_page - 1),
+                        pageSize: pages.per_page,
+                        pageCount: Math.max(1, pages.last_page),
+                        total: pages.total,
+                    }}
+                    onPageChange={(pageIndex) =>
+                        visit({ ...filters, page: pageIndex + 1 })
+                    }
+                    emptyState={
+                        <EmptyState
+                            icon={FileText}
+                            title={
+                                filters.q
+                                    ? 'No pages match that search'
+                                    : filters.trashed
+                                      ? 'The trash is empty'
+                                      : filters.status === 'draft'
+                                        ? 'No drafts right now'
+                                        : 'No pages yet'
+                            }
+                            description={
+                                filters.q
+                                    ? 'Try a shorter search term or clear the filters.'
+                                    : filters.trashed
+                                      ? 'Deleted pages stay here until they are restored.'
+                                      : 'Start with a page — a hero section is added for you.'
+                            }
+                            action={
+                                filters.q ? (
+                                    <Button
+                                        variant="outline"
+                                        onClick={() =>
+                                            visit({ sort: filters.sort })
+                                        }
+                                    >
+                                        Clear search
+                                    </Button>
+                                ) : can.create ? (
+                                    <Button asChild>
+                                        <Link href="/admin/pages/create">
+                                            <Plus className="size-4" />
+                                            Create the first page
+                                        </Link>
+                                    </Button>
+                                ) : null
+                            }
+                        />
+                    }
+                    toolbar={
+                        <DataTableToolbar
+                            filters={
+                                <>
+                                    <DataTableFilterTabs
+                                        value={
+                                            filters.trashed
+                                                ? 'trashed'
+                                                : filters.status
+                                        }
+                                        options={[
+                                            {
+                                                value: '',
+                                                label: 'All',
+                                                count: counts.all,
+                                            },
+                                            {
+                                                value: 'published',
+                                                label: 'Published',
+                                                count: counts.published,
+                                            },
+                                            {
+                                                value: 'scheduled',
+                                                label: 'Scheduled',
+                                                count: counts.scheduled,
+                                            },
+                                            {
+                                                value: 'draft',
+                                                label: 'Drafts',
+                                                count: counts.draft,
+                                            },
+                                            ...(counts.trashed > 0
+                                                ? [
+                                                      {
+                                                          value: 'trashed',
+                                                          label: 'Trash',
+                                                          count: counts.trashed,
+                                                      },
+                                                  ]
+                                                : []),
+                                        ]}
+                                        onChange={(value) => {
+                                            if (value === 'trashed') {
+                                                visit({
+                                                    ...filters,
+                                                    status: '',
+                                                    trashed: true,
+                                                    page: undefined,
+                                                });
 
-                        {counts.trashed > 0 || filters.trashed ? (
-                            <Button
-                                size="sm"
-                                variant={
-                                    filters.trashed ? 'secondary' : 'ghost'
-                                }
-                                onClick={() =>
-                                    visit({
-                                        ...filters,
-                                        trashed: filters.trashed
-                                            ? undefined
-                                            : 1,
-                                    })
-                                }
-                            >
-                                Trash
-                                <span className="ml-1 text-xs text-muted-foreground">
-                                    {counts.trashed}
-                                </span>
-                            </Button>
-                        ) : null}
-                    </div>
+                                                return;
+                                            }
 
-                    <div className="flex items-center gap-2">
-                        <div className="relative">
-                            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                                value={search}
-                                onChange={(event) =>
-                                    setSearch(event.target.value)
-                                }
-                                onKeyDown={(event) => {
-                                    if (event.key === 'Enter') {
-                                        visit({ ...filters, q: search });
-                                    }
-                                }}
-                                placeholder="Search pages"
-                                aria-label="Search pages"
-                                className="h-9 w-full pl-8 sm:w-56"
-                            />
-                        </div>
-
-                        <Select
-                            value={filters.sort}
-                            onValueChange={(value) =>
-                                visit({ ...filters, sort: value })
+                                            visit({
+                                                ...filters,
+                                                status: value,
+                                                trashed: undefined,
+                                                page: undefined,
+                                            });
+                                        }}
+                                    />
+                                    {isFiltered ? (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                visit({
+                                                    sort: filters.sort,
+                                                    page: undefined,
+                                                })
+                                            }
+                                        >
+                                            Clear filters
+                                        </Button>
+                                    ) : null}
+                                </>
                             }
                         >
-                            <SelectTrigger
-                                className="h-9 w-36"
-                                aria-label="Sort pages"
+                            <DataTableSearch
+                                defaultValue={filters.q}
+                                placeholder="Search pages"
+                                onSearch={(q) =>
+                                    visit({
+                                        ...filters,
+                                        q,
+                                        page: undefined,
+                                    })
+                                }
+                            />
+
+                            <Select
+                                value={filters.sort}
+                                onValueChange={(value) =>
+                                    visit({
+                                        ...filters,
+                                        sort: value,
+                                        page: undefined,
+                                    })
+                                }
                             >
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="updated">
-                                    Last updated
-                                </SelectItem>
-                                <SelectItem value="created">Newest</SelectItem>
-                                <SelectItem value="title">Title</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-
-                {isEmpty ? (
-                    <EmptyState
-                        icon={FileText}
-                        title={
-                            filters.q
-                                ? 'No pages match that search'
-                                : filters.trashed
-                                  ? 'The trash is empty'
-                                  : filters.status === 'draft'
-                                    ? 'No drafts right now'
-                                    : 'No pages yet'
-                        }
-                        description={
-                            filters.q
-                                ? 'Try a shorter search term or clear the filters.'
-                                : filters.trashed
-                                  ? 'Deleted pages stay here until they are restored.'
-                                  : 'Start with a page — a hero section is added for you.'
-                        }
-                        action={
-                            filters.q ? (
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        setSearch('');
-                                        visit({ sort: filters.sort });
-                                    }}
+                                <SelectTrigger
+                                    className="h-9 w-36 md:hidden"
+                                    aria-label="Sort pages"
                                 >
-                                    Clear search
-                                </Button>
-                            ) : can.create ? (
-                                <Button asChild>
-                                    <Link href="/admin/pages/create">
-                                        <Plus className="size-4" />
-                                        Create the first page
-                                    </Link>
-                                </Button>
-                            ) : null
-                        }
-                    />
-                ) : (
-                    <Card className="gap-0 overflow-hidden py-0">
-                        <CardContent className="p-0">
-                            <table className="w-full text-sm">
-                                <caption className="sr-only">Pages</caption>
-                                <thead className="bg-muted/40">
-                                    <tr className="border-b border-border">
-                                        <th
-                                            scope="col"
-                                            className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                                        >
-                                            Page
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                                        >
-                                            Status
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="hidden px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase sm:table-cell"
-                                        >
-                                            Author
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="hidden px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase md:table-cell"
-                                        >
-                                            Updated
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-4 py-2.5 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                                        >
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {visiblePages.map((page) => (
-                                        <tr
-                                            key={page.id}
-                                            className={cn(
-                                                'border-b border-border/60 transition-colors last:border-0 hover:bg-muted/40',
-                                                busyId === page.id &&
-                                                    'opacity-60',
-                                            )}
-                                        >
-                                            <td className="px-4 py-3">
-                                                <div className="flex flex-col">
-                                                    <Link
-                                                        href={page.urls.edit}
-                                                        className="font-medium transition-colors hover:text-primary"
-                                                    >
-                                                        {page.title}
-                                                    </Link>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        /{page.slug}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {page.is_trashed ? (
-                                                    <StatusBadge status="error" />
-                                                ) : (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-2 h-7"
-                                                        onClick={() =>
-                                                            togglePublish(page)
-                                                        }
-                                                        disabled={
-                                                            !can.publish ||
-                                                            page.status ===
-                                                                'scheduled'
-                                                        }
-                                                        title={
-                                                            can.publish
-                                                                ? 'Toggle publish state'
-                                                                : 'You are not allowed to publish'
-                                                        }
-                                                    >
-                                                        <StatusBadge
-                                                            status={page.status}
-                                                        />
-                                                    </Button>
-                                                )}
-                                            </td>
-                                            <td className="hidden px-4 py-3 text-xs text-muted-foreground sm:table-cell">
-                                                {page.author ?? '—'}
-                                            </td>
-                                            <td className="hidden px-4 py-3 text-xs text-muted-foreground md:table-cell">
-                                                {formatDate(page.updated_at)}
-                                            </td>
-                                            <td className="px-4 py-3 text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger
-                                                        asChild
-                                                    >
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="size-8"
-                                                            aria-label={`Actions for ${page.title}`}
-                                                        >
-                                                            <MoreHorizontal className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent
-                                                        align="end"
-                                                        className="w-44"
-                                                    >
-                                                        <DropdownMenuItem
-                                                            asChild
-                                                        >
-                                                            <Link
-                                                                href={
-                                                                    page.urls
-                                                                        .edit
-                                                                }
-                                                            >
-                                                                Edit
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        {page.urls.preview ? (
-                                                            <DropdownMenuItem
-                                                                asChild
-                                                            >
-                                                                <a
-                                                                    href={
-                                                                        page
-                                                                            .urls
-                                                                            .preview
-                                                                    }
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                >
-                                                                    <Eye className="size-3.5" />
-                                                                    Preview
-                                                                </a>
-                                                            </DropdownMenuItem>
-                                                        ) : null}
-                                                        {page.urls.public ? (
-                                                            <DropdownMenuItem
-                                                                asChild
-                                                            >
-                                                                <a
-                                                                    href={
-                                                                        page
-                                                                            .urls
-                                                                            .public
-                                                                    }
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                >
-                                                                    View live
-                                                                </a>
-                                                            </DropdownMenuItem>
-                                                        ) : null}
-                                                        {can.create &&
-                                                        !page.is_trashed ? (
-                                                            <DropdownMenuItem
-                                                                onClick={() =>
-                                                                    duplicate(
-                                                                        page,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Copy className="size-3.5" />
-                                                                Duplicate
-                                                            </DropdownMenuItem>
-                                                        ) : null}
-                                                        <DropdownMenuSeparator />
-                                                        {page.is_trashed ? (
-                                                            <DropdownMenuItem
-                                                                onClick={() =>
-                                                                    router.post(
-                                                                        page
-                                                                            .urls
-                                                                            .restore,
-                                                                        {},
-                                                                        {
-                                                                            preserveScroll: true,
-                                                                        },
-                                                                    )
-                                                                }
-                                                            >
-                                                                <RotateCcw className="size-3.5" />
-                                                                Restore
-                                                            </DropdownMenuItem>
-                                                        ) : can.delete ? (
-                                                            <DropdownMenuItem
-                                                                variant="destructive"
-                                                                onClick={() =>
-                                                                    destroy(
-                                                                        page,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Trash2 className="size-3.5" />
-                                                                Move to trash
-                                                            </DropdownMenuItem>
-                                                        ) : null}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {pagination.length > 3 ? (
-                    <nav
-                        className="flex flex-wrap items-center justify-center gap-1"
-                        aria-label="Pagination"
-                    >
-                        {pagination.map(({ link, key }) =>
-                            link.url ? (
-                                <Button
-                                    key={key}
-                                    size="sm"
-                                    variant={
-                                        link.active ? 'secondary' : 'ghost'
-                                    }
-                                    onClick={() =>
-                                        router.get(
-                                            link.url as string,
-                                            {},
-                                            {
-                                                preserveState: true,
-                                                preserveScroll: true,
-                                            },
-                                        )
-                                    }
-                                >
-                                    {plainLabel(link.label)}
-                                </Button>
-                            ) : (
-                                // Disabled gap ("...") links share a label, so position is the key.
-
-                                <Button
-                                    key={key}
-                                    size="sm"
-                                    variant="ghost"
-                                    disabled
-                                >
-                                    {plainLabel(link.label)}
-                                </Button>
-                            ),
-                        )}
-                    </nav>
-                ) : null}
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="updated">
+                                        Last updated
+                                    </SelectItem>
+                                    <SelectItem value="created">
+                                        Newest
+                                    </SelectItem>
+                                    <SelectItem value="title">Title</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </DataTableToolbar>
+                    }
+                />
             </div>
         </>
     );
