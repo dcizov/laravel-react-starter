@@ -1,0 +1,85 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lattice version
+    |--------------------------------------------------------------------------
+    |
+    | Compared against the `requires.lattice` constraint of every addon and
+    | theme manifest before it is allowed to be activated.
+    |
+    */
+
+    'version' => '0.1.0',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Extension paths
+    |--------------------------------------------------------------------------
+    |
+    | Addons and themes are folders on disk. They are never registered by
+    | Composer — the database decides which ones boot.
+    |
+    */
+
+    'paths' => [
+        'addons' => app_path('Addons'),
+        'themes' => app_path('Themes'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache
+    |--------------------------------------------------------------------------
+    |
+    | Only handles and scalars are cached. Models are re-queried on every
+    | request because a serialising cache store cannot round-trip them.
+    |
+    */
+
+    'cache' => [
+        'store' => env('LATTICE_CACHE_STORE'),
+        'ttl' => env('LATTICE_CACHE_TTL', 3600),
+        'keys' => [
+            'addons' => 'lattice.addons.active',
+            'themes' => 'lattice.theme.active',
+            'navigation' => 'lattice.navigation',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Core navigation
+    |--------------------------------------------------------------------------
+    |
+    | The same registry addons write to. Adding an admin screen means adding an
+    | entry here (or in an addon.json) — never editing the React sidebar.
+    |
+    */
+
+    'core_navigation' => [
+        ['section' => 'Workspace', 'label' => 'Dashboard', 'route' => '/admin', 'icon' => 'layout-dashboard', 'order' => 10],
+        ['section' => 'Content', 'label' => 'Pages', 'route' => '/admin/pages', 'icon' => 'file-text', 'order' => 20],
+        ['section' => 'Content', 'label' => 'Media', 'route' => '/admin/media', 'icon' => 'image', 'order' => 30],
+        ['section' => 'Site', 'label' => 'Appearance', 'route' => '/admin/appearance', 'icon' => 'palette', 'order' => 40],
+        ['section' => 'Site', 'label' => 'Addons', 'route' => '/admin/addons', 'icon' => 'plug', 'order' => 50],
+        ['section' => 'Team', 'label' => 'Users', 'route' => '/admin/users', 'icon' => 'users', 'order' => 60],
+        ['section' => 'Team', 'label' => 'Activity', 'route' => '/admin/activity', 'icon' => 'activity', 'order' => 70],
+        ['section' => 'System', 'label' => 'Settings', 'route' => '/admin/settings', 'icon' => 'settings', 'order' => 80],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generated TypeScript
+    |--------------------------------------------------------------------------
+    |
+    | `lattice:discover` writes the page and section registries that the
+    | frontend imports. JS is resolved at build time, never at runtime.
+    |
+    */
+
+    'generated_path' => resource_path('js/lib/generated'),
+
+];

@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ExternalLink, Search } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavSections } from '@/components/nav-sections';
@@ -14,9 +14,10 @@ import {
     SidebarMenuItem,
     SidebarSeparator,
 } from '@/components/ui/sidebar';
-import { adminNavigation } from '@/lib/navigation';
 
 export function AppSidebar() {
+    const { navigation } = usePage().props;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -47,7 +48,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavSections sections={adminNavigation} />
+                <NavSections sections={navigation} />
             </SidebarContent>
 
             <SidebarFooter>

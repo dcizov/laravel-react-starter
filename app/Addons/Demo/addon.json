@@ -1,0 +1,26 @@
+{
+    "handle": "Demo",
+    "name": "Demo",
+    "version": "1.0.0",
+    "description": "Reference addon: one route, one navigation entry, one migration and a lifecycle hook.",
+    "author": "Lattice",
+    "provider": "App\\Addons\\Demo\\DemoServiceProvider",
+    "requires": {
+        "php": "^8.3",
+        "laravel": "^13.0",
+        "lattice": "^0.1"
+    },
+    "permissions": ["demo:view"],
+    "navigation": [
+        {
+            "section": "Site",
+            "label": "Demo",
+            "route": "/admin/demo",
+            "icon": "flask-conical",
+            "permission": "demo:view",
+            "order": 55
+        }
+    ],
+    "migrations": true,
+    "seeders": []
+}

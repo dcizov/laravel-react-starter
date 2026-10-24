@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { createElement } from 'react';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -7,9 +8,16 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import type { AdminNavSection } from '@/lib/navigation';
+import { navIcon } from '@/lib/nav-icons';
+import type { NavigationSection } from '@/types/navigation';
 
-export function NavSections({ sections }: { sections: AdminNavSection[] }) {
+function NavIcon({ name }: { name: string | null }) {
+    // createElement keeps the icon lookup out of the render tree, so eslint's
+    // static-components rule stays satisfied.
+    return createElement(navIcon(name));
+}
+
+export function NavSections({ sections }: { sections: NavigationSection[] }) {
     const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
@@ -20,24 +28,29 @@ export function NavSections({ sections }: { sections: AdminNavSection[] }) {
                         {section.label}
                     </SidebarGroupLabel>
                     <SidebarMenu>
-                        {section.items.map((item) => (
-                            <SidebarMenuItem key={item.title}>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={
-                                        item.href === '/admin'
-                                            ? isCurrentUrl(item.href)
-                                            : isCurrentOrParentUrl(item.href)
-                                    }
-                                    tooltip={{ children: item.title }}
+                        {section.items.map((item) => {
+                            const isActive =
+                                item.route === '/admin'
+                                    ? isCurrentUrl(item.href)
+                                    : isCurrentOrParentUrl(item.href);
+
+                            return (
+                                <SidebarMenuItem
+                                    key={`${section.label}:${item.route}`}
                                 >
-                                    <Link href={item.href} prefetch>
-                                        <item.icon />
-                                        <span>{item.title}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        ))}
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={isActive}
+                                        tooltip={{ children: item.label }}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            <NavIcon name={item.icon} />
+                                            <span>{item.label}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            );
+                        })}
                     </SidebarMenu>
                 </SidebarGroup>
             ))}

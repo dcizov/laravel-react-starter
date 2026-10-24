@@ -67,6 +67,48 @@ Nothing in the repository depends on these workarounds: on a normal machine
 - `pint --test`, `tsc --noEmit`, `eslint --max-warnings 0`, `npm run build`,
   `php artisan test` (see overrides above): pass.
 
-**Next: S1 — architecture spine** (`app/Cms/*`: manifest DTO, version
-constraints, addon/theme repositories, `ProviderLoader` + `SafeMode`,
-navigation registry, lifecycle commands, DB-driven boot).
+## S1 — Architecture spine
+
+**Done**
+
+- `app/Cms/` core, no concrete addon imported anywhere:
+    - `Manifests/{AddonManifest,ThemeManifest,ManifestValidator}` — immutable
+      DTOs read from `addon.json` / `theme.json`, plus structural validation.
+    - `Support/VersionConstraint` — `^`, `~`, wildcards, comparisons, `||`.
+    - `Support/SafeMode` — registers a provider in try/catch; a throw is logged,
+      the row is flagged `status=error` with `last_error`, booting continues.
+    - `Repositories/{AddonRepository,ThemeRepository}` — query-builder only, so
+      they are safe inside `register()` (pitfall #1). Cache stores handles, never
+      models (pitfall #3).
+    - `Boot/ProviderLoader` — `installed()` guard (fresh clone → install screen),
+      registers active addons + theme, then `refreshNameLookups()` /
+      `refreshActionLookups()` (pitfall #4).
+    - `Registries/Navigation` — addons and core both write here; items are
+      permission-filtered per user. React renders the registry, nothing else.
+    - `Addons/AddonManager` — install / activate / deactivate / uninstall with
+      addon-scoped migrations (`DatabaseMigrationRepository` over
+      `addon_migrations`), health check before `active`, rollback of just that
+      activation on failure, data kept on deactivate.
+    - `Providers/CoreServiceProvider` — registered first; merges config, binds
+      the registry/repositories/SafeMode/loader, defines manifest permissions as
+      gates (temporary until the RBAC step).
+- Migrations: `addons`, `addon_migrations` (nullable columns), `themes`.
+- Commands: `lattice:install [--demo]`, `lattice:discover` (writes
+  `resources/js/lib/generated/{navigation,addons}.ts`), `lattice:doctor`,
+  `addon:make`, `addon:enable|disable|remove|migrate`. Custom namespace wired
+  with `->withCommands()` (pitfall #6).
+- Reference `app/Addons/Demo`: manifest nav + permission, own route, own
+  migration (`demo_notes`), `Activator::activate()` hook, React screen.
+- Frontend: `navigation` shared prop from the registry, `nav-icons.ts` maps
+  manifest icon names, sidebar renders whatever the server sends.
+- Tests: `tests/Feature/Cms` (lifecycle, fresh-boot, safe mode, uninstall,
+  navigation) on `DatabaseMigrations` + file DB so a "next request" can be
+  simulated by `refreshApplication()` (pitfall #11); `tests/Unit/ManifestTest`.
+
+**Accept:** enabling Demo adds its nav item + `/admin/demo`; disabling removes
+both and keeps `demo_notes`; a provider that throws becomes `error` while the
+app still serves `/login`; an incompatible manifest is refused with the exact
+reason. 55 tests / 223 assertions green, pint + tsc + eslint + build green.
+
+**Next: S2 — auth, roles, users** (Spatie roles Admin/Editor/Author,
+permission map in `auth.can`, policies, invitations, activity log).
