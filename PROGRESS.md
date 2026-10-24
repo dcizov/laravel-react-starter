@@ -1102,3 +1102,81 @@ activate/deactivate control per person; a table would make it worse on narrow
 screens. `pages/admin/activity/index.tsx` is a grouped timeline, not a table.
 `pages/admin/media/index.tsx` is a grid. Each already renders the shared empty
 state, so they stay as they are rather than being forced into the table.
+
+## Known issue: the committed `composer.lock` is not a real lock
+
+`composer install` fails on a clean checkout:
+
+```text
+- Required package "spatie/laravel-activitylog" is not present in the lock file.
+- Required package "spatie/laravel-permission" is not present in the lock file.
+```
+
+`composer.json` requires both packages (`^4.12`, `^6.22`); the lock contains
+neither, and its `content-hash` (`9a90e7e8…`) does not match `composer.json`
+(`767941a1…`). The cause is the sandbox this project was built in: it has no
+Packagist access, so `composer.lock` was **reconstructed** from `composer.json`
+and the package versions that happened to be installable, rather than resolved
+by Composer. It therefore cannot install, and no amount of `composer install`
+will fix it.
+
+The fix is to let real Composer resolve it once on a machine with PHP ≥ 8.3
+and Packagist access:
+
+```bash
+composer update            # deliberately an update: the existing lock is not genuine
+composer install           # re-run so post-install scripts run with the app's PHP
+git add composer.lock && git commit -m "chore(deps): regenerate composer.lock with real Composer"
+```
+
+`vendor/laravel/sail/runtimes/8.5` is also absent for the same reason (it ships
+inside `vendor/`), so `docker compose build` cannot run until `vendor/` exists —
+install Composer dependencies first, Sail second.
+
+## Fix: the site rendered unstyled in `sail composer dev`
+
+Symptom: with `sail composer dev` running, `http://localhost:8000/` painted the
+real content — the Northwind Studio copy, the menu — but with no stylesheet: no
+colour tokens, no layout, no type scale. Every script ran and the console was
+quiet, which is the signature of a blocked **stylesheet**, not of broken JS.
+
+Cause: in development Vite serves CSS from its own origin
+(`http://localhost:5173/resources/css/app.css`) and the fonts it references from
+the same place. The CSP sent by `SecurityHeaders` was:
+
+```text
+script-src 'self' 'nonce-…' 'unsafe-eval'
+style-src 'self' 'unsafe-inline'
+font-src 'self' data:
+```
+
+`'self'` is the app origin (`:8000`), so the browser refused the cross-origin
+sheet and its fonts. A nonce cannot rescue this: nonces apply to `<script>` and
+`<style>` elements, not to `<link rel="stylesheet">`. `'unsafe-inline'` does not
+help either, for the same reason.
+
+Fix: while (and only while) Vite's hot file exists, `SecurityHeaders::viteDevOrigins()`
+reads `public/hot`, keeps it only when it parses as a plain `http`/`https`
+origin, and adds that origin to `script-src`, `style-src`, `font-src` and
+`connect-src`. The loosening is confined to `app()->environment('local')`, the
+file is written by Vite and deleted when it stops, and a malformed file is
+ignored rather than interpolated into the header — so production, testing and
+`npm run build` are unaffected.
+
+Tests added in `tests/Feature/Security/SecurityHeadersTest.php`: the origin is
+present in `local`, absent in `testing` even when a hot file exists, and a
+`javascript:` hot file injects nothing.
+
+### Also: `npm run check` was failing on formatting
+
+`vp check` reported 17 files with formatting differences. They were real (the
+formatter's own config, `fmt` in `vite.config.ts`, disagreed with what those
+files contained), so they are fixed with `vp check --fix` rather than by
+loosening the check. `npm run check` now passes with 0 errors and 4 warnings,
+all pre-existing type warnings in files this pass did not otherwise touch.
+
+### Not executed here
+
+PHP: no binary and no `vendor/` in this sandbox, so the three new Pest cases are
+written but **unexecuted**; `pint` likewise. `npx vitest run` (48 tests),
+`npx tsc --noEmit` and `npx vp check` were executed and are green.

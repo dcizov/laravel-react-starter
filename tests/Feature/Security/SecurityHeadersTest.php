@@ -55,3 +55,65 @@ it('sets the headers on admin responses too', function () {
         ->get('/admin')
         ->assertHeader('X-Content-Type-Options', 'nosniff');
 });
+
+/**
+ * In development `npm run dev` serves the stylesheet and the fonts from the
+ * Vite dev server, which is a different origin from the app. `'self'` does not
+ * cover it and a nonce cannot cover a `<link rel="stylesheet">`, so the policy
+ * has to name the origin or the page renders without CSS while every script
+ * still runs. The origin is read from Vite's hot file, so it is only ever
+ * allowed while the dev server is actually up.
+ */
+it('allows the Vite dev server origin in local development', function () {
+    $page = Page::factory()->published()->create();
+    $hotFile = public_path('hot');
+
+    file_put_contents($hotFile, 'http://localhost:5173');
+
+    $this->app->detectEnvironment(fn (): string => 'local');
+
+    try {
+        $csp = (string) $this->get('/'.$page->slug)->headers->get('Content-Security-Policy');
+    } finally {
+        @unlink($hotFile);
+        $this->app->detectEnvironment(fn (): string => 'testing');
+    }
+
+    expect($csp)->toContain('http://localhost:5173')
+        ->and($csp)->toContain('unsafe-eval');
+});
+
+it('never names the dev server outside local development', function () {
+    $page = Page::factory()->published()->create();
+    $hotFile = public_path('hot');
+
+    file_put_contents($hotFile, 'http://localhost:5173');
+
+    try {
+        $csp = (string) $this->get('/'.$page->slug)->headers->get('Content-Security-Policy');
+    } finally {
+        @unlink($hotFile);
+    }
+
+    expect($csp)->not->toContain('localhost:5173')
+        ->and($csp)->not->toContain('unsafe-eval');
+});
+
+it('ignores a hot file that is not a plain http origin', function () {
+    $page = Page::factory()->published()->create();
+    $hotFile = public_path('hot');
+
+    file_put_contents($hotFile, "javascript:alert(1); style-src *\n");
+
+    $this->app->detectEnvironment(fn (): string => 'local');
+
+    try {
+        $csp = (string) $this->get('/'.$page->slug)->headers->get('Content-Security-Policy');
+    } finally {
+        @unlink($hotFile);
+        $this->app->detectEnvironment(fn (): string => 'testing');
+    }
+
+    expect($csp)->not->toContain('javascript:')
+        ->and($csp)->not->toContain('style-src *');
+});
