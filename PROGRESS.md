@@ -698,3 +698,30 @@ instead. Screenshots can be dropped into `docs/` later without touching prose.
 without a surprise; every list has its three states; every destructive action
 asks first; the whole admin is token-driven, so dark mode needs no second
 stylesheet.
+
+### S8 close-out
+
+Lattice is complete through the scope of `02-steps.md`. A fresh clone gets:
+
+```
+composer install && cp .env.example .env && php artisan key:generate
+npm install && npm run build
+php artisan lattice:install --demo      # migrate + seed + storage:link + discover
+php artisan serve
+```
+
+and lands on a seeded Northwind Studio site (`/`) with the admin at `/admin`
+(`admin@lattice.test` / `password`) — eight pages in five shapes, a six-post
+blog with categories and tags, eight generated images, eight weeks of traffic,
+five settings groups, a full activity log, two themes (`aperture` live,
+`meridian` installed) and one addon (`PostCraft`) doing real work: its routes,
+navigation and sections appear when active and vanish, without losing a row,
+when it is not. `Shopper` stays on disk as the incompatible case.
+
+Final state: **179 tests / 1324 assertions**, pint (196 files), `tsc --noEmit`,
+eslint (0 warnings), `npm run build` and `lattice:doctor` all green.
+
+Known deviations, all recorded above: no `Redirects` addon (§G mentions one that
+S6 never scoped), no README screenshots (no browser in the build sandbox), and
+`theme:activate` / `pages:publish-scheduled` were written in S8.2 rather than in
+the step that introduced their callers.
