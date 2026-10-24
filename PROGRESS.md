@@ -795,3 +795,25 @@ Two stale-checkout traps are now in the README's troubleshooting section:
 predates `composer setup:demo`, and `could not translate host name "pgsql"`
 means an `.env` copied from the old starter.
 
+### S8.6 — `sail composer dev` on port 8000
+
+The base branch let `composer dev` (which is `php artisan dev` → `artisan serve`
++ queue + pail + Vite) be opened at `localhost:8000`; after S8.4 nothing
+answered there, because `compose.yaml` published only `80:80` and `artisan
+serve` binds `127.0.0.1` inside the container — a published port cannot reach a
+loopback-only listener.
+
+**Fixed in `compose.yaml`:**
+
+- `- '${FORWARD_SERVE_PORT:-8000}:8000'` — the port `composer dev` actually
+  uses is forwarded to the host again.
+- `SERVER_HOST: '0.0.0.0'` in the container environment — `ServeCommand` reads
+  `SERVER_HOST` for its `--host` default, so the built-in server listens on
+  every interface inside the container while a bare-metal `php artisan serve`
+  keeps its safer loopback default.
+
+`APP_PORT` (nginx, `:80`) and `VITE_PORT` (`:5173`) are untouched, so both
+workflows work: `sail composer dev` → `http://localhost:8000`, or `sail up -d` +
+`sail npm run dev` → `http://localhost`. `.env.example` and the README explain
+the choice next to `APP_URL`.
+

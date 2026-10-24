@@ -63,16 +63,23 @@ there (and drop the `pgsql` host lines) or start over with
 ### With Sail
 
 ```bash
-sail up -d              # app on http://localhost  (port 80, not 8000)
+sail up -d              # containers
 sail composer setup:demo
-sail npm run dev        # Vite on http://localhost:5173
+sail composer dev       # server + queue + logs + Vite, all in one
 ```
 
-Set `APP_URL=http://localhost` in `.env` to match what you open: Sail
-publishes port **80**, so `php artisan serve`'s `:8000` — the address the
-container prints — is not reachable from the host. And `composer dev` starts a
-second server *inside* the container; with Sail you only need
-`sail npm run dev`.
+`composer dev` runs `php artisan serve` on **port 8000**, so with Sail that is
+<http://localhost:8000> — matching the default `APP_URL`. Two pieces make it
+reachable from the host: `compose.yaml` publishes `8000:8000`, and the container
+sets `SERVER_HOST=0.0.0.0` because `artisan serve` otherwise listens on
+loopback only. Change the host port with `FORWARD_SERVE_PORT` if 8000 is taken
+(then update `APP_URL` too).
+
+Prefer the container's own nginx — no extra process, one less port? Then run
+`sail up -d` and just `sail npm run dev`, and open <http://localhost> with
+`APP_URL=http://localhost`.
+
+Vite is published on <http://localhost:5173> either way.
 
 `lattice:install --demo` migrates the core, installs the addons and themes found
 on disk, links storage, regenerates the frontend registries and seeds the demo
@@ -201,8 +208,10 @@ a provider, one route, one migration and an activation hook.
   reason; nothing else in the installation is affected.
 - **`There are no commands defined in the "setup" namespace`** — the checkout
   predates the `setup:demo` composer script. `git log --oneline -1` and pull.
-- **Firefox/Chrome cannot connect to `localhost:8000` under Sail** — Sail
-  publishes port 80: use <http://localhost>, and check `sail ps`.
+- **The browser cannot reach `localhost:8000` under Sail** — the port is
+  published only by the current `compose.yaml`; older checkouts served nginx on
+  `80` instead. Pull, `sail build --no-cache && sail up -d`, then check
+  `sail ps` (both `8000` and `5173` should be forwarded).
 - **`could not translate host name "pgsql"`** — an old `.env` still points at
   Postgres. Set `DB_CONNECTION=sqlite` and drop the `DB_HOST`/`DB_PORT`/
   `DB_DATABASE`/`DB_USERNAME`/`DB_PASSWORD` lines, or `rm .env` and re-run

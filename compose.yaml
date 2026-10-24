@@ -10,10 +10,15 @@ services:
             - 'host.docker.internal:host-gateway'
         ports:
             - '${APP_PORT:-80}:80'
+            # `php artisan dev` / `composer dev` runs the built-in server here.
+            - '${FORWARD_SERVE_PORT:-8000}:8000'
             - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
         environment:
             WWWUSER: '${WWWUSER}'
             LARAVEL_SAIL: 1
+            # `artisan serve` binds 127.0.0.1 by default, which a published
+            # port cannot reach; listen on every interface inside the container.
+            SERVER_HOST: '0.0.0.0'
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
