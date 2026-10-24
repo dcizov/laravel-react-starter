@@ -2,8 +2,9 @@
 
 namespace App\Cms\Registries;
 
+use App\Cms\Permissions\AbilityMap;
+use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Support\Facades\Gate;
 
 /**
  * The navigation registry.
@@ -92,14 +93,17 @@ final class Navigation
      */
     private function filterFor(?Authenticatable $user): array
     {
+        // One ability map per request instead of one gate call per item.
+        $abilities = $user instanceof User ? app(AbilityMap::class)->for($user) : [];
+
         return array_values(array_filter(
             $this->items,
-            static function (array $item) use ($user): bool {
+            static function (array $item) use ($user, $abilities): bool {
                 if ($item['permission'] === null || $user === null) {
                     return $item['permission'] === null;
                 }
 
-                return Gate::forUser($user)->allows($item['permission']);
+                return $abilities[$item['permission']] ?? false;
             },
         ));
     }

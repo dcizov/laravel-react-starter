@@ -3,8 +3,10 @@
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\AppearanceController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
@@ -21,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth', 'verified', 'active'])->prefix('admin')->group(function (): void {
-    Route::inertia('/', 'dashboard')->name('dashboard');
+    Route::get('/', DashboardController::class)->name('dashboard');
 
     Route::get('users', [UserController::class, 'index'])->name('admin.users.index');
     Route::post('users/invitations', [UserController::class, 'invite'])->name('admin.users.invite');
@@ -30,6 +32,9 @@ Route::middleware(['auth', 'verified', 'active'])->prefix('admin')->group(functi
     Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 
     Route::get('activity', [ActivityController::class, 'index'])->name('admin.activity.index');
+
+    Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('admin.notifications.read-all');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('admin.notifications.read');
 
     Route::get('settings', [SettingsController::class, 'index'])->name('admin.settings.index');
     Route::get('settings/{group}', [SettingsController::class, 'show'])->name('admin.settings.show');

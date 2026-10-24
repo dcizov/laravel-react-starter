@@ -3,9 +3,9 @@
 namespace App\Cms\Permissions;
 
 use App\Models\User;
-use Illuminate\Contracts\Auth\Access\Gate;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission as SpatiePermission;
+use Throwable;
 
 /**
  * The ability map shared with the frontend (`auth.can`).
@@ -13,10 +13,15 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
  * It is generated from the permission table, so an addon that seeds a new
  * permission shows up in the UI without a frontend change. The client uses it
  * to hide affordances; the server still authorizes every mutation.
+ *
+ * Two queries: the permission list and one union of the user's role and direct
+ * grants. Asking the gate per permission cost five queries and ran on every
+ * admin screen.
  */
 final class AbilityMap
 {
-    public function __construct(private readonly Application $app) {}
+    /** @var array<int, array<string, bool>> */
+    private array $memo = [];
 
     /**
      * @return array<string, bool>
@@ -27,18 +32,19 @@ final class AbilityMap
             return [];
         }
 
-        if (! $this->app->bound(Gate::class)) {
-            return [];
+        if (isset($this->memo[$user->getKey()])) {
+            return $this->memo[$user->getKey()];
         }
 
-        $gate = $this->app->make(Gate::class);
+        $granted = $this->grantedPermissionIds($user);
+
         $abilities = [];
 
-        foreach ($this->permissions() as $permission) {
-            $abilities[$permission] = $gate->forUser($user)->allows($permission);
+        foreach ($this->permissionRows() as $permission) {
+            $abilities[$permission->name] = in_array($permission->id, $granted, true);
         }
 
-        return $abilities;
+        return $this->memo[$user->getKey()] = $abilities;
     }
 
     /**
@@ -46,9 +52,43 @@ final class AbilityMap
      */
     public function permissions(): array
     {
+        return array_map(fn ($permission): string => $permission->name, $this->permissionRows());
+    }
+
+    /**
+     * @return list<SpatiePermission>
+     */
+    private function permissionRows(): array
+    {
         try {
-            return SpatiePermission::query()->orderBy('name')->pluck('name')->all();
-        } catch (\Throwable) {
+            return SpatiePermission::query()->orderBy('name')->get(['id', 'name'])->all();
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function grantedPermissionIds(User $user): array
+    {
+        try {
+            $viaRoles = DB::table('model_has_roles')
+                ->join('role_has_permissions', 'role_has_permissions.role_id', '=', 'model_has_roles.role_id')
+                ->where('model_has_roles.model_id', $user->getKey())
+                ->where('model_has_roles.model_type', $user->getMorphClass())
+                ->select('role_has_permissions.permission_id');
+
+            $direct = DB::table('model_has_permissions')
+                ->where('model_id', $user->getKey())
+                ->where('model_type', $user->getMorphClass())
+                ->select('model_has_permissions.permission_id');
+
+            return $viaRoles->union($direct)->pluck('permission_id')
+                ->map(fn ($id): int => (int) $id)
+                ->all();
+        } catch (Throwable) {
+            // A fresh clone has no permission tables yet.
             return [];
         }
     }

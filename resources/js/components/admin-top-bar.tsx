@@ -1,14 +1,10 @@
-import { Link } from '@inertiajs/react';
-import { Bell, ChevronRight, Plus } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { ChevronRight, Plus } from 'lucide-react';
 import { Fragment } from 'react';
+import { NotificationBell } from '@/components/notification-bell';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 import type { BreadcrumbItem } from '@/types';
 
 export function AdminTopBar({
@@ -56,34 +52,33 @@ export function AdminTopBar({
             </nav>
 
             <div className="flex items-center gap-1">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8"
-                            aria-label="Notifications"
-                            disabled
-                        >
-                            <Bell className="size-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        Notifications arrive in a later step
-                    </TooltipContent>
-                </Tooltip>
+                <NotificationBell />
 
                 <ThemeToggle />
 
-                <Button
-                    size="sm"
-                    className="ml-1 hidden gap-1.5 sm:inline-flex"
-                    disabled
-                >
-                    <Plus className="size-4" />
-                    New page
-                </Button>
+                <NewPageButton />
             </div>
         </header>
+    );
+}
+
+/**
+ * The top bar is shared by every admin screen, so its primary action is too:
+ * it appears only for people allowed to create pages.
+ */
+function NewPageButton() {
+    const { auth } = usePage().props;
+
+    if (!auth.user || !auth.can?.['pages.create']) {
+        return null;
+    }
+
+    return (
+        <Button size="sm" className="ml-1 hidden gap-1.5 sm:inline-flex" asChild>
+            <Link href="/admin/pages/create">
+                <Plus className="size-4" />
+                New page
+            </Link>
+        </Button>
     );
 }

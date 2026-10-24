@@ -3,6 +3,7 @@
 namespace App\Cms\Providers;
 
 use App\Cms\Boot\ProviderLoader;
+use App\Cms\Permissions\AbilityMap;
 use App\Cms\Registries\Navigation;
 use App\Cms\Repositories\AddonRepository;
 use App\Cms\Repositories\ThemeRepository;
@@ -34,6 +35,10 @@ class CoreServiceProvider extends ServiceProvider
             $app->make(AddonRepository::class),
             $app->make(ThemeRepository::class),
         ));
+        // Shared per request: the ability map is built once and handed to both
+        // the Inertia props and the controllers that ask about abilities.
+        $this->app->scoped(AbilityMap::class, fn (): AbilityMap => new AbilityMap);
+
         // Scoped: the repository memoises the settings table for one request.
         $this->app->scoped(SettingRepository::class, fn (Application $app): SettingRepository => new SettingRepository($app));
         $this->app->singleton(SafeMode::class, fn (Application $app): SafeMode => new SafeMode(

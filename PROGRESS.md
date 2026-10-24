@@ -513,5 +513,42 @@ build green. Smoke: `/admin/settings` 302 → general for admin/editor, 403 for
 author; saving a name in the live DB changed the rendered public header and
 removing it restored the config default.
 
-**Next: S7.2 — dashboard** (KPI cards, seeded page-view chart, recent activity,
-drafts, addon health, ≤ 12 queries) **+ the notification bell.**
+**Done (S7.2)**
+
+- `page_views` table (+ `App\Models\PageView`) and
+  `App\Cms\Analytics\TrafficRepository`: one grouped query covers twice the
+  window, so the series, the total and the comparison against the previous
+  fortnight all come from the same statement. Empty days are filled in PHP.
+- `notifications` table (Laravel's database notifications) + `Inbox` read model
+  and `NotificationController` (`read`, `read-all`), scoped through the user's
+  own relation so one user can never touch another's rows.
+- `DashboardController` replaces the placeholder: four KPIs (published pages
+  with the draft count, page views with the trend, media, team), a 14-day
+  traffic series, the six latest activity rows, five drafts and addon health.
+  The two short lists join `users` instead of eager-loading a relation, and
+  ability flags come from the same `AbilityMap` the layout already built.
+- Query budget work (this is the acceptance criterion): `AbilityMap` now
+  answers from two queries (permission list + one union of role and direct
+  grants) instead of five gate calls per permission, it is memoised and bound
+  as a scoped singleton, and `Navigation` filters from that map instead of one
+  gate call per sidebar item. `/admin` went from 17 queries to **12**.
+- `resources/js/pages/dashboard.tsx`: KPI cards, an inline SVG area chart (no
+  chart library — fewer than 15 points, and a `<table>` fallback for screen
+  readers), addon health with the failure message inline, drafts and recent
+  activity, each with its own empty state.
+- `components/notification-bell.tsx`: unread badge, deferred rows (skeleton
+  while they load), per-row mark-as-read that navigates, "mark all read", and
+  an "all caught up" empty state. It sits in `admin-top-bar.tsx`, which also
+  gained a permission-gated "New page" button instead of the disabled one.
+
+**Accept (S7.2):** 9 feature tests — KPIs/series/lists from real rows, the two
+empty states on a brand new install, addon health including an `error` row,
+the author's reduced ability flags, **query budget asserted (`≤ 12`) with 25
+pages and 20 days of views seeded**, notifications deferred from the first
+paint, one-read and read-all endpoints, and cross-user isolation.
+Full suite: **164 tests / 1142 assertions**; pint (188 files), tsc, eslint and
+build green. The dev database carries eight weeks of seeded traffic and two
+bell rows, so the preview shows a real chart.
+
+**Next: S7.3 — activity timeline polish** (causer/log/date filters, empty and
+loading states).

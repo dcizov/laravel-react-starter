@@ -12,6 +12,8 @@ export type User = {
 
 export type Auth = {
     user: User;
+    /** Permission map built on the server (`App\Cms\Permissions\AbilityMap`). */
+    can?: Record<string, boolean>;
 };
 
 export type Passkey = {

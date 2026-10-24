@@ -3,10 +3,12 @@
 namespace App\Http\Middleware;
 
 use App\Cms\Boot\ProviderLoader;
+use App\Cms\Notifications\Inbox;
 use App\Cms\Permissions\AbilityMap;
 use App\Cms\Registries\Navigation;
 use App\Cms\Settings\SettingRepository;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -54,6 +56,9 @@ class HandleInertiaRequests extends Middleware
                 'can' => fn (): array => app(AbilityMap::class)->for($request->user()),
             ],
             'navigation' => fn (): array => $this->navigation($request),
+            'notifications' => Inertia::defer(fn (): ?array => $request->user() !== null
+                ? app(Inbox::class)->for($request->user())
+                : null),
             'settings' => [
                 'public' => fn (): array => app(SettingRepository::class)->publicValues(),
             ],
