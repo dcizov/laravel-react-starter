@@ -202,7 +202,7 @@ unpublish, author refused publish, schedule in the future only, duplicate as a
 draft copy, soft delete + trash + restore, revision restore with a
 "Before restore" snapshot, editor render, public serving, drafts 404, scheduled
 pages hidden until their time, 301 on a renamed slug, historical slug never
-reused, signed-preview only. Full suite: 88 tests / 432 assertions. pint
+reused, signed-preview only. Full suite: 88 tests / 430 assertions. pint
 (133 files) + tsc + eslint (0 warnings) + build green.
 
 **Next: S3.2 — editor polish**, then S4 media library.
