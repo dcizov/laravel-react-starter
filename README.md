@@ -26,16 +26,39 @@ Everything else — permissions, addons, themes, sections, navigation — is par
 ```bash
 git clone <repository> lattice && cd lattice
 
+composer setup          # install, .env, key, SQLite file, Lattice, assets
+composer setup:demo     # ...and the demo site
+php artisan serve
+```
+
+`composer setup` is the one command that does the whole install: it copies
+`.env.example` to `.env` (skipping an existing `.env`), generates the key,
+creates `database/database.sqlite`, runs `lattice:install`, then installs the
+npm packages and builds the assets. `composer setup:demo` adds
+`--demo` to the seed.
+
+<details>
+<summary>Same steps by hand</summary>
+
+```bash
 composer install
 cp .env.example .env
 php artisan key:generate
+touch database/database.sqlite
 
-npm install
-npm run build
+npm install && npm run build
 
 php artisan lattice:install --demo
 php artisan serve
 ```
+
+</details>
+
+`.env.example` ships with `DB_CONNECTION=sqlite` and `MAIL_MAILER=log`, so
+nothing else has to run for a first boot. Coming from the plain Laravel starter
+with an existing `.env`? `composer setup` keeps it — set `DB_CONNECTION=sqlite`
+there (and drop the `pgsql` host lines) or start over with
+`rm .env && composer setup`.
 
 `lattice:install --demo` migrates the core, installs the addons and themes found
 on disk, links storage, regenerates the frontend registries and seeds the demo

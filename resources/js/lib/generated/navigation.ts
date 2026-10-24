@@ -17,7 +17,6 @@ export const navigationSections: GeneratedNavSection[] = [
         items: [
             { label: "Pages", route: "/admin/pages", icon: "file-text" },
             { label: "Media", route: "/admin/media", icon: "image" },
-            { label: "Posts", route: "/admin/posts", icon: "newspaper" },
         ],
     },
     {

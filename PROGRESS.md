@@ -725,3 +725,39 @@ Known deviations, all recorded above: no `Redirects` addon (§G mentions one tha
 S6 never scoped), no README screenshots (no browser in the build sandbox), and
 `theme:activate` / `pages:publish-scheduled` were written in S8.2 rather than in
 the step that introduced their callers.
+
+### S8.4 — Install path fix (reported from a real clone)
+
+`composer setup` failed on a fresh clone with
+
+```
+SQLSTATE[08006] [7] could not translate host name "pgsql" to address
+```
+
+The skeleton still carried the upstream starter's Postgres defaults:
+`.env.example` said `DB_CONNECTION=pgsql` / `DB_HOST=pgsql`, `compose.yaml`
+started a `pgsql` container, and `composer setup` ran a plain `migrate` — while
+`composer.json` already touched `database/database.sqlite` in
+`post-create-project-cmd`, and the whole of Lattice is SQLite. Three things
+disagreed with each other and the README described a fourth.
+
+**Fixed**
+
+- `.env.example` — `DB_CONNECTION=sqlite` (path defaults to
+  `database/database.sqlite`), the Postgres/MySQL block kept commented for
+  anyone who wants it, `APP_NAME=Lattice`, and `MAIL_MAILER=log` so a fresh
+  clone needs no mail server (Sail users can switch to `smtp`/`mailpit`).
+- `composer.json` — `setup` now creates the SQLite file and runs
+  `lattice:install --force` instead of `migrate`, so addons, themes, the storage
+  link and the frontend registries are all part of "setup". New `setup:demo`
+  script adds `--demo`.
+- `compose.yaml` — the unused `pgsql` service, its health check, the
+  `depends_on` entry and the `sail-pgsql` volume are gone; `mailpit` stays.
+- `README.md` — the quickstart is `composer setup` + `composer setup:demo` +
+  `php artisan serve`, with the by-hand steps folded into a `<details>` block
+  and a note for people whose `.env` predates the switch.
+
+**Verified:** a fresh SQLite file (`touch /tmp/fresh.sqlite`,
+`DB_CONNECTION=sqlite DB_DATABASE=/tmp/fresh.sqlite php artisan lattice:install
+--demo --force`) installs, seeds and discovers end to end in ~5 s; the full
+suite is unchanged at **179 tests / 1324 assertions**.

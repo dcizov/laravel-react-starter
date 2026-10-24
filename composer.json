@@ -49,9 +49,13 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
-            "@php artisan migrate --force",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan lattice:install --force",
             "npm install",
             "npm run build"
+        ],
+        "setup:demo": [
+            "@php artisan lattice:install --demo --force"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
