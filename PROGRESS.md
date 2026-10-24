@@ -606,6 +606,37 @@ Full suite: **174 tests / 1314 assertions**; pint (194 files) green.
 `/blog/{slug}`, `/sitemap.xml`, `/robots.txt`) answers 200 and `lattice:doctor`
 reports **no problems**.
 
-**Next: S8.2 — documentation** (README quickstart + credentials,
-`docs/ARCHITECTURE.md`, `docs/ADDON_DEVELOPMENT.md`,
-`docs/THEME_DEVELOPMENT.md`).
+### S8.2 — Documentation (and the two missing commands)
+
+**Done (S8.2)**
+
+- `README.md` — stack table, quickstart (`composer install` → `.env` →
+  `npm run build` → `lattice:install --demo` → `serve`), demo credentials
+  (`admin|editor|author@lattice.test`, password `password`, one pending
+  invitation), everyday commands, gate commands, "where things live", doc
+  links and troubleshooting.
+- `docs/ARCHITECTURE.md` — request lifecycle, the registries, section
+  contract, permission map, storage layout and the rules the core keeps.
+- `docs/ADDON_DEVELOPMENT.md` — manifest keys, folder layout, lifecycle,
+  routes/middleware, migrations, settings, sections and a walkthrough.
+- `docs/THEME_DEVELOPMENT.md` — manifest, tokens, the section → component
+  contract, `ThemePageProps`, menus and a checklist.
+
+Two commands the docs (and `01-spec.md` §I) promised did not exist yet, so they
+were written with this step instead of documenting them as missing:
+
+- `theme:activate {handle}` — goes through `ThemeManager::activate()`, so
+  requirement checks, the cache flush and the provider reload are the same code
+  path the Appearance screen uses; a bad handle exits non-zero with the reason.
+- `pages:publish-scheduled` — publishes every page whose `scheduled_at` has
+  passed, idempotent when nothing is due, and wired into `routes/console.php`
+  as `Schedule::command(...)->everyMinute()->withoutOverlapping()`.
+
+**Accept (S8.2):** `tests/Feature/Cms/CommandsTest.php` (5 tests) covers
+activation, the refusal path, the due/not-due split of the publisher and the
+schedule entry. Full suite: **179 tests / 1324 assertions**; pint, `tsc
+--noEmit`, eslint and `npm run build` all clean.
+
+**Next: S8.3 — UI audit and QA** (skeleton/empty/error states, destructive
+confirmation, dark mode, keyboard focus; then the full-suite run,
+`lattice:doctor` and a README walkthrough on a fresh database).
