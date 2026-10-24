@@ -637,6 +637,64 @@ activation, the refusal path, the due/not-due split of the publisher and the
 schedule entry. Full suite: **179 tests / 1324 assertions**; pint, `tsc
 --noEmit`, eslint and `npm run build` all clean.
 
-**Next: S8.3 — UI audit and QA** (skeleton/empty/error states, destructive
-confirmation, dark mode, keyboard focus; then the full-suite run,
-`lattice:doctor` and a README walkthrough on a fresh database).
+### S8.3 — UI audit and QA
+
+**Audit method.** Every admin screen and every list was read against four
+questions: does it have a loading state, an empty state and an error path; does
+every destructive action ask first; does it survive dark mode; can it be driven
+from the keyboard. What follows is only what the audit *changed* — everything
+else already held.
+
+| Screen | Loading | Empty | Error | Confirm | Notes |
+|---|---|---|---|---|---|
+| Dashboard | deferred notifications paint as skeletons | empty states on drafts and activity | toast per action | — | |
+| Pages list | row skeletons | four variants (no pages / no results / empty trash) | toast + retry | trash is reversible and offers Undo | |
+| Page editor | — | — | inline alert | — | block list decides Enter *and* Space |
+| Media library | grid + table skeletons | empty library, empty folder | toast, keep selection | delete dialog names the usage count | |
+| Users | — | empty state | toast | dialog with password | |
+| Addons | — | empty catalog | error status per addon | uninstall requires typing the handle | |
+| Activity | row skeletons | empty + filtered-empty | toast | — | |
+| Settings | — | — | toast echoing the first validation error | — | booleans save optimistically |
+| Posts list / editor | — | empty + filtered-empty | toast | **was missing** → dialog now | |
+| Taxonomy | — | "nothing here yet" | toast | **was missing** → dialog now | |
+
+**Changed (5 files)**
+
+- `resources/js/components/confirm-dialog.tsx` — one confirmation for
+  destructive actions; *Cancel* is the first tab stop so an Enter on an opened
+  dialog can never destroy anything.
+- `resources/js/pages/posts/index.tsx`, `posts/edit.tsx`,
+  `posts/taxonomy.tsx` — the three delete paths that fired immediately. The
+  editor's `window.confirm` is gone; a term deletion now says how many posts
+  used it.
+- `resources/js/pages/admin/media/index.tsx` — cards answer Space as well as
+  Enter, and the pagination gap-key lint hit is fixed properly instead of by an
+  unused directive.
+- Focus and naming: `focus-visible` rings on the two `role="button"` surfaces
+  (page blocks, media cards), `aria-label` on the icon-only header buttons, and
+  the auth screens' raw `text-green-600` / input errors replaced by the
+  `status-published` / `status-error` tokens so dark mode keeps its contrast.
+
+**QA run.** Fresh database via `lattice:reset-demo --force` (migrate + seed +
+registries), then the README walkthrough end to end:
+
+| Check | Result |
+|---|---|
+| `/`, `/services`, `/about`, `/contact`, `/imprint` | 200 |
+| `/blog`, `/blog/why-we-still-draw-with-a-pencil`, `/sitemap.xml`, `/robots.txt` | 200 |
+| `/login` (guests) | 200, `/admin` → 302 to it, `/admin/login` 404 |
+| `/dashboard` (not a Lattice route) | 404 |
+| `php artisan lattice:doctor` | *No problems found* (core tables, addons, theme, storage link) |
+| `php artisan theme:activate meridian` → back to `aperture` | both announce the new theme, content untouched |
+| `php artisan schedule:list` | `pages:publish-scheduled` every minute |
+| Gates | pint clean · `tsc --noEmit` clean · eslint 0 warnings · `npm run build` ok · **179 tests / 1324 assertions** |
+
+**Deviation, recorded:** the S8 scope asks for screenshots in the README. The
+build sandbox has no browser (no Chromium/WebKit binary and the Playwright CDN
+is unreachable), so the README carries the walkthrough as text and tables
+instead. Screenshots can be dropped into `docs/` later without touching prose.
+
+**Accept (S8.3):** a fresh clone installs, seeds and walks the README checklist
+without a surprise; every list has its three states; every destructive action
+asks first; the whole admin is token-driven, so dark mode needs no second
+stylesheet.

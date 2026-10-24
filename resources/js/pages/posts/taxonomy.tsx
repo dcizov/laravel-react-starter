@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Plus, Tag as TagIcon } from 'lucide-react';
 import { useState } from 'react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,9 +89,14 @@ function TermList({
     const [name, setName] = useState('');
     const [editing, setEditing] = useState<number | null>(null);
     const [draft, setDraft] = useState('');
+    const [pendingDelete, setPendingDelete] = useState<Term | null>(null);
 
     const create = () => {
-        router.post(createUrl, { name }, { preserveScroll: true, onSuccess: () => setName('') });
+        router.post(
+            createUrl,
+            { name },
+            { preserveScroll: true, onSuccess: () => setName('') },
+        );
     };
 
     return (
@@ -106,12 +112,19 @@ function TermList({
                             placeholder={label}
                             onChange={(event) => setName(event.target.value)}
                             onKeyDown={(event) => {
-                                if (event.key === 'Enter' && name.trim() !== '') {
+                                if (
+                                    event.key === 'Enter' &&
+                                    name.trim() !== ''
+                                ) {
                                     create();
                                 }
                             }}
                         />
-                        <Button size="sm" onClick={create} disabled={name.trim() === ''}>
+                        <Button
+                            size="sm"
+                            onClick={create}
+                            disabled={name.trim() === ''}
+                        >
                             <Plus className="size-3.5" />
                             Add
                         </Button>
@@ -119,26 +132,38 @@ function TermList({
                 ) : null}
 
                 {terms.length === 0 ? (
-                    <p className="text-muted-foreground flex items-center gap-2 py-6 text-xs">
+                    <p className="flex items-center gap-2 py-6 text-xs text-muted-foreground">
                         <TagIcon className="size-3.5" />
                         Nothing here yet.
                     </p>
                 ) : (
                     <ul className="divide-y divide-border/60">
                         {terms.map((term) => (
-                            <li key={term.id} className="flex items-center gap-2 py-2">
+                            <li
+                                key={term.id}
+                                className="flex items-center gap-2 py-2"
+                            >
                                 {editing === term.id ? (
                                     <>
                                         <Input
                                             value={draft}
                                             className="h-8"
-                                            onChange={(event) => setDraft(event.target.value)}
+                                            onChange={(event) =>
+                                                setDraft(event.target.value)
+                                            }
                                             onKeyDown={(event) => {
                                                 if (event.key === 'Enter') {
-                                                    router.patch(term.urls.update, { name: draft }, {
-                                                        preserveScroll: true,
-                                                        onSuccess: () => setEditing(null),
-                                                    });
+                                                    router.patch(
+                                                        term.urls.update,
+                                                        { name: draft },
+                                                        {
+                                                            preserveScroll: true,
+                                                            onSuccess: () =>
+                                                                setEditing(
+                                                                    null,
+                                                                ),
+                                                        },
+                                                    );
                                                 }
                                             }}
                                         />
@@ -146,22 +171,36 @@ function TermList({
                                             size="sm"
                                             className="h-7"
                                             onClick={() =>
-                                                router.patch(term.urls.update, { name: draft }, {
-                                                    preserveScroll: true,
-                                                    onSuccess: () => setEditing(null),
-                                                })
+                                                router.patch(
+                                                    term.urls.update,
+                                                    { name: draft },
+                                                    {
+                                                        preserveScroll: true,
+                                                        onSuccess: () =>
+                                                            setEditing(null),
+                                                    },
+                                                )
                                             }
                                         >
                                             Save
                                         </Button>
-                                        <Button size="sm" variant="ghost" className="h-7" onClick={() => setEditing(null)}>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-7"
+                                            onClick={() => setEditing(null)}
+                                        >
                                             Cancel
                                         </Button>
                                     </>
                                 ) : (
                                     <>
-                                        <span className="min-w-0 flex-1 truncate text-sm">{term.name}</span>
-                                        <span className="text-muted-foreground text-[11px]">{term.posts} posts</span>
+                                        <span className="min-w-0 flex-1 truncate text-sm">
+                                            {term.name}
+                                        </span>
+                                        <span className="text-[11px] text-muted-foreground">
+                                            {term.posts} posts
+                                        </span>
                                         {canEdit ? (
                                             <>
                                                 <Button
@@ -178,8 +217,10 @@ function TermList({
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="text-status-error h-7"
-                                                    onClick={() => router.delete(term.urls.destroy, { preserveScroll: true })}
+                                                    className="h-7 text-status-error"
+                                                    onClick={() =>
+                                                        setPendingDelete(term)
+                                                    }
                                                 >
                                                     Delete
                                                 </Button>
@@ -191,6 +232,28 @@ function TermList({
                         ))}
                     </ul>
                 )}
+
+                <ConfirmDialog
+                    open={pendingDelete !== null}
+                    onOpenChange={(open) =>
+                        open ? null : setPendingDelete(null)
+                    }
+                    title={`Delete “${pendingDelete?.name ?? ''}”?`}
+                    description={
+                        pendingDelete && pendingDelete.posts > 0
+                            ? `It is used by ${pendingDelete.posts} post${pendingDelete.posts === 1 ? '' : 's'}; those keep their content and lose this term.`
+                            : 'No post uses it. This cannot be undone.'
+                    }
+                    confirmLabel="Delete term"
+                    onConfirm={() => {
+                        if (pendingDelete) {
+                            router.delete(pendingDelete.urls.destroy, {
+                                preserveScroll: true,
+                            });
+                        }
+                        setPendingDelete(null);
+                    }}
+                />
             </CardContent>
         </Card>
     );

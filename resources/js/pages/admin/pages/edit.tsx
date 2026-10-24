@@ -44,14 +44,8 @@ import {
 } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import AppLayout from '@/layouts/app-layout';
-import {
-    blockIndexFromErrorKey,
-    sectionDef
-    
-    
-    
-} from '@/lib/sections';
-import type {PageStatus, SectionBlock, SectionDef} from '@/lib/sections';
+import { blockIndexFromErrorKey, sectionDef } from '@/lib/sections';
+import type { PageStatus, SectionBlock, SectionDef } from '@/lib/sections';
 import { cn } from '@/lib/utils';
 
 type PageRecord = {
@@ -136,25 +130,42 @@ const emptyBlock = (section: SectionDef): SectionBlock => ({
     content: { ...section.defaults },
 });
 
-export default function PageEditor({ page, sections, draft, revisions = [], urls, can }: Props) {
+export default function PageEditor({
+    page,
+    sections,
+    draft,
+    revisions = [],
+    urls,
+    can,
+}: Props) {
     const isNew = page === null;
 
     const [title, setTitle] = useState(page?.title ?? draft?.title ?? '');
     const [slug, setSlug] = useState(page?.slug ?? draft?.slug ?? '');
-    const [excerpt, setExcerpt] = useState(page?.excerpt ?? draft?.excerpt ?? '');
-    const [seoTitle, setSeoTitle] = useState(page?.seo_title ?? draft?.seo_title ?? '');
+    const [excerpt, setExcerpt] = useState(
+        page?.excerpt ?? draft?.excerpt ?? '',
+    );
+    const [seoTitle, setSeoTitle] = useState(
+        page?.seo_title ?? draft?.seo_title ?? '',
+    );
     const [seoDescription, setSeoDescription] = useState(
         page?.seo_description ?? draft?.seo_description ?? '',
     );
-    const [robots, setRobots] = useState(page?.robots ?? draft?.robots ?? 'index,follow');
-    const [blocks, setBlocks] = useState<SectionBlock[]>(page?.content ?? draft?.content ?? []);
+    const [robots, setRobots] = useState(
+        page?.robots ?? draft?.robots ?? 'index,follow',
+    );
+    const [blocks, setBlocks] = useState<SectionBlock[]>(
+        page?.content ?? draft?.content ?? [],
+    );
     const [status, setStatus] = useState<PageStatus>(page?.status ?? 'draft');
 
     const [selectedId, setSelectedId] = useState<string | null>(
         (page?.content ?? draft?.content ?? [])[0]?.id ?? null,
     );
     const [saveState, setSaveState] = useState<SaveState>('saved');
-    const [lastSavedAt, setLastSavedAt] = useState<string | null>(page?.updated_at ?? null);
+    const [lastSavedAt, setLastSavedAt] = useState<string | null>(
+        page?.updated_at ?? null,
+    );
     const [seoOpen, setSeoOpen] = useState(false);
     const [revisionsOpen, setRevisionsOpen] = useState(false);
     const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -178,7 +189,10 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                 id: block.id,
                 section: block.section,
                 enabled: block.enabled,
-                content: block.content as unknown as Record<string, ContentValue>,
+                content: block.content as unknown as Record<
+                    string,
+                    ContentValue
+                >,
             })),
         }),
         [title, slug, excerpt, seoTitle, seoDescription, robots, blocks],
@@ -195,7 +209,9 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
     );
 
     const selected = blocks.find((block) => block.id === selectedId) ?? null;
-    const selectedDef = selected ? sectionDef(sections, selected.section) : undefined;
+    const selectedDef = selected
+        ? sectionDef(sections, selected.section)
+        : undefined;
 
     const touchedRef = useRef(false);
 
@@ -204,20 +220,25 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
         setSaveState('dirty');
     };
 
-    const applyErrors = useCallback((errors: Record<string, string>) => {
-        setFieldErrors(errors);
+    const applyErrors = useCallback(
+        (errors: Record<string, string>) => {
+            setFieldErrors(errors);
 
-        const firstBlockKey = Object.keys(errors).find((key) => blockIndexFromErrorKey(key) !== null);
+            const firstBlockKey = Object.keys(errors).find(
+                (key) => blockIndexFromErrorKey(key) !== null,
+            );
 
-        if (firstBlockKey) {
-            const index = blockIndexFromErrorKey(firstBlockKey);
+            if (firstBlockKey) {
+                const index = blockIndexFromErrorKey(firstBlockKey);
 
-            if (index !== null && blocks[index]) {
-                setSelectedId(blocks[index].id);
-                setPendingSection(blocks[index].id);
+                if (index !== null && blocks[index]) {
+                    setSelectedId(blocks[index].id);
+                    setPendingSection(blocks[index].id);
+                }
             }
-        }
-    }, [blocks]);
+        },
+        [blocks],
+    );
 
     useEffect(() => {
         if (!autosaveUrl || !touchedRef.current) {
@@ -325,7 +346,9 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
 
     const toggleBlock = (id: string) => {
         setBlocks((current) =>
-            current.map((block) => (block.id === id ? { ...block, enabled: !block.enabled } : block)),
+            current.map((block) =>
+                block.id === id ? { ...block, enabled: !block.enabled } : block,
+            ),
         );
         markDirty();
     };
@@ -355,14 +378,18 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
         }
 
         // Publish validates server-side; invalid sections are surfaced in place.
-        router.post(page.urls.publish as string, {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setStatus('published');
-                setFieldErrors({});
+        router.post(
+            page.urls.publish as string,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setStatus('published');
+                    setFieldErrors({});
+                },
+                onError: (errors) => applyErrors(errors),
             },
-            onError: (errors) => applyErrors(errors),
-        });
+        );
     };
 
     const unpublish = () => {
@@ -370,10 +397,14 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
             return;
         }
 
-        router.post(page.urls.unpublish as string, {}, {
-            preserveScroll: true,
-            onSuccess: () => setStatus('draft'),
-        });
+        router.post(
+            page.urls.unpublish as string,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => setStatus('draft'),
+            },
+        );
     };
 
     const schedule = () => {
@@ -397,7 +428,9 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
     const previewDisabled = isNew || !page?.urls.preview;
 
     const saveLabel = {
-        saved: lastSavedAt ? `Saved ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'All changes saved',
+        saved: lastSavedAt
+            ? `Saved ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+            : 'All changes saved',
         dirty: 'Unsaved changes',
         saving: 'Saving…',
         error: 'Could not save',
@@ -416,8 +449,16 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
             <div className="space-y-5">
                 <div className="flex flex-col gap-3 border-b border-border/60 pb-4 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
-                        <Button variant="ghost" size="icon" className="size-8" asChild>
-                            <Link href="/admin/pages" aria-label="Back to pages">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            asChild
+                        >
+                            <Link
+                                href="/admin/pages"
+                                aria-label="Back to pages"
+                            >
                                 <ArrowLeft className="size-4" />
                             </Link>
                         </Button>
@@ -438,52 +479,87 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                         <span
                             className={cn(
                                 'mr-1 flex items-center gap-1.5 text-xs',
-                                saveState === 'error' ? 'text-status-error' : 'text-muted-foreground',
+                                saveState === 'error'
+                                    ? 'text-status-error'
+                                    : 'text-muted-foreground',
                             )}
                             aria-live="polite"
                         >
-                            {saveState === 'saving' ? <Spinner className="size-3" /> : null}
-                            {saveState === 'saved' ? <Check className="size-3" /> : null}
+                            {saveState === 'saving' ? (
+                                <Spinner className="size-3" />
+                            ) : null}
+                            {saveState === 'saved' ? (
+                                <Check className="size-3" />
+                            ) : null}
                             {saveLabel}
                         </span>
 
-                        <Button variant="outline" size="sm" onClick={() => setSeoOpen(true)}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSeoOpen(true)}
+                        >
                             SEO
                         </Button>
 
                         {!isNew ? (
-                            <Button variant="outline" size="sm" onClick={() => setRevisionsOpen(true)}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setRevisionsOpen(true)}
+                            >
                                 <History className="size-4" />
                                 Revisions
                             </Button>
                         ) : null}
 
-                        <Button variant="outline" size="sm" disabled={previewDisabled} asChild={!previewDisabled}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={previewDisabled}
+                            asChild={!previewDisabled}
+                        >
                             {previewDisabled ? (
                                 <span>
                                     <Eye className="size-4" />
                                     Preview
                                 </span>
                             ) : (
-                                <a href={page?.urls.preview as string} target="_blank" rel="noreferrer">
+                                <a
+                                    href={page?.urls.preview as string}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
                                     <Eye className="size-4" />
                                     Preview
                                 </a>
                             )}
                         </Button>
 
-                        <Button size="sm" onClick={save} disabled={isNew === false && saveState === 'saving'}>
+                        <Button
+                            size="sm"
+                            onClick={save}
+                            disabled={isNew === false && saveState === 'saving'}
+                        >
                             {isNew ? 'Create page' : 'Save'}
                         </Button>
 
                         {can.publish && !isNew ? (
                             status === 'published' ? (
-                                <Button size="sm" variant="secondary" onClick={unpublish}>
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={unpublish}
+                                >
                                     Unpublish
                                 </Button>
                             ) : (
                                 <>
-                                    <Button size="sm" variant="outline" onClick={() => setScheduleOpen(true)}>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setScheduleOpen(true)}
+                                    >
                                         <Clock className="size-4" />
                                         Schedule
                                     </Button>
@@ -498,7 +574,7 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                 </div>
 
                 {Object.keys(fieldErrors).length > 0 ? (
-                    <div className="border-status-error/30 bg-status-error-soft text-status-error rounded-md border px-3 py-2 text-xs">
+                    <div className="rounded-md border border-status-error/30 bg-status-error-soft px-3 py-2 text-xs text-status-error">
                         {fieldErrors[Object.keys(fieldErrors)[0]]}
                     </div>
                 ) : null}
@@ -507,8 +583,12 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                     {/* Outline */}
                     <aside className="space-y-2" aria-label="Page outline">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xs font-semibold tracking-wide uppercase">Sections</h2>
-                            <span className="text-muted-foreground text-[11px]">{blocks.length}</span>
+                            <h2 className="text-xs font-semibold tracking-wide uppercase">
+                                Sections
+                            </h2>
+                            <span className="text-[11px] text-muted-foreground">
+                                {blocks.length}
+                            </span>
                         </div>
 
                         <ul className="space-y-1">
@@ -527,25 +607,80 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                                         >
                                             <button
                                                 type="button"
-                                                onClick={() => setSelectedId(block.id)}
+                                                onClick={() =>
+                                                    setSelectedId(block.id)
+                                                }
                                                 className="flex min-w-0 flex-1 items-center gap-2 text-left"
                                             >
-                                                <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
-                                                <span className={cn('truncate', !block.enabled && 'text-muted-foreground line-through')}>
-                                                    {def?.label ?? block.section}
+                                                <GripVertical className="size-3.5 shrink-0 text-muted-foreground" />
+                                                <span
+                                                    className={cn(
+                                                        'truncate',
+                                                        !block.enabled &&
+                                                            'text-muted-foreground line-through',
+                                                    )}
+                                                >
+                                                    {def?.label ??
+                                                        block.section}
                                                 </span>
                                             </button>
                                             <div className="flex shrink-0 items-center">
-                                                <Button type="button" variant="ghost" size="icon" className="size-6" aria-label="Move up" onClick={() => moveBlock(index, -1)}>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-6"
+                                                    aria-label="Move up"
+                                                    onClick={() =>
+                                                        moveBlock(index, -1)
+                                                    }
+                                                >
                                                     <ChevronUp className="size-3" />
                                                 </Button>
-                                                <Button type="button" variant="ghost" size="icon" className="size-6" aria-label="Move down" onClick={() => moveBlock(index, 1)}>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-6"
+                                                    aria-label="Move down"
+                                                    onClick={() =>
+                                                        moveBlock(index, 1)
+                                                    }
+                                                >
                                                     <ChevronDown className="size-3" />
                                                 </Button>
-                                                <Button type="button" variant="ghost" size="icon" className="size-6" aria-label={block.enabled ? 'Hide section' : 'Show section'} onClick={() => toggleBlock(block.id)}>
-                                                    <Eye className={cn('size-3', !block.enabled && 'opacity-40')} />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-6"
+                                                    aria-label={
+                                                        block.enabled
+                                                            ? 'Hide section'
+                                                            : 'Show section'
+                                                    }
+                                                    onClick={() =>
+                                                        toggleBlock(block.id)
+                                                    }
+                                                >
+                                                    <Eye
+                                                        className={cn(
+                                                            'size-3',
+                                                            !block.enabled &&
+                                                                'opacity-40',
+                                                        )}
+                                                    />
                                                 </Button>
-                                                <Button type="button" variant="ghost" size="icon" className="size-6" aria-label="Remove section" onClick={() => removeBlock(block.id)}>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-6"
+                                                    aria-label="Remove section"
+                                                    onClick={() =>
+                                                        removeBlock(block.id)
+                                                    }
+                                                >
                                                     <Trash2 className="size-3" />
                                                 </Button>
                                             </div>
@@ -556,7 +691,9 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                         </ul>
 
                         <div className="space-y-1 border-t border-border/60 pt-2">
-                            <p className="text-muted-foreground px-1 text-[11px]">Add a section</p>
+                            <p className="px-1 text-[11px] text-muted-foreground">
+                                Add a section
+                            </p>
                             {sections.map((section) => (
                                 <Button
                                     key={section.key}
@@ -577,9 +714,12 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                     <div className="min-w-0" aria-label="Page canvas">
                         {blocks.length === 0 ? (
                             <div className="rounded-lg border border-dashed border-border px-6 py-20 text-center">
-                                <p className="text-sm font-medium">This page is empty</p>
-                                <p className="text-muted-foreground mt-1 text-sm">
-                                    Add a section from the outline to start building.
+                                <p className="text-sm font-medium">
+                                    This page is empty
+                                </p>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    Add a section from the outline to start
+                                    building.
                                 </p>
                             </div>
                         ) : (
@@ -592,14 +732,20 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                                         tabIndex={0}
                                         onClick={() => setSelectedId(block.id)}
                                         onKeyDown={(event) => {
-                                            if (event.key === 'Enter' || event.key === ' ') {
+                                            if (
+                                                event.key === 'Enter' ||
+                                                event.key === ' '
+                                            ) {
                                                 setSelectedId(block.id);
                                             }
                                         }}
                                         className={cn(
                                             'relative cursor-pointer border-b border-border/50 last:border-0',
-                                            selectedId === block.id && 'ring-primary/40 ring-2 ring-inset',
-                                            pendingSection === block.id && 'ring-status-error ring-2 ring-inset',
+                                            'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
+                                            selectedId === block.id &&
+                                                'ring-2 ring-primary/40 ring-inset',
+                                            pendingSection === block.id &&
+                                                'ring-2 ring-status-error ring-inset',
                                             !block.enabled && 'opacity-40',
                                         )}
                                     >
@@ -615,15 +761,27 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                         {selected && selectedDef ? (
                             <Card className="gap-3 py-4">
                                 <CardHeader className="px-4">
-                                    <CardTitle className="text-sm">{selectedDef.label}</CardTitle>
-                                    <p className="text-muted-foreground text-xs">{selectedDef.description}</p>
+                                    <CardTitle className="text-sm">
+                                        {selectedDef.label}
+                                    </CardTitle>
+                                    <p className="text-xs text-muted-foreground">
+                                        {selectedDef.description}
+                                    </p>
                                 </CardHeader>
                                 <CardContent className="space-y-4 px-4">
                                     {selectedDef.fields.map((field) => {
-                                        const errorKey = Object.keys(fieldErrors).find(
+                                        const errorKey = Object.keys(
+                                            fieldErrors,
+                                        ).find(
                                             (key) =>
-                                                key.endsWith(`content.${field.key}`) &&
-                                                blocks.findIndex((block) => block.id === selected.id) ===
+                                                key.endsWith(
+                                                    `content.${field.key}`,
+                                                ) &&
+                                                blocks.findIndex(
+                                                    (block) =>
+                                                        block.id ===
+                                                        selected.id,
+                                                ) ===
                                                     blockIndexFromErrorKey(key),
                                         );
 
@@ -631,17 +789,28 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                                             <FieldControl
                                                 key={field.key}
                                                 field={field}
-                                                value={selected.content[field.key]}
-                                                error={errorKey ? fieldErrors[errorKey] : undefined}
+                                                value={
+                                                    selected.content[field.key]
+                                                }
+                                                error={
+                                                    errorKey
+                                                        ? fieldErrors[errorKey]
+                                                        : undefined
+                                                }
                                                 idPrefix={`field-${selected.id}`}
-                                                onChange={(value) => updateSelectedContent(field.key, value)}
+                                                onChange={(value) =>
+                                                    updateSelectedContent(
+                                                        field.key,
+                                                        value,
+                                                    )
+                                                }
                                             />
                                         );
                                     })}
                                 </CardContent>
                             </Card>
                         ) : (
-                            <div className="text-muted-foreground rounded-lg border border-dashed border-border px-4 py-10 text-center text-xs">
+                            <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center text-xs text-muted-foreground">
                                 Select a section to edit its content.
                             </div>
                         )}
@@ -671,19 +840,30 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                 <SheetContent>
                     <SheetHeader>
                         <SheetTitle>Revisions</SheetTitle>
-                        <SheetDescription>Restoring keeps a snapshot of the current state.</SheetDescription>
+                        <SheetDescription>
+                            Restoring keeps a snapshot of the current state.
+                        </SheetDescription>
                     </SheetHeader>
                     <div className="mt-4 space-y-2 overflow-y-auto px-4 pb-6">
                         {revisions.length === 0 ? (
-                            <p className="text-muted-foreground text-sm">No revisions yet.</p>
+                            <p className="text-sm text-muted-foreground">
+                                No revisions yet.
+                            </p>
                         ) : (
                             revisions.map((revision) => (
-                                <div key={revision.id} className="rounded-md border border-border px-3 py-2">
-                                    <p className="text-sm font-medium">{revision.label ?? revision.title}</p>
-                                    <p className="text-muted-foreground text-xs">
+                                <div
+                                    key={revision.id}
+                                    className="rounded-md border border-border px-3 py-2"
+                                >
+                                    <p className="text-sm font-medium">
+                                        {revision.label ?? revision.title}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
                                         {revision.user ?? 'System'} ·{' '}
                                         {revision.created_at
-                                            ? new Date(revision.created_at).toLocaleString()
+                                            ? new Date(
+                                                  revision.created_at,
+                                              ).toLocaleString()
                                             : ''}
                                     </p>
                                     <Button
@@ -691,10 +871,15 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                                         size="sm"
                                         className="mt-2 h-7"
                                         onClick={() =>
-                                            router.post(revision.restore_url, {}, {
-                                                preserveScroll: true,
-                                                onSuccess: () => setRevisionsOpen(false),
-                                            })
+                                            router.post(
+                                                revision.restore_url,
+                                                {},
+                                                {
+                                                    preserveScroll: true,
+                                                    onSuccess: () =>
+                                                        setRevisionsOpen(false),
+                                                },
+                                            )
                                         }
                                     >
                                         Restore
@@ -711,7 +896,8 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                     <DialogHeader>
                         <DialogTitle>Schedule publication</DialogTitle>
                         <DialogDescription>
-                            The page becomes public at the chosen time. It stays a draft until then.
+                            The page becomes public at the chosen time. It stays
+                            a draft until then.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2">
@@ -720,11 +906,16 @@ export default function PageEditor({ page, sections, draft, revisions = [], urls
                             id="schedule-at"
                             type="datetime-local"
                             value={scheduleAt}
-                            onChange={(event) => setScheduleAt(event.target.value)}
+                            onChange={(event) =>
+                                setScheduleAt(event.target.value)
+                            }
                         />
                     </div>
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setScheduleOpen(false)}>
+                        <Button
+                            variant="ghost"
+                            onClick={() => setScheduleOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button onClick={schedule} disabled={scheduleAt === ''}>
@@ -770,79 +961,123 @@ function SeoDialog({
                 <DialogHeader>
                     <DialogTitle>Search engine preview</DialogTitle>
                     <DialogDescription>
-                        Titles read best under 60 characters, descriptions under 160.
+                        Titles read best under 60 characters, descriptions under
+                        160.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
-                        <p className="truncate text-xs text-[oklch(0.45_0.13_240)]">lattice.test/{slug || 'your-page'}</p>
-                        <p className="text-primary truncate text-sm font-medium">
+                        <p className="truncate text-xs text-[oklch(0.45_0.13_240)]">
+                            lattice.test/{slug || 'your-page'}
+                        </p>
+                        <p className="truncate text-sm font-medium text-primary">
                             {title || 'Page title'}
                         </p>
-                        <p className="text-muted-foreground line-clamp-2 text-xs">
-                            {description || excerpt || 'Add a description to control the snippet.'}
+                        <p className="line-clamp-2 text-xs text-muted-foreground">
+                            {description ||
+                                excerpt ||
+                                'Add a description to control the snippet.'}
                         </p>
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="seo-title" className="text-xs">SEO title</Label>
-                        <Input id="seo-title" value={title} maxLength={70} onChange={(event) => onTitle(event.target.value)} />
-                        <p className={cn('text-[11px]', title.length > 60 ? 'text-status-scheduled' : 'text-muted-foreground')}>
+                        <Label htmlFor="seo-title" className="text-xs">
+                            SEO title
+                        </Label>
+                        <Input
+                            id="seo-title"
+                            value={title}
+                            maxLength={70}
+                            onChange={(event) => onTitle(event.target.value)}
+                        />
+                        <p
+                            className={cn(
+                                'text-[11px]',
+                                title.length > 60
+                                    ? 'text-status-scheduled'
+                                    : 'text-muted-foreground',
+                            )}
+                        >
                             {title.length}/60
                         </p>
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="seo-description" className="text-xs">Meta description</Label>
+                        <Label htmlFor="seo-description" className="text-xs">
+                            Meta description
+                        </Label>
                         <textarea
                             id="seo-description"
                             value={description}
                             maxLength={170}
                             rows={3}
-                            onChange={(event) => onDescription(event.target.value)}
-                            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm outline-none"
+                            onChange={(event) =>
+                                onDescription(event.target.value)
+                            }
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none"
                         />
-                        <p className={cn('text-[11px]', description.length > 160 ? 'text-status-scheduled' : 'text-muted-foreground')}>
+                        <p
+                            className={cn(
+                                'text-[11px]',
+                                description.length > 160
+                                    ? 'text-status-scheduled'
+                                    : 'text-muted-foreground',
+                            )}
+                        >
                             {description.length}/160
                         </p>
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="page-slug" className="text-xs">URL slug</Label>
+                        <Label htmlFor="page-slug" className="text-xs">
+                            URL slug
+                        </Label>
                         <Input
                             id="page-slug"
                             value={slug}
                             onChange={(event) => onSlug(event.target.value)}
                             className="font-mono text-xs"
                         />
-                        <p className="text-muted-foreground text-[11px]">
-                            Changing this keeps the old URL working with a permanent redirect.
+                        <p className="text-[11px] text-muted-foreground">
+                            Changing this keeps the old URL working with a
+                            permanent redirect.
                         </p>
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="page-excerpt" className="text-xs">Excerpt</Label>
+                        <Label htmlFor="page-excerpt" className="text-xs">
+                            Excerpt
+                        </Label>
                         <textarea
                             id="page-excerpt"
                             value={excerpt}
                             rows={2}
                             maxLength={400}
                             onChange={(event) => onExcerpt(event.target.value)}
-                            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm outline-none"
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none"
                         />
                     </div>
 
                     <div className="space-y-1.5">
                         <Label className="text-xs">Robots</Label>
-                        <Select value={robots} onValueChange={(value) => onRobots(value)}>
+                        <Select
+                            value={robots}
+                            onValueChange={(value) => onRobots(value)}
+                        >
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="index,follow">Index, follow</SelectItem>
-                                <SelectItem value="noindex,follow">No index, follow</SelectItem>
-                                <SelectItem value="noindex,nofollow">No index, no follow</SelectItem>
+                                <SelectItem value="index,follow">
+                                    Index, follow
+                                </SelectItem>
+                                <SelectItem value="noindex,follow">
+                                    No index, follow
+                                </SelectItem>
+                                <SelectItem value="noindex,nofollow">
+                                    No index, no follow
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

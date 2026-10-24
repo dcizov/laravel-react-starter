@@ -67,7 +67,12 @@ type MediaRow = {
     folder: string | null;
     uploaded_by: string | null;
     usages: number;
-    usages_detail: { id: number; title: string; field: string | null; url: string | null }[];
+    usages_detail: {
+        id: number;
+        title: string;
+        field: string | null;
+        url: string | null;
+    }[];
     is_trashed: boolean;
     created_at: string | null;
     urls: { update: string; destroy: string; restore: string; show: string };
@@ -88,16 +93,38 @@ type Paginated<T> = {
     total: number;
 };
 
-type Upload = { key: string; name: string; progress: number; status: 'queued' | 'uploading' | 'done' | 'error' };
+type Upload = {
+    key: string;
+    name: string;
+    progress: number;
+    status: 'queued' | 'uploading' | 'done' | 'error';
+};
 
 type Props = {
     media: Paginated<MediaRow>;
     folders: Folder[];
-    filters: { q: string; type: string; folder: number | null; view: 'grid' | 'list'; trashed: boolean };
-    counts: { all: number; image: number; document: number; other: number; trashed: number };
+    filters: {
+        q: string;
+        type: string;
+        folder: number | null;
+        view: 'grid' | 'list';
+        trashed: boolean;
+    };
+    counts: {
+        all: number;
+        image: number;
+        document: number;
+        other: number;
+        trashed: number;
+    };
     limits: { max_kilobytes: number; mimes: string };
     urls: { index: string; upload: string; folders: string };
-    can: { upload: boolean; update: boolean; delete: boolean; folders: boolean };
+    can: {
+        upload: boolean;
+        update: boolean;
+        delete: boolean;
+        folders: boolean;
+    };
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -107,10 +134,21 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 /** Laravel paginator labels arrive HTML-escaped (`&laquo; Previous`). */
 function plainLabel(label: string): string {
-    return label.replace(/&laquo;/g, '«').replace(/&raquo;/g, '»').replace(/&amp;/g, '&');
+    return label
+        .replace(/&laquo;/g, '«')
+        .replace(/&raquo;/g, '»')
+        .replace(/&amp;/g, '&');
 }
 
-export default function MediaIndex({ media, folders, filters, counts, limits, urls, can }: Props) {
+export default function MediaIndex({
+    media,
+    folders,
+    filters,
+    counts,
+    limits,
+    urls,
+    can,
+}: Props) {
     const [search, setSearch] = useState(filters.q);
     const [dragging, setDragging] = useState(false);
     const [uploads, setUploads] = useState<Upload[]>([]);
@@ -120,12 +158,18 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
     const [folderName, setFolderName] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const visit = (params: Record<string, string | number | boolean | undefined>) => {
-        router.get(urls.index, params as Record<string, string | number | boolean>, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
+    const visit = (
+        params: Record<string, string | number | boolean | undefined>,
+    ) => {
+        router.get(
+            urls.index,
+            params as Record<string, string | number | boolean>,
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            },
+        );
     };
 
     /**
@@ -154,7 +198,13 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                 return;
             }
 
-            setUploads((current) => current.map((item) => (item.key === entry.key ? { ...item, status: 'uploading' } : item)));
+            setUploads((current) =>
+                current.map((item) =>
+                    item.key === entry.key
+                        ? { ...item, status: 'uploading' }
+                        : item,
+                ),
+            );
 
             router.post(
                 urls.upload,
@@ -165,20 +215,38 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                     preserveState: true,
                     onProgress: (progress) => {
                         setUploads((current) =>
-                            current.map((item) => (item.key === entry.key ? { ...item, progress: progress?.percentage ?? 0 } : item)),
+                            current.map((item) =>
+                                item.key === entry.key
+                                    ? {
+                                          ...item,
+                                          progress: progress?.percentage ?? 0,
+                                      }
+                                    : item,
+                            ),
                         );
                     },
                     onSuccess: () => {
                         setUploads((current) =>
-                            current.map((item) => (item.key === entry.key ? { ...item, progress: 100, status: 'done' } : item)),
+                            current.map((item) =>
+                                item.key === entry.key
+                                    ? { ...item, progress: 100, status: 'done' }
+                                    : item,
+                            ),
                         );
                         send(index + 1);
                     },
                     onError: (errors) => {
-                        const message = errors.files ?? Object.values(errors)[0] ?? 'Upload failed.';
+                        const message =
+                            errors.files ??
+                            Object.values(errors)[0] ??
+                            'Upload failed.';
 
                         setUploads((current) =>
-                            current.map((item) => (item.key === entry.key ? { ...item, status: 'error' } : item)),
+                            current.map((item) =>
+                                item.key === entry.key
+                                    ? { ...item, status: 'error' }
+                                    : item,
+                            ),
                         );
                         toast.error(`${entry.name}: ${message}`);
                         send(index + 1);
@@ -201,12 +269,21 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
         uploadFiles(Array.from(event.dataTransfer.files));
     };
 
-    const saveMedia = (row: MediaRow, patch: { alt?: string | null; caption?: string | null; folder_id?: number | null }) => {
+    const saveMedia = (
+        row: MediaRow,
+        patch: {
+            alt?: string | null;
+            caption?: string | null;
+            folder_id?: number | null;
+        },
+    ) => {
         router.patch(row.urls.update, patch, {
             preserveScroll: true,
             preserveState: true,
             onError: () => {
-                toast.error('Change reverted', { description: 'The media item was not updated.' });
+                toast.error('Change reverted', {
+                    description: 'The media item was not updated.',
+                });
             },
         });
     };
@@ -219,23 +296,39 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
             preserveScroll: true,
             onSuccess: () => {
                 toast.success(`“${row.original_name}” moved to trash`, {
-                    description: row.usages > 0 ? `It is still used in ${row.usages} place${row.usages === 1 ? '' : 's'}.` : undefined,
+                    description:
+                        row.usages > 0
+                            ? `It is still used in ${row.usages} place${row.usages === 1 ? '' : 's'}.`
+                            : undefined,
                     action: {
                         label: 'Undo',
-                        onClick: () => router.post(row.urls.restore, {}, { preserveScroll: true }),
+                        onClick: () =>
+                            router.post(
+                                row.urls.restore,
+                                {},
+                                { preserveScroll: true },
+                            ),
                     },
                     duration: 8000,
                 });
             },
-            onError: () => toast.error('Change reverted', { description: 'The file could not be deleted.' }),
+            onError: () =>
+                toast.error('Change reverted', {
+                    description: 'The file could not be deleted.',
+                }),
         });
     };
 
     const restore = (row: MediaRow) => {
-        router.post(row.urls.restore, {}, {
-            preserveScroll: true,
-            onSuccess: () => toast.success(`“${row.original_name}” restored`),
-        });
+        router.post(
+            row.urls.restore,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () =>
+                    toast.success(`“${row.original_name}” restored`),
+            },
+        );
     };
 
     const createFolder = () => {
@@ -252,8 +345,11 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
         );
     };
 
-    const activeFolder = folders.find((folder) => folder.id === filters.folder) ?? null;
-    const pending = uploads.filter((upload) => upload.status === 'queued' || upload.status === 'uploading');
+    const activeFolder =
+        folders.find((folder) => folder.id === filters.folder) ?? null;
+    const pending = uploads.filter(
+        (upload) => upload.status === 'queued' || upload.status === 'uploading',
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -270,14 +366,24 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                                     ref={inputRef}
                                     type="file"
                                     multiple
-                                    accept={limits.mimes.split(',').map((extension) => `.${extension}`).join(',')}
+                                    accept={limits.mimes
+                                        .split(',')
+                                        .map((extension) => `.${extension}`)
+                                        .join(',')}
                                     className="hidden"
                                     onChange={(event) => {
-                                        uploadFiles(Array.from(event.target.files ?? []));
+                                        uploadFiles(
+                                            Array.from(
+                                                event.target.files ?? [],
+                                            ),
+                                        );
                                         event.target.value = '';
                                     }}
                                 />
-                                <Button size="sm" onClick={() => inputRef.current?.click()}>
+                                <Button
+                                    size="sm"
+                                    onClick={() => inputRef.current?.click()}
+                                >
                                     <Upload className="size-4" />
                                     Upload
                                 </Button>
@@ -290,25 +396,36 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                     <Card className="border-dashed">
                         <CardContent className="space-y-2 p-3">
                             {uploads.slice(0, 6).map((upload) => (
-                                <div key={upload.key} className="flex items-center gap-3 text-xs">
+                                <div
+                                    key={upload.key}
+                                    className="flex items-center gap-3 text-xs"
+                                >
                                     {upload.status === 'done' ? (
                                         <RotateCcw className="size-3.5 text-status-published" />
                                     ) : upload.status === 'error' ? (
-                                        <ImageOff className="text-status-error size-3.5" />
+                                        <ImageOff className="size-3.5 text-status-error" />
                                     ) : (
-                                        <Loader2 className="text-muted-foreground size-3.5 animate-spin" />
+                                        <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
                                     )}
-                                    <span className="w-40 truncate">{upload.name}</span>
-                                    <div className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full">
+                                    <span className="w-40 truncate">
+                                        {upload.name}
+                                    </span>
+                                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                                         <div
                                             className={cn(
                                                 'h-full rounded-full transition-[width]',
-                                                upload.status === 'error' ? 'bg-status-error' : 'bg-primary',
+                                                upload.status === 'error'
+                                                    ? 'bg-status-error'
+                                                    : 'bg-primary',
                                             )}
-                                            style={{ width: `${upload.progress}%` }}
+                                            style={{
+                                                width: `${upload.progress}%`,
+                                            }}
                                         />
                                     </div>
-                                    <span className="text-muted-foreground w-10 text-right">{upload.progress}%</span>
+                                    <span className="w-10 text-right text-muted-foreground">
+                                        {upload.progress}%
+                                    </span>
                                 </div>
                             ))}
                         </CardContent>
@@ -317,9 +434,14 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
 
                 <div className="grid gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
                     <aside className="space-y-1" aria-label="Folders">
-                        <FolderButton active={filters.folder === null && !filters.trashed} onClick={() => visit({ view: filters.view })}>
+                        <FolderButton
+                            active={filters.folder === null && !filters.trashed}
+                            onClick={() => visit({ view: filters.view })}
+                        >
                             All media
-                            <span className="text-muted-foreground ml-auto text-[11px]">{counts.all}</span>
+                            <span className="ml-auto text-[11px] text-muted-foreground">
+                                {counts.all}
+                            </span>
                         </FolderButton>
 
                         {folders.map((folder) => (
@@ -327,29 +449,68 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                                 key={folder.id}
                                 active={filters.folder === folder.id}
                                 indent={folder.depth}
-                                onClick={() => visit({ folder: folder.id, view: filters.view })}
+                                onClick={() =>
+                                    visit({
+                                        folder: folder.id,
+                                        view: filters.view,
+                                    })
+                                }
                             >
                                 {folder.name}
-                                <span className="text-muted-foreground ml-auto text-[11px]">{folder.count}</span>
+                                <span className="ml-auto text-[11px] text-muted-foreground">
+                                    {folder.count}
+                                </span>
                             </FolderButton>
                         ))}
 
                         {can.folders ? (
-                            <Button variant="ghost" size="sm" className="mt-1 w-full justify-start text-xs" onClick={() => setFolderDialog(true)}>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="mt-1 w-full justify-start text-xs"
+                                onClick={() => setFolderDialog(true)}
+                            >
                                 <FolderPlus className="size-3.5" />
                                 New folder
                             </Button>
                         ) : null}
 
                         <div className="mt-3 space-y-1 border-t border-border/60 pt-2">
-                            <FolderButton active={filters.type === 'image'} onClick={() => visit({ type: 'image', view: filters.view })}>
-                                Images<span className="text-muted-foreground ml-auto text-[11px]">{counts.image}</span>
+                            <FolderButton
+                                active={filters.type === 'image'}
+                                onClick={() =>
+                                    visit({ type: 'image', view: filters.view })
+                                }
+                            >
+                                Images
+                                <span className="ml-auto text-[11px] text-muted-foreground">
+                                    {counts.image}
+                                </span>
                             </FolderButton>
-                            <FolderButton active={filters.type === 'document'} onClick={() => visit({ type: 'document', view: filters.view })}>
-                                Documents<span className="text-muted-foreground ml-auto text-[11px]">{counts.document}</span>
+                            <FolderButton
+                                active={filters.type === 'document'}
+                                onClick={() =>
+                                    visit({
+                                        type: 'document',
+                                        view: filters.view,
+                                    })
+                                }
+                            >
+                                Documents
+                                <span className="ml-auto text-[11px] text-muted-foreground">
+                                    {counts.document}
+                                </span>
                             </FolderButton>
-                            <FolderButton active={filters.trashed} onClick={() => visit({ trashed: true, view: filters.view })}>
-                                Trash<span className="text-muted-foreground ml-auto text-[11px]">{counts.trashed}</span>
+                            <FolderButton
+                                active={filters.trashed}
+                                onClick={() =>
+                                    visit({ trashed: true, view: filters.view })
+                                }
+                            >
+                                Trash
+                                <span className="ml-auto text-[11px] text-muted-foreground">
+                                    {counts.trashed}
+                                </span>
                             </FolderButton>
                         </div>
                     </aside>
@@ -357,7 +518,7 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                     <div
                         className={cn(
                             'min-w-0 space-y-4 rounded-lg transition-colors',
-                            dragging && 'ring-primary/50 bg-primary/5 ring-2',
+                            dragging && 'bg-primary/5 ring-2 ring-primary/50',
                         )}
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -368,43 +529,81 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                     >
                         <div className="flex flex-wrap items-center gap-2">
                             <div className="relative min-w-48 flex-1">
-                                <Search className="text-muted-foreground absolute top-2.5 left-2.5 size-4" />
+                                <Search className="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
                                 <Input
                                     value={search}
                                     placeholder="Search files, alt text or captions"
                                     className="pl-8"
-                                    onChange={(event) => setSearch(event.target.value)}
+                                    onChange={(event) =>
+                                        setSearch(event.target.value)
+                                    }
                                     onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
-                                            visit({ q: search, folder: filters.folder ?? undefined, view: filters.view });
+                                            visit({
+                                                q: search,
+                                                folder:
+                                                    filters.folder ?? undefined,
+                                                view: filters.view,
+                                            });
                                         }
                                     }}
                                     onBlur={() => {
                                         if (search !== filters.q) {
-                                            visit({ q: search, folder: filters.folder ?? undefined, view: filters.view });
+                                            visit({
+                                                q: search,
+                                                folder:
+                                                    filters.folder ?? undefined,
+                                                view: filters.view,
+                                            });
                                         }
                                     }}
                                 />
                             </div>
 
-                            <span className="text-muted-foreground text-xs">{media.total} files</span>
+                            <span className="text-xs text-muted-foreground">
+                                {media.total} files
+                            </span>
 
                             <div className="flex items-center rounded-md border border-border">
                                 <Button
-                                    variant={filters.view === 'grid' ? 'secondary' : 'ghost'}
+                                    variant={
+                                        filters.view === 'grid'
+                                            ? 'secondary'
+                                            : 'ghost'
+                                    }
                                     size="icon"
                                     className="size-8 rounded-r-none"
                                     aria-label="Grid view"
-                                    onClick={() => visit({ q: filters.q, type: filters.type, folder: filters.folder ?? undefined, trashed: filters.trashed, view: 'grid' })}
+                                    onClick={() =>
+                                        visit({
+                                            q: filters.q,
+                                            type: filters.type,
+                                            folder: filters.folder ?? undefined,
+                                            trashed: filters.trashed,
+                                            view: 'grid',
+                                        })
+                                    }
                                 >
                                     <Grid2x2 className="size-3.5" />
                                 </Button>
                                 <Button
-                                    variant={filters.view === 'list' ? 'secondary' : 'ghost'}
+                                    variant={
+                                        filters.view === 'list'
+                                            ? 'secondary'
+                                            : 'ghost'
+                                    }
                                     size="icon"
                                     className="size-8 rounded-l-none"
                                     aria-label="List view"
-                                    onClick={() => visit({ q: filters.q, type: filters.type, folder: filters.folder ?? undefined, trashed: filters.trashed, view: 'list' })}
+                                    onClick={() =>
+                                        visit({
+                                            q: filters.q,
+                                            type: filters.type,
+                                            folder: filters.folder ?? undefined,
+                                            trashed: filters.trashed,
+                                            view: 'list',
+                                        })
+                                    }
                                 >
                                     <List className="size-3.5" />
                                 </Button>
@@ -414,7 +613,11 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                         {media.data.length === 0 ? (
                             <EmptyState
                                 icon={Upload}
-                                title={filters.trashed ? 'Trash is empty' : 'No media yet'}
+                                title={
+                                    filters.trashed
+                                        ? 'Trash is empty'
+                                        : 'No media yet'
+                                }
                                 description={
                                     filters.trashed
                                         ? 'Deleted files stay here until the library is purged.'
@@ -432,36 +635,47 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                                         tabIndex={0}
                                         onClick={() => setSelected(row)}
                                         onKeyDown={(event) => {
-                                            if (event.key === 'Enter') {
+                                            if (
+                                                event.key === 'Enter' ||
+                                                event.key === ' '
+                                            ) {
+                                                event.preventDefault();
                                                 setSelected(row);
                                             }
                                         }}
-                                        className="group overflow-hidden rounded-lg border border-border bg-card text-left transition-shadow hover:shadow-md"
+                                        className="group overflow-hidden rounded-lg border border-border bg-card text-left transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
-                                        <div className="bg-muted relative aspect-[4/3]">
+                                        <div className="relative aspect-[4/3] bg-muted">
                                             {row.thumbnail_url ? (
                                                 <img
                                                     src={row.thumbnail_url}
-                                                    alt={row.alt ?? row.original_name}
+                                                    alt={
+                                                        row.alt ??
+                                                        row.original_name
+                                                    }
                                                     loading="lazy"
                                                     className="size-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="text-muted-foreground flex size-full items-center justify-center">
+                                                <div className="flex size-full items-center justify-center text-muted-foreground">
                                                     <FileText className="size-6" />
                                                 </div>
                                             )}
                                             {row.usages > 0 ? (
-                                                <span className="bg-background/90 absolute top-1.5 right-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                                                <span className="absolute top-1.5 right-1.5 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium">
                                                     used {row.usages}×
                                                 </span>
                                             ) : null}
                                         </div>
                                         <div className="space-y-0.5 p-2">
-                                            <p className="truncate text-xs font-medium">{row.original_name}</p>
-                                            <p className="text-muted-foreground text-[11px]">
+                                            <p className="truncate text-xs font-medium">
+                                                {row.original_name}
+                                            </p>
+                                            <p className="text-[11px] text-muted-foreground">
                                                 {row.human_size}
-                                                {row.dimension_label ? ` · ${row.dimension_label}` : ''}
+                                                {row.dimension_label
+                                                    ? ` · ${row.dimension_label}`
+                                                    : ''}
                                             </p>
                                         </div>
                                     </div>
@@ -470,43 +684,93 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                         ) : (
                             <Card className="overflow-hidden py-0">
                                 <table className="w-full text-sm">
-                                    <thead className="bg-muted/50 text-muted-foreground text-xs">
+                                    <thead className="bg-muted/50 text-xs text-muted-foreground">
                                         <tr>
-                                            <th className="px-3 py-2 text-left font-medium">File</th>
-                                            <th className="hidden px-3 py-2 text-left font-medium sm:table-cell">Folder</th>
-                                            <th className="hidden px-3 py-2 text-left font-medium md:table-cell">Size</th>
-                                            <th className="px-3 py-2 text-right font-medium">Actions</th>
+                                            <th className="px-3 py-2 text-left font-medium">
+                                                File
+                                            </th>
+                                            <th className="hidden px-3 py-2 text-left font-medium sm:table-cell">
+                                                Folder
+                                            </th>
+                                            <th className="hidden px-3 py-2 text-left font-medium md:table-cell">
+                                                Size
+                                            </th>
+                                            <th className="px-3 py-2 text-right font-medium">
+                                                Actions
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {media.data.map((row) => (
-                                            <tr key={row.id} className="border-t border-border/60">
+                                            <tr
+                                                key={row.id}
+                                                className="border-t border-border/60"
+                                            >
                                                 <td className="px-3 py-2">
-                                                    <button type="button" className="flex items-center gap-2 text-left" onClick={() => setSelected(row)}>
+                                                    <button
+                                                        type="button"
+                                                        className="flex items-center gap-2 text-left"
+                                                        onClick={() =>
+                                                            setSelected(row)
+                                                        }
+                                                    >
                                                         {row.thumbnail_url ? (
-                                                            <img src={row.thumbnail_url} alt="" className="size-8 rounded object-cover" />
+                                                            <img
+                                                                src={
+                                                                    row.thumbnail_url
+                                                                }
+                                                                alt=""
+                                                                className="size-8 rounded object-cover"
+                                                            />
                                                         ) : (
-                                                            <span className="bg-muted flex size-8 items-center justify-center rounded">
+                                                            <span className="flex size-8 items-center justify-center rounded bg-muted">
                                                                 <FileText className="size-3.5" />
                                                             </span>
                                                         )}
                                                         <span className="min-w-0">
-                                                            <span className="block max-w-56 truncate font-medium">{row.original_name}</span>
-                                                            <span className="text-muted-foreground block text-[11px]">{row.mime}</span>
+                                                            <span className="block max-w-56 truncate font-medium">
+                                                                {
+                                                                    row.original_name
+                                                                }
+                                                            </span>
+                                                            <span className="block text-[11px] text-muted-foreground">
+                                                                {row.mime}
+                                                            </span>
                                                         </span>
                                                     </button>
                                                 </td>
-                                                <td className="hidden px-3 py-2 text-xs sm:table-cell">{row.folder ?? '—'}</td>
-                                                <td className="hidden px-3 py-2 text-xs md:table-cell">{row.human_size}</td>
+                                                <td className="hidden px-3 py-2 text-xs sm:table-cell">
+                                                    {row.folder ?? '—'}
+                                                </td>
+                                                <td className="hidden px-3 py-2 text-xs md:table-cell">
+                                                    {row.human_size}
+                                                </td>
                                                 <td className="px-3 py-2 text-right">
                                                     {row.is_trashed ? (
                                                         can.delete ? (
-                                                            <Button variant="ghost" size="sm" className="h-7" onClick={() => restore(row)}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7"
+                                                                onClick={() =>
+                                                                    restore(row)
+                                                                }
+                                                            >
                                                                 Restore
                                                             </Button>
                                                         ) : null
                                                     ) : can.delete ? (
-                                                        <Button variant="ghost" size="icon" className="size-7" aria-label="Delete" onClick={() => setConfirmDelete(row)}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-7"
+                                                            aria-label="Delete"
+                                                            onClick={() =>
+                                                                setConfirmDelete(
+                                                                    row,
+                                                                )
+                                                            }
+                                                        >
                                                             <Trash2 className="size-3.5" />
                                                         </Button>
                                                     ) : null}
@@ -519,21 +783,42 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                         )}
 
                         {media.links.length > 3 ? (
-                            <nav className="flex flex-wrap items-center justify-center gap-1" aria-label="Pagination">
+                            <nav
+                                className="flex flex-wrap items-center justify-center gap-1"
+                                aria-label="Pagination"
+                            >
                                 {media.links.map((link, slot) =>
                                     link.url ? (
                                         <Button
                                             key={link.url}
                                             size="sm"
-                                            variant={link.active ? 'secondary' : 'ghost'}
-                                            onClick={() => router.get(link.url as string, {}, { preserveState: true, preserveScroll: true })}
+                                            variant={
+                                                link.active
+                                                    ? 'secondary'
+                                                    : 'ghost'
+                                            }
+                                            onClick={() =>
+                                                router.get(
+                                                    link.url as string,
+                                                    {},
+                                                    {
+                                                        preserveState: true,
+                                                        preserveScroll: true,
+                                                    },
+                                                )
+                                            }
                                         >
                                             {plainLabel(link.label)}
                                         </Button>
                                     ) : (
                                         // Disabled gap links share a label, so position is the key.
-                                        // eslint-disable-next-line @eslint-react/no-array-index-key
-                                        <Button key={`gap-${slot}`} size="sm" variant="ghost" disabled>
+                                        <Button
+                                            // eslint-disable-next-line @eslint-react/no-array-index-key
+                                            key={`gap-${slot}`}
+                                            size="sm"
+                                            variant="ghost"
+                                            disabled
+                                        >
                                             {plainLabel(link.label)}
                                         </Button>
                                     ),
@@ -554,10 +839,15 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                 onDelete={(row) => setConfirmDelete(row)}
             />
 
-            <Dialog open={confirmDelete !== null} onOpenChange={(open) => (open ? null : setConfirmDelete(null))}>
+            <Dialog
+                open={confirmDelete !== null}
+                onOpenChange={(open) => (open ? null : setConfirmDelete(null))}
+            >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Delete “{confirmDelete?.original_name}”?</DialogTitle>
+                        <DialogTitle>
+                            Delete “{confirmDelete?.original_name}”?
+                        </DialogTitle>
                         <DialogDescription>
                             {confirmDelete && confirmDelete.usages > 0
                                 ? `This file is used in ${confirmDelete.usages} place${confirmDelete.usages === 1 ? '' : 's'}. Those pages will show a broken image. You can undo this from the toast.`
@@ -565,10 +855,18 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setConfirmDelete(null)}>
+                        <Button
+                            variant="ghost"
+                            onClick={() => setConfirmDelete(null)}
+                        >
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={() => confirmDelete && destroy(confirmDelete)}>
+                        <Button
+                            variant="destructive"
+                            onClick={() =>
+                                confirmDelete && destroy(confirmDelete)
+                            }
+                        >
                             Delete file
                         </Button>
                     </DialogFooter>
@@ -580,7 +878,9 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                     <DialogHeader>
                         <DialogTitle>New folder</DialogTitle>
                         <DialogDescription>
-                            {activeFolder ? `Inside “${activeFolder.name}”.` : 'At the top level of the library.'}
+                            {activeFolder
+                                ? `Inside “${activeFolder.name}”.`
+                                : 'At the top level of the library.'}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2">
@@ -588,15 +888,23 @@ export default function MediaIndex({ media, folders, filters, counts, limits, ur
                         <Input
                             id="folder-name"
                             value={folderName}
-                            onChange={(event) => setFolderName(event.target.value)}
+                            onChange={(event) =>
+                                setFolderName(event.target.value)
+                            }
                             placeholder="Brand assets"
                         />
                     </div>
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setFolderDialog(false)}>
+                        <Button
+                            variant="ghost"
+                            onClick={() => setFolderDialog(false)}
+                        >
                             Cancel
                         </Button>
-                        <Button onClick={createFolder} disabled={folderName.trim() === ''}>
+                        <Button
+                            onClick={createFolder}
+                            disabled={folderName.trim() === ''}
+                        >
                             Create folder
                         </Button>
                     </DialogFooter>
@@ -624,7 +932,9 @@ function FolderButton({
             style={{ paddingLeft: `${8 + indent * 12}px` }}
             className={cn(
                 'flex w-full items-center gap-2 rounded-md py-1.5 pr-2 text-left text-sm transition-colors',
-                active ? 'bg-primary/10 text-foreground font-medium' : 'text-muted-foreground hover:bg-muted',
+                active
+                    ? 'bg-primary/10 font-medium text-foreground'
+                    : 'text-muted-foreground hover:bg-muted',
             )}
         >
             {children}
@@ -644,7 +954,14 @@ function MediaDrawer({
     folders: Folder[];
     can: { update: boolean; delete: boolean };
     onClose: () => void;
-    onSave: (row: MediaRow, patch: { alt?: string | null; caption?: string | null; folder_id?: number | null }) => void;
+    onSave: (
+        row: MediaRow,
+        patch: {
+            alt?: string | null;
+            caption?: string | null;
+            folder_id?: number | null;
+        },
+    ) => void;
     onDelete: (row: MediaRow) => void;
 }) {
     // The drawer is keyed by media id, so these drafts seed once per file.
@@ -652,29 +969,42 @@ function MediaDrawer({
     const [caption, setCaption] = useState(row?.caption ?? '');
 
     return (
-        <Sheet open={row !== null} onOpenChange={(open) => (open ? null : onClose())}>
+        <Sheet
+            open={row !== null}
+            onOpenChange={(open) => (open ? null : onClose())}
+        >
             <SheetContent className="w-full sm:max-w-md">
                 {row === null ? (
                     <SheetSkeleton />
                 ) : (
                     <>
                         <SheetHeader>
-                            <SheetTitle className="truncate">{row.original_name}</SheetTitle>
+                            <SheetTitle className="truncate">
+                                {row.original_name}
+                            </SheetTitle>
                             <SheetDescription>
                                 {row.mime} · {row.human_size}
-                                {row.dimension_label ? ` · ${row.dimension_label}` : ''}
+                                {row.dimension_label
+                                    ? ` · ${row.dimension_label}`
+                                    : ''}
                                 {row.uploaded_by ? ` · ${row.uploaded_by}` : ''}
                             </SheetDescription>
                         </SheetHeader>
 
                         <div className="space-y-4 overflow-y-auto px-4 pb-8">
-                            <div className="bg-muted overflow-hidden rounded-md">
+                            <div className="overflow-hidden rounded-md bg-muted">
                                 {row.type === 'image' ? (
-                                    <img src={row.url} alt={row.alt ?? row.original_name} className="max-h-56 w-full object-contain" />
+                                    <img
+                                        src={row.url}
+                                        alt={row.alt ?? row.original_name}
+                                        className="max-h-56 w-full object-contain"
+                                    />
                                 ) : (
-                                    <div className="text-muted-foreground flex h-32 items-center justify-center gap-2 text-sm">
+                                    <div className="flex h-32 items-center justify-center gap-2 text-sm text-muted-foreground">
                                         <FileText className="size-4" />
-                                        {row.type === 'document' ? 'Document' : 'File'}
+                                        {row.type === 'document'
+                                            ? 'Document'
+                                            : 'File'}
                                     </div>
                                 )}
                             </div>
@@ -688,17 +1018,24 @@ function MediaDrawer({
                                     value={alt}
                                     readOnly={!can.update}
                                     placeholder="Describe the image for screen readers"
-                                    onChange={(event) => setAlt(event.target.value)}
+                                    onChange={(event) =>
+                                        setAlt(event.target.value)
+                                    }
                                     onBlur={() => {
                                         if (alt !== (row.alt ?? '')) {
-                                            onSave(row, { alt: alt === '' ? null : alt });
+                                            onSave(row, {
+                                                alt: alt === '' ? null : alt,
+                                            });
                                         }
                                     }}
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="media-caption" className="text-xs">
+                                <Label
+                                    htmlFor="media-caption"
+                                    className="text-xs"
+                                >
                                     Caption
                                 </Label>
                                 <textarea
@@ -706,22 +1043,38 @@ function MediaDrawer({
                                     value={caption}
                                     readOnly={!can.update}
                                     rows={2}
-                                    onChange={(event) => setCaption(event.target.value)}
+                                    onChange={(event) =>
+                                        setCaption(event.target.value)
+                                    }
                                     onBlur={() => {
                                         if (caption !== (row.caption ?? '')) {
-                                            onSave(row, { caption: caption === '' ? null : caption });
+                                            onSave(row, {
+                                                caption:
+                                                    caption === ''
+                                                        ? null
+                                                        : caption,
+                                            });
                                         }
                                     }}
-                                    className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm outline-none"
+                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
                                 <Label className="text-xs">Folder</Label>
                                 <Select
-                                    value={row.folder_id === null ? 'root' : String(row.folder_id)}
+                                    value={
+                                        row.folder_id === null
+                                            ? 'root'
+                                            : String(row.folder_id)
+                                    }
                                     onValueChange={(value) =>
-                                        onSave(row, { folder_id: value === 'root' ? null : Number(value) })
+                                        onSave(row, {
+                                            folder_id:
+                                                value === 'root'
+                                                    ? null
+                                                    : Number(value),
+                                        })
                                     }
                                     disabled={!can.update}
                                 >
@@ -729,9 +1082,14 @@ function MediaDrawer({
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="root">Unfiled</SelectItem>
+                                        <SelectItem value="root">
+                                            Unfiled
+                                        </SelectItem>
                                         {folders.map((folder) => (
-                                            <SelectItem key={folder.id} value={String(folder.id)}>
+                                            <SelectItem
+                                                key={folder.id}
+                                                value={String(folder.id)}
+                                            >
                                                 {folder.name}
                                             </SelectItem>
                                         ))}
@@ -741,17 +1099,28 @@ function MediaDrawer({
 
                             <div className="space-y-2 border-t border-border/60 pt-3">
                                 <h3 className="text-xs font-semibold">
-                                    Used in {row.usages} place{row.usages === 1 ? '' : 's'}
+                                    Used in {row.usages} place
+                                    {row.usages === 1 ? '' : 's'}
                                 </h3>
                                 {row.usages_detail.length === 0 ? (
-                                    <p className="text-muted-foreground text-xs">Nothing links to this file yet.</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Nothing links to this file yet.
+                                    </p>
                                 ) : (
                                     <ul className="space-y-1">
                                         {row.usages_detail.map((usage) => (
-                                            <li key={`${usage.id}-${usage.field ?? 'file'}`} className="flex items-center justify-between gap-2 text-xs">
-                                                <span className="min-w-0 truncate">{usage.title}</span>
+                                            <li
+                                                key={`${usage.id}-${usage.field ?? 'file'}`}
+                                                className="flex items-center justify-between gap-2 text-xs"
+                                            >
+                                                <span className="min-w-0 truncate">
+                                                    {usage.title}
+                                                </span>
                                                 {usage.url ? (
-                                                    <a href={usage.url} className="text-primary shrink-0 hover:underline">
+                                                    <a
+                                                        href={usage.url}
+                                                        className="shrink-0 text-primary hover:underline"
+                                                    >
                                                         Edit page
                                                     </a>
                                                 ) : null}
@@ -763,12 +1132,21 @@ function MediaDrawer({
 
                             <div className="flex items-center gap-2 border-t border-border/60 pt-3">
                                 <Button variant="outline" size="sm" asChild>
-                                    <a href={row.url} target="_blank" rel="noreferrer">
+                                    <a
+                                        href={row.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
                                         Open original
                                     </a>
                                 </Button>
                                 {can.delete && !row.is_trashed ? (
-                                    <Button variant="ghost" size="sm" className="text-status-error" onClick={() => onDelete(row)}>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-status-error"
+                                        onClick={() => onDelete(row)}
+                                    >
                                         <Trash2 className="size-3.5" />
                                         Delete
                                     </Button>
