@@ -12,6 +12,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
+import { Reveal } from '@/components/reveal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -124,40 +125,42 @@ export default function Dashboard({
                     aria-label="Key figures"
                     className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
                 >
-                    {kpis.map((kpi) => {
+                    {kpis.map((kpi, index) => {
                         const Icon = icons[kpi.icon] ?? FileText;
 
                         return (
-                            <Card key={kpi.key} className="gap-2 py-5">
-                                <CardHeader className="flex flex-row items-center justify-between px-5">
-                                    <CardTitle className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                        {kpi.label}
-                                    </CardTitle>
-                                    <Icon className="size-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent className="px-5">
-                                    <p className="text-3xl font-semibold tracking-tight">
-                                        {kpi.value.toLocaleString()}
-                                    </p>
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                        {kpi.href ? (
-                                            <Link
-                                                href={kpi.href}
-                                                className="underline-offset-4 hover:text-foreground hover:underline"
-                                            >
-                                                {kpi.hint}
-                                            </Link>
-                                        ) : (
-                                            kpi.hint
-                                        )}
-                                    </p>
-                                </CardContent>
-                            </Card>
+                            <Reveal key={kpi.key} index={index}>
+                                <Card className="gap-2 py-5">
+                                    <CardHeader className="flex flex-row items-center justify-between px-5">
+                                        <CardTitle className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                            {kpi.label}
+                                        </CardTitle>
+                                        <Icon className="size-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent className="px-5">
+                                        <p className="text-3xl font-semibold tracking-tight">
+                                            {kpi.value.toLocaleString()}
+                                        </p>
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            {kpi.href ? (
+                                                <Link
+                                                    href={kpi.href}
+                                                    className="underline-offset-4 hover:text-foreground hover:underline"
+                                                >
+                                                    {kpi.hint}
+                                                </Link>
+                                            ) : (
+                                                kpi.hint
+                                            )}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Reveal>
                         );
                     })}
                 </section>
 
-                <div className="grid gap-6 lg:grid-cols-3">
+                <Reveal index={1} className="grid gap-6 lg:grid-cols-3">
                     <section className="lg:col-span-2" aria-label="Page views">
                         <Card className="h-full">
                             <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
@@ -272,9 +275,9 @@ export default function Dashboard({
                             </ul>
                         </Card>
                     </section>
-                </div>
+                </Reveal>
 
-                <div className="grid gap-6 lg:grid-cols-2">
+                <Reveal index={2} className="grid gap-6 lg:grid-cols-2">
                     <section aria-label="Drafts" className="space-y-3">
                         <div className="flex items-center justify-between">
                             <h2 className="text-sm font-semibold">Drafts</h2>
@@ -371,7 +374,7 @@ export default function Dashboard({
                             </Card>
                         )}
                     </section>
-                </div>
+                </Reveal>
             </div>
         </>
     );

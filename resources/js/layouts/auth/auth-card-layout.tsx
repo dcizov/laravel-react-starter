@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import { Reveal } from '@/components/reveal';
 import {
     Card,
     CardContent,
@@ -31,7 +32,7 @@ export default function AuthCardLayout({
                     </div>
                 </Link>
 
-                <div className="flex flex-col gap-6">
+                <Reveal className="flex flex-col gap-6">
                     <Card className="rounded-xl">
                         <CardHeader className="px-10 pt-8 pb-0 text-center">
                             <CardTitle className="text-xl">{title}</CardTitle>
@@ -41,7 +42,7 @@ export default function AuthCardLayout({
                             {children}
                         </CardContent>
                     </Card>
-                </div>
+                </Reveal>
             </div>
         </div>
     );

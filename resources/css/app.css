@@ -167,6 +167,25 @@
     --color-status-error-soft: var(--status-error-soft);
 }
 
+/* Section entrance used by <Reveal />. CSS only, so server and client render
+   the identical class and custom property and hydration cannot disagree. */
+@keyframes reveal-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@utility reveal {
+    animation: reveal-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+}
+
 @layer base {
     * {
         @apply border-border;
@@ -196,6 +215,10 @@
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
             scroll-behavior: auto !important;
+        }
+
+        .reveal {
+            animation: none !important;
         }
     }
 }
