@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
+use App\Cms\Media\MediaLibrary;
+use App\Models\Media;
 use App\Models\Page;
 use App\Models\User;
+use App\Policies\MediaPolicy;
 use App\Policies\PagePolicy;
 use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
@@ -33,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->registerPolicies();
         $this->registerEventListeners();
+        $this->trackMediaUsages();
     }
 
     /**
@@ -43,6 +47,26 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Page::class, PagePolicy::class);
+        Gate::policy(Media::class, MediaPolicy::class);
+    }
+
+    /**
+     * The media usage table is derived state: every write path of a page
+     * refreshes it, so "where is this image used?" is answered from the
+     * database instead of by re-scanning every page on read.
+     */
+    private function trackMediaUsages(): void
+    {
+        $sync = function (Page $page): void {
+            app(MediaLibrary::class)->syncUsages($page);
+        };
+
+        Page::saved($sync);
+        Page::restored($sync);
+
+        Page::deleted(function (Page $page): void {
+            app(MediaLibrary::class)->forgetUsages($page);
+        });
     }
 
     /**

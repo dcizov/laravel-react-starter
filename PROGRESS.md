@@ -206,3 +206,42 @@ reused, signed-preview only. Full suite: 88 tests / 430 assertions. pint
 (133 files) + tsc + eslint (0 warnings) + build green.
 
 **Next: S3.2 — editor polish**, then S4 media library.
+
+## S4 — Media
+
+Split like S3: S4.1 media storage backend (done), S4.2 HTTP + library UI,
+S4.3 picker wired into the editor.
+
+**Done (S4.1)**
+
+- `media_folders` and `media_usages` migrations. Folders are a self-referencing
+  tree; `media_usages` is a polymorphic table (`usable_type`, `usable_id`,
+  `field`) with a unique key per usage, so re-saving a page can never duplicate
+  a row. The `media` table from S3 already carried uuid/disk/path/dimensions.
+- `App\Models\MediaFolder` (parent/children/media, `trail()`, `depth()`,
+  sibling-unique slugs) and `App\Models\MediaUsage` (media + morphTo usable).
+  `Media` gained `folder()`, `usages()`, `thumbnailPath()`, `thumbnailUrl()`,
+  `isImage()`, `humanSize()`, `dimensionLabel()`.
+- `App\Cms\Media\MediaLibrary` owns every disk write: UUID file names under
+  `media/YYYY/MM`, real dimensions from `getimagesize`, one GD thumbnail
+  (480 px long edge, JPEG q82) written to `<dir>/thumbs/`, metadata edits that
+  never touch bytes, soft delete + restore + purge, folder CRUD that refuses to
+  delete a non-empty folder, and a recursive `scan()` of section content that
+  finds `/storage/...` references anywhere in the JSON tree.
+- Usage bookkeeping is derived state: `Page::saved` / `Page::restored` /
+  `Page::deleted` are hooked in `AppServiceProvider`, so editor saves, autosave,
+  duplicate and revision restore all rewrite `media_usages` without any caller
+  knowing about media. Field paths match the editor's error paths
+  (`content.0.content.image`).
+- `MediaPolicy`: view/upload for authors, update/delete/move for editors and up;
+  folder management follows `media.update`.
+
+**Accept (S4.1):** 11 feature tests — uuid + dimensions + single thumbnail per
+image, identical file names stored apart, documents never thumbnailed, alt and
+caption edits that leave the file untouched, soft delete/restore/purge,
+usage rows created/rewritten/removed as pages change, folder tree slugs and
+non-empty folder protection, role matrix. Full suite: 99 tests / 486
+assertions; pint clean (139 files).
+
+**Next: S4.2 — media HTTP layer** (`MediaController`, upload/update/destroy/
+restore/folder routes, grid + list UI with folders, search and detail drawer).
