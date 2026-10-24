@@ -110,6 +110,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Site identity
+    |--------------------------------------------------------------------------
+    |
+    | Public chrome reads these until the settings screen (S7) makes them
+    | editable. The name shows in the header and in the sitemap.
+    |
+    */
+
+    'site' => [
+        'name' => env('LATTICE_SITE_NAME', 'Northwind Studio'),
+        'tagline' => env('LATTICE_SITE_TAGLINE', 'Design for things that last'),
+        'description' => env('LATTICE_SITE_DESCRIPTION', 'A design studio working on identity, product and print.'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Generated TypeScript
     |--------------------------------------------------------------------------
     |

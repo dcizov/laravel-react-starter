@@ -333,4 +333,31 @@ suite: 119 tests / 683 assertions; pint (149 files), tsc, eslint (0 warnings) an
 build green; `lattice:install` registers both themes and `/admin/appearance`
 renders 200 for admin/editor, 403 for author.
 
-**Next: S5.2 — theme layouts and the themed public site.**
+**Done (S5.2)**
+
+- `menu_items` table + `App\Models\MenuItem` (page- or URL-targeted, nested via
+  `parent_id`, `href()` resolves at read time and degrades to `/` when the target
+  page is a draft, scheduled or deleted — a menu can never link to a 404).
+- `App\Cms\Menus\MenuRepository`: ordered trees per menu (`main`, `footer`),
+  built from one query, and safe to call before the tables exist.
+- `PublicPageController` now renders **the component the active theme declares**
+  (`themes/{handle}/page`) and shares one `shell()` payload with the page, the
+  404 and the preview: site identity (`config('lattice.site')`), theme
+  handle/name/tokens/degraded and both menus. Unknown slug → themed 404 with
+  chrome, still 404; signed previews unchanged and still `noindex`.
+- `SitemapController`: `/sitemap.xml` (published, past, indexable pages only,
+  home at `/`) and `/robots.txt` (blocks `/admin`, `/preview`, `/settings`,
+  `/invitations`, points at the sitemap). Both registered above the catch-all.
+- `MenuSeeder` (main + footer, page-targeted when the page exists) wired into
+  `DatabaseSeeder`, so a fresh install has working chrome before a theme exists.
+
+**Accept (S5.2):** 8 new feature tests (9 total in the file) — page render with
+site + menus + tokens, menu items resolving to pages and degrading unpublished
+targets, nested children, 404 with chrome, errored-theme degradation, sitemap
+excluding noindex/draft/scheduled pages, robots rules, signed-preview gating.
+Full suite: 127 tests / 750 assertions; pint (155 files), tsc, eslint
+(0 warnings) and build green; `/sitemap.xml`, `/robots.txt` and `/` all 200 in
+the running preview.
+
+**Next: S5.3 — the theme React layers** (Aperture + Meridian layouts, themed
+404, preview banner) which turns `themes/{handle}/page` into a real component.

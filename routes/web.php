@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicPageController::class, 'home'])->name('home');
@@ -10,6 +11,11 @@ Route::get('/', [PublicPageController::class, 'home'])->name('home');
 Route::get('preview/pages/{page}', [PublicPageController::class, 'preview'])
     ->middleware('signed')
     ->name('preview.pages.show');
+
+// Machine-readable entry points. They sit above the catch-all so a page can
+// never shadow them.
+Route::get('sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
+Route::get('robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 require __DIR__.'/admin.php';
 
