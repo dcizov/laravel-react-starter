@@ -1065,15 +1065,15 @@ screen had its own table, its own pagination and its own idea of what "loading",
 "empty" and "error" looked like. This pass replaces that with one component and
 adds a motion primitive that cannot break hydration.
 
-| Area            | Change                                                                                                                                                                                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Table primitive | `resources/js/components/ui/table.tsx` (shadcn-compatible, no behaviour).                                                                                                                                                                                                 |
-| Data table      | `resources/js/components/data-table.tsx` rewritten on TanStack Table v9 with an explicit feature registry, client + server hosting, skeletons, empty/error states, column visibility, selection, pagination, server search and filter tabs.                               |
-| Pages list      | `pages/admin/pages/{index,columns}.tsx`: server sort tokens, status/trash filter tabs, search, Laravel pagination. The sort `Select` stays for narrow screens where the sortable header column is hidden.                                                                 |
-| Posts list      | `pages/posts/{index,columns}.tsx` (PostCraft addon): same table, status counts, search, pagination; the title is a real link, not a click handler on a button.                                                                                                            |
-| Motion          | `components/reveal.tsx` + `@utility reveal`: CSS-only stagger, capped at six steps, disabled wholesale under `prefers-reduced-motion`. Applied to the dashboard KPIs, dashboard grids and the auth card.                                                                  |
-| Dependencies    | `@tanstack/react-table@^9.3.1` added. `motion` was installed while researching and removed again: nothing consumed it, and an unused dependency is a liability.                                                                                                           |
-| Tests           | `resources/js/__tests__/data-table.test.tsx` (7 cases: render, empty, error+retry, loading skeleton, client paging, server paging callback, column hiding) and `reveal.test.tsx` (3 cases: deterministic SSR markup, capped delay, SSR → hydrate with no console output). |
+| Area            | Change                                                                                                                                                                                                                                                                                    |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table primitive | `resources/js/components/ui/table.tsx` (shadcn-compatible, no behaviour).                                                                                                                                                                                                                 |
+| Data table      | `resources/js/components/data-table.tsx` rewritten on TanStack Table v9 with an explicit feature registry, client + server hosting, skeletons, empty/error states, column visibility, selection, pagination, server search and filter tabs.                                               |
+| Pages list      | `pages/admin/pages/{index,columns}.tsx`: server sort tokens, status/trash filter tabs, search, Laravel pagination. The sort `Select` stays for narrow screens where the sortable header column is hidden.                                                                                 |
+| Posts list      | `pages/posts/{index,columns}.tsx` (PostCraft addon): same table, status counts, search, pagination; the title is a real link, not a click handler on a button.                                                                                                                            |
+| Motion          | `components/reveal.tsx` + `@utility reveal`: CSS-only stagger, capped at six steps, disabled wholesale under `prefers-reduced-motion`. Applied to the dashboard KPIs, dashboard grids and the auth card.                                                                                  |
+| Dependencies    | `@tanstack/react-table@^9.3.1` added. `motion` was installed while researching and removed again: nothing consumed it, and an unused dependency is a liability.                                                                                                                           |
+| Tests           | `resources/js/__tests__/data-table.test.tsx` (8 cases: render, empty, error+retry, loading skeleton, client paging, server paging callback, header sorting, column hiding) and `reveal.test.tsx` (3 cases: deterministic SSR markup, capped delay, SSR → hydrate with no console output). |
 
 ### Verified here
 
@@ -1081,7 +1081,7 @@ adds a motion primitive that cannot break hydration.
   the Wayfinder-generated `@/routes/*` and `@/actions/*` modules, which are not
   present in this sandbox.
 - `npx eslint` over every changed file — clean.
-- `npx vitest run` — 8 files, 47 tests, no unhandled errors.
+- `npx vitest run` — 8 files, 48 tests, no unhandled errors.
 - `npx prettier --check` over the changed files — clean.
 
 ### Not executed here

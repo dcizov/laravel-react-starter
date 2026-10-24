@@ -64,6 +64,8 @@ export function createPageColumns({
         columnHelper.accessor('title', {
             id: 'title',
             meta: { label: 'Page' },
+            // The primary column is the row's identity; hiding it helps nobody.
+            enableHiding: false,
             header: () => (
                 <DataTableSortButton
                     label="Page"

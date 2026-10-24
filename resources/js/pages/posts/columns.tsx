@@ -52,6 +52,8 @@ export function createPostColumns({
         columnHelper.accessor('title', {
             id: 'title',
             meta: { label: 'Title' },
+            // The primary column is the row's identity; hiding it helps nobody.
+            enableHiding: false,
             header: () => (
                 <span className="text-xs font-medium tracking-wide uppercase">
                     Title

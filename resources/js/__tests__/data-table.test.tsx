@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
     DataTable,
+    DataTableColumnHeader,
     DataTableSortButton,
     DataTableToolbar,
 } from '@/components/data-table';
@@ -28,6 +29,19 @@ const columns = columnHelper.columns([
     columnHelper.accessor('role', {
         header: 'Role',
         meta: { label: 'Role' },
+        cell: ({ row }) => row.original.role,
+    }),
+]);
+
+const sortableColumns = columnHelper.columns([
+    columnHelper.accessor('name', {
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Name" />
+        ),
+        cell: ({ row }) => row.original.name,
+    }),
+    columnHelper.accessor('role', {
+        header: 'Role',
         cell: ({ row }) => row.original.role,
     }),
 ]);
@@ -179,6 +193,32 @@ describe('DataTable', () => {
         );
 
         expect(onPageChange).toHaveBeenCalledWith(2);
+    });
+
+    it('sorts client data from the column header menu', async () => {
+        render(
+            <DataTable
+                columns={sortableColumns}
+                data={people}
+                getRowId={getRowId}
+                paginate={false}
+            />,
+        );
+
+        const firstColumn = () =>
+            screen
+                .getAllByRole('row')
+                .slice(1)
+                .map((row) => within(row).getAllByRole('cell')[0].textContent);
+
+        expect(firstColumn()).toEqual(['Ada', 'Grace', 'Linus']);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Name' }));
+        await userEvent.click(
+            screen.getByRole('menuitem', { name: /descending/i }),
+        );
+
+        expect(firstColumn()).toEqual(['Linus', 'Grace', 'Ada']);
     });
 
     it('hides a column from the visibility menu', async () => {
