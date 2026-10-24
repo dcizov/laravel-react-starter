@@ -6,6 +6,7 @@ use App\Cms\Addons\AddonManager;
 use App\Cms\Registries\Navigation;
 use App\Cms\Repositories\AddonRepository;
 use App\Cms\Repositories\ThemeRepository;
+use Database\Seeders\DemoSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -68,7 +69,8 @@ class InstallCommand extends Command
         Artisan::call('lattice:discover', [], $this->output);
 
         if ($this->option('demo')) {
-            Artisan::call('db:seed', ['--force' => true], $this->output);
+            $this->components->info('Seeding the demo site…');
+            Artisan::call('db:seed', ['--class' => DemoSeeder::class, '--force' => true], $this->output);
         }
 
         $navigation->flush();

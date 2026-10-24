@@ -17,6 +17,7 @@ export const navigationSections: GeneratedNavSection[] = [
         items: [
             { label: "Pages", route: "/admin/pages", icon: "file-text" },
             { label: "Media", route: "/admin/media", icon: "image" },
+            { label: "Posts", route: "/admin/posts", icon: "newspaper" },
         ],
     },
     {
@@ -24,7 +25,6 @@ export const navigationSections: GeneratedNavSection[] = [
         items: [
             { label: "Appearance", route: "/admin/appearance", icon: "palette" },
             { label: "Addons", route: "/admin/addons", icon: "plug" },
-            { label: "Demo", route: "/admin/demo", icon: "flask-conical" },
         ],
     },
     {

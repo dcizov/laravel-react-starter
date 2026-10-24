@@ -573,4 +573,39 @@ Full suite: **171 tests / 1278 assertions**; pint (189 files), tsc, eslint and
 build green. Smoke: `/admin/activity`, a filtered query and a malformed date all
 answer 200 for admin and author.
 
-**Next: S8 — seed, polish, docs, QA.**
+## S8 — Seed, polish, docs, QA
+
+Split into S8.1 (demo data), S8.2 (docs) and S8.3 (polish + QA).
+
+**Done (S8.1)**
+
+- `database/seeders/DemoSeeder.php`: the whole demo site, idempotent (every
+  record matched on its natural key) and dated relative to `now()`: eight pages
+  (five published, one scheduled, one draft, one trashed — real studio copy, two
+  revisions each), eight media items, PostCraft with three categories, four tags
+  and six posts spread over five months, populated settings in all five groups,
+  25 activity rows, eight weeks of page views, `aperture` active, PostCraft
+  active and `Shopper` left blocked on disk.
+- `database/seeders/Demo/PlaceholderImages.php`: the fixture image script —
+  GD-drawn duotone abstracts (1600×1067) from a deterministic seed, so the
+  repository holds no binary fixtures and the demo still looks designed.
+- `lattice:reset-demo {--force}` drops, migrates, seeds and regenerates the
+  registries; `lattice:install --demo` now seeds `DemoSeeder` instead of the
+  bare `DatabaseSeeder`.
+- Deviation, recorded: the spec's §G mentions a `Redirects` addon with four
+  rows; that addon was never part of S6's scope, so the on-disk set stays
+  `Demo`, `PostCraft` and the incompatible `Shopper`.
+
+**Accept (S8.1):** 3 feature tests — the seeded site matches §G (8 pages split
+5/1/1/1, 8 media, 6 posts, 3 categories, 25 activity rows, >500 page views,
+menus pointing at page ids), settings drive the public site (name, logo,
+`page.slug = home`), and a second run changes nothing.
+Full suite: **174 tests / 1314 assertions**; pint (194 files) green.
+`lattice:reset-demo --force` on the dev database: every public route
+(`/`, `/services`, `/about`, `/contact`, `/imprint`, `/blog`,
+`/blog/{slug}`, `/sitemap.xml`, `/robots.txt`) answers 200 and `lattice:doctor`
+reports **no problems**.
+
+**Next: S8.2 — documentation** (README quickstart + credentials,
+`docs/ARCHITECTURE.md`, `docs/ADDON_DEVELOPMENT.md`,
+`docs/THEME_DEVELOPMENT.md`).
