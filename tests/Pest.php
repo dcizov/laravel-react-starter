@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in('Feature/Auth', 'Feature/Settings', 'Feature/Http');
+    ->in('Feature/Auth', 'Feature/Settings', 'Feature/Http', 'Feature/Admin');
 
 pest()->extend(TestCase::class)
     ->use(DatabaseMigrations::class)

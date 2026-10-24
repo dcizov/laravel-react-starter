@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +29,29 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerPolicies();
+        $this->registerEventListeners();
+    }
+
+    /**
+     * Explicit mappings beat policy guessing when classes live outside the
+     * default namespace.
+     */
+    private function registerPolicies(): void
+    {
+        Gate::policy(User::class, UserPolicy::class);
+    }
+
+    /**
+     * Auth events feed the audit trail and the "last seen" column.
+     */
+    private function registerEventListeners(): void
+    {
+        Event::listen(Login::class, function (Login $event): void {
+            if ($event->user instanceof User) {
+                $event->user->forceFill(['last_login_at' => now()])->saveQuietly();
+            }
+        });
     }
 
     /**

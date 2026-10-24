@@ -7,5 +7,7 @@ use Inertia\Inertia;
 Route::middleware(['web', 'auth'])->prefix('admin')->group(function (): void {
     Route::get('demo', fn () => Inertia::render('demo', [
         'notes' => DemoNote::query()->latest('id')->limit(10)->get(['id', 'body', 'created_at']),
-    ]))->name('demo.index');
+    ]))
+        ->middleware('can:demo:view')
+        ->name('demo.index');
 });

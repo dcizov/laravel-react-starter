@@ -3,18 +3,29 @@
 use App\Cms\Addons\AddonManager;
 use App\Cms\Manifests\AddonManifest;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 beforeEach(function () {
+    $this->seed(RolePermissionSeeder::class);
     app(AddonManager::class)->install(AddonManifest::fromPath(config('lattice.paths.addons').'/Demo'));
 });
+
+/**
+ * Addon navigation is permission-filtered, so the viewer needs the ability.
+ */
+function adminUser(): User
+{
+    $user = User::factory()->create();
+    $user->assignRole('Admin');
+
+    return $user;
+}
 
 it('serves the addon screen and lists it in the shared navigation once active', function () {
     app(AddonManager::class)->activate('Demo');
     $this->refreshApplication();
 
-    $user = User::factory()->create();
-
-    $response = $this->actingAs($user)->get('/admin/demo');
+    $response = $this->actingAs(adminUser())->get('/admin/demo');
 
     $response->assertOk()
         ->assertInertia(fn ($page) => $page
@@ -31,7 +42,7 @@ it('hides the addon screen and its navigation entry once deactivated', function 
     app(AddonManager::class)->deactivate('Demo');
     $this->refreshApplication();
 
-    $user = User::factory()->create();
+    $user = adminUser();
 
     $this->actingAs($user)->get('/admin/demo')->assertNotFound();
 
@@ -43,7 +54,7 @@ it('hides the addon screen and its navigation entry once deactivated', function 
 });
 
 it('lists core navigation from the registry, not from react', function () {
-    $user = User::factory()->create();
+    $user = adminUser();
 
     $this->actingAs($user)->get('/admin')->assertOk()
         ->assertInertia(fn ($page) => $page

@@ -110,5 +110,40 @@ both and keeps `demo_notes`; a provider that throws becomes `error` while the
 app still serves `/login`; an incompatible manifest is refused with the exact
 reason. 55 tests / 223 assertions green, pint + tsc + eslint + build green.
 
-**Next: S2 — auth, roles, users** (Spatie roles Admin/Editor/Author,
-permission map in `auth.can`, policies, invitations, activity log).
+## S2 — Auth, roles, users
+
+**Done**
+
+- `spatie/laravel-permission` 6.22 + `spatie/laravel-activitylog` 4.12
+  (fetched into `vendor/` by the sandbox toolchain, declared in
+  `composer.json`), providers registered explicitly in `bootstrap/providers.php`,
+  configs published, permission + activity migrations converted to anonymous
+  classes (the published stubs redeclared their class names).
+- Role matrix is **data** in `config/lattice.php` (`roles`, `admin_only_abilities`),
+  turned into Spatie roles/permissions by `RolePermissionSeeder`. Addon
+  manifest permissions are synced on activation (`Cms\Permissions\PermissionSync`),
+  so a newly enabled addon is usable immediately.
+- `AbilityMap` builds `auth.can` from the permission table; `auth.user` is now a
+  small array, never a model.
+- `UserPolicy` + explicit `Gate::policy` mapping; `pages`/`media` policies land
+  with their models. `User` gained `HasRoles`, `avatar_url`, `preferences`,
+  `is_active`, `last_login_at`, `isLastAdmin()`; `last_login_at` is written by a
+  `Login` event listener.
+- Invite-only signup: `invitations` table (hashed token, 7-day expiry),
+  `InvitationNotification`, public `GET/POST /invitations/{token}` with a
+  dedicated React screen, invitation revoke, duplicate-email guard.
+- Admin users screen: list + search, invite dialog, role select, activate/
+  deactivate, pending invitations, last-admin protection (role demotion and
+  deactivation are refused with validation errors).
+- Activity screen with log filters, fed by user/invitation events.
+- `active` middleware signs out deactivated accounts on their next request.
+
+**Accept:** role matrix tests pass (author 403 on `/admin/users`, editor sees
+team but cannot manage, admin manages); invited editor accepts and logs in with
+the invited role; last admin cannot be demoted or deactivated; addon permission
+`demo:view` is enforced by `can:` middleware on the addon route.
+69 tests / 299 assertions, pint (114 files) + tsc + eslint + build green.
+
+**Next: S3 — pages, editor, publishing** (`pages`, `page_revisions`,
+`page_slugs`, section registry, three-panel editor, autosave, publish/schedule,
+signed preview, slug 301s).

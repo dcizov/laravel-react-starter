@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Cms\Boot\ProviderLoader;
+use App\Cms\Permissions\AbilityMap;
 use App\Cms\Registries\Navigation;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -48,14 +49,39 @@ class HandleInertiaRequests extends Middleware
                 'version' => config('lattice.version'),
             ],
             'auth' => [
-                'user' => $request->user(),
-                'can' => [],
+                'user' => fn () => $this->user($request),
+                'can' => fn (): array => app(AbilityMap::class)->for($request->user()),
             ],
             'navigation' => fn (): array => $this->navigation($request),
             'flash' => [
                 'toast' => fn (): ?array => $request->session()->get('toast'),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+        ];
+    }
+
+    /**
+     * Never send the model itself: only what the UI renders.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function user(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return null;
+        }
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar_url' => $user->avatar_url,
+            'role' => $user->roleName(),
+            'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
+            'created_at' => $user->created_at?->toIso8601String(),
+            'updated_at' => $user->updated_at?->toIso8601String(),
         ];
     }
 

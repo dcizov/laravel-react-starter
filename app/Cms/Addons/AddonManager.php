@@ -5,6 +5,7 @@ namespace App\Cms\Addons;
 use App\Cms\Boot\ProviderLoader;
 use App\Cms\Manifests\AddonManifest;
 use App\Cms\Manifests\ManifestValidator;
+use App\Cms\Permissions\PermissionSync;
 use App\Cms\Repositories\AddonRepository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
@@ -80,6 +81,8 @@ final class AddonManager
             $this->act($manifest, 'activate');
 
             $this->addons->setStatus($handle, 'active');
+
+            $this->app->make(PermissionSync::class)->syncAddon($manifest);
         } catch (Throwable $e) {
             if ($ranMigrations) {
                 $this->rollbackMigrations($manifest);

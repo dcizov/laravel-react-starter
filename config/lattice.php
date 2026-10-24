@@ -51,6 +51,44 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Roles and permissions
+    |--------------------------------------------------------------------------
+    |
+    | The role matrix is data, not code: the seeder turns it into Spatie roles
+    | and permissions, and every policy/gate reads the same names. Permissions
+    | from installed addon manifests are registered too, so an addon never has
+    | to edit this file.
+    |
+    | `Admin` receives every permission that exists (`*`), including the ones
+    | declared by addons and the admin-only abilities below.
+    |
+    */
+
+    'admin_only_abilities' => [
+        'users.manage',
+        'addons.manage',
+    ],
+
+    'roles' => [
+        'Admin' => ['*'],
+        'Editor' => [
+            'pages.view', 'pages.create', 'pages.update', 'pages.publish', 'pages.delete',
+            'media.view', 'media.upload', 'media.update', 'media.delete',
+            'settings.view', 'settings.update',
+            'users.view',
+            'addons.view',
+            'themes.view', 'themes.activate',
+            'activity.view',
+        ],
+        'Author' => [
+            'pages.view', 'pages.create', 'pages.update',
+            'media.view', 'media.upload',
+            'activity.view',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Core navigation
     |--------------------------------------------------------------------------
     |

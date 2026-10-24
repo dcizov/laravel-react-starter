@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -23,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Lattice is meant to run behind a reverse proxy (TLS is terminated there).
         $middleware->trustProxies(at: '*');
+
+        $middleware->alias([
+            'active' => EnsureUserIsActive::class,
+        ]);
 
         $middleware->web(append: [
             HandleAppearance::class,

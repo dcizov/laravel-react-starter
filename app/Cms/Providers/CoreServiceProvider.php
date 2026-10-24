@@ -7,7 +7,6 @@ use App\Cms\Registries\Navigation;
 use App\Cms\Repositories\AddonRepository;
 use App\Cms\Repositories\ThemeRepository;
 use App\Cms\Support\SafeMode;
-use Illuminate\Contracts\Auth\Access\Gate as GateContract;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -46,37 +45,6 @@ class CoreServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerCoreNavigation();
-        $this->registerExtensionPermissions();
-    }
-
-    /**
-     * Every permission declared in an active addon manifest becomes a gate.
-     *
-     * Until the role matrix lands, an ability merely requires an authenticated
-     * user; the RBAC step replaces this definition with role checks.
-     */
-    private function registerExtensionPermissions(): void
-    {
-        // The gate is bound by contract, not by the 'gate' alias. Before the
-        // core tables exist there is nothing to read, so the installer screen
-        // keeps working.
-        if (! $this->app->bound(GateContract::class)) {
-            return;
-        }
-
-        if (! $this->app->make(ProviderLoader::class)->installed()) {
-            return;
-        }
-
-        $gate = $this->app->make(GateContract::class);
-
-        foreach ($this->app->make(AddonRepository::class)->activeManifests() as $manifest) {
-            foreach ($manifest->permissions as $permission) {
-                if (is_string($permission) && ! $gate->has($permission)) {
-                    $gate->define($permission, fn ($user = null): bool => $user !== null);
-                }
-            }
-        }
     }
 
     /**
