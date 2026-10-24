@@ -55,11 +55,13 @@ export function ThemeShell({
     const accent = theme.tokens.accent ?? 'oklch(0.51 0.19 264)';
     // Branding is site identity, so it arrives once in the shared props rather
     // than being threaded through every public controller.
-    const logo = usePage<{ settings?: { public?: { logo?: string | null } } }>().props.settings?.public?.logo ?? null;
+    const logo =
+        usePage<{ settings?: { public?: { logo?: string | null } } }>().props
+            .settings?.public?.logo ?? null;
 
     return (
         <div
-            className="bg-background text-foreground flex min-h-screen flex-col"
+            className="flex min-h-screen flex-col bg-background text-foreground"
             style={{
                 // The theme writes tokens; the markup reads them. No component
                 // knows which theme it is rendering under.
@@ -72,16 +74,18 @@ export function ThemeShell({
         >
             <a
                 href="#site-content"
-                className="bg-background focus:ring-ring sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:px-3 focus:py-2 focus:text-sm focus:ring-2"
+                className="sr-only bg-background focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring"
             >
                 Skip to content
             </a>
 
-            <header className="border-border/60 bg-background/85 sticky top-0 z-30 border-b backdrop-blur">
+            <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur">
                 <div
                     className={cn(
                         'mx-auto flex w-full items-center justify-between gap-4 px-6',
-                        variant === 'wide' ? 'max-w-6xl py-4' : 'max-w-5xl py-3',
+                        variant === 'wide'
+                            ? 'max-w-6xl py-4'
+                            : 'max-w-5xl py-3',
                     )}
                 >
                     <a
@@ -90,7 +94,11 @@ export function ThemeShell({
                         aria-label={`${site.name} — home`}
                     >
                         {logo ? (
-                            <img src={logo} alt="" className="h-7 w-auto max-w-40 object-contain" />
+                            <img
+                                src={logo}
+                                alt=""
+                                className="h-7 w-auto max-w-40 object-contain"
+                            />
                         ) : (
                             <span
                                 className="flex size-7 items-center justify-center rounded-[calc(var(--theme-radius)/1.5)] text-white"
@@ -99,16 +107,23 @@ export function ThemeShell({
                                 <AppLogoIcon className="size-4" />
                             </span>
                         )}
-                        {logo ? <span className="sr-only">{site.name}</span> : site.name}
+                        {logo ? (
+                            <span className="sr-only">{site.name}</span>
+                        ) : (
+                            site.name
+                        )}
                     </a>
 
                     {links.length > 0 || cta !== null ? (
-                        <nav className="text-muted-foreground flex items-center gap-1 text-sm" aria-label="Main">
+                        <nav
+                            className="flex items-center gap-1 text-sm text-muted-foreground"
+                            aria-label="Main"
+                        >
                             {links.map((item) => (
                                 <a
                                     key={item.id}
                                     href={item.url}
-                                    className="hover:text-foreground hover:bg-muted rounded-md px-2.5 py-1.5 transition-colors"
+                                    className="rounded-md px-2.5 py-1.5 transition-colors hover:bg-muted hover:text-foreground"
                                 >
                                     {item.label}
                                 </a>
@@ -131,22 +146,31 @@ export function ThemeShell({
                 {children}
             </main>
 
-            <footer className="border-border/60 mt-auto border-t">
+            <footer className="mt-auto border-t border-border/60">
                 <div
                     className={cn(
-                        'text-muted-foreground mx-auto flex w-full flex-col gap-4 px-6 py-10 text-xs sm:flex-row sm:items-center sm:justify-between',
+                        'mx-auto flex w-full flex-col gap-4 px-6 py-10 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between',
                         variant === 'wide' ? 'max-w-6xl' : 'max-w-5xl',
                     )}
                 >
                     <div className="space-y-1">
-                        <p className="text-foreground text-sm font-medium">{site.name}</p>
+                        <p className="text-sm font-medium text-foreground">
+                            {site.name}
+                        </p>
                         <p>{site.tagline}</p>
                     </div>
 
                     {footer.length > 0 ? (
-                        <nav className="flex flex-wrap items-center gap-4" aria-label="Footer">
+                        <nav
+                            className="flex flex-wrap items-center gap-4"
+                            aria-label="Footer"
+                        >
                             {footer.map((item) => (
-                                <a key={item.id} href={item.url} className="hover:text-foreground transition-colors">
+                                <a
+                                    key={item.id}
+                                    href={item.url}
+                                    className="transition-colors hover:text-foreground"
+                                >
                                     {item.label}
                                 </a>
                             ))}
@@ -182,7 +206,12 @@ export function ThemeBand({
                 variant === 'wide' ? 'py-16 sm:py-24' : 'py-12 sm:py-16',
             )}
         >
-            <div className={cn('mx-auto w-full', variant === 'wide' ? 'max-w-6xl' : 'max-w-5xl')}>
+            <div
+                className={cn(
+                    'mx-auto w-full',
+                    variant === 'wide' ? 'max-w-6xl' : 'max-w-5xl',
+                )}
+            >
                 {children}
             </div>
         </section>

@@ -16,14 +16,15 @@ export default function NotFound({ site, menus, theme }: ThemePageProps) {
 
             <ThemeShell site={site} menus={menus} theme={theme} variant="wide">
                 <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-24 text-center">
-                    <p className="text-muted-foreground text-xs font-medium tracking-[0.18em] uppercase">
+                    <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
                         404
                     </p>
                     <h1 className="mt-3 text-3xl font-semibold tracking-tight text-balance">
                         This page has moved on.
                     </h1>
-                    <p className="text-muted-foreground mt-3 max-w-md text-sm">
-                        The link may be old, or the page was never published. Try the home page.
+                    <p className="mt-3 max-w-md text-sm text-muted-foreground">
+                        The link may be old, or the page was never published.
+                        Try the home page.
                     </p>
                     <a
                         href={site.home_url}

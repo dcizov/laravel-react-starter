@@ -62,7 +62,16 @@ services:
         networks:
             - sail
         healthcheck:
-            test: ['CMD', 'pg_isready', '-q', '-d', '${DB_DATABASE:-lattice}', '-U', '${DB_USERNAME:-sail}']
+            test:
+                [
+                    'CMD',
+                    'pg_isready',
+                    '-q',
+                    '-d',
+                    '${DB_DATABASE:-lattice}',
+                    '-U',
+                    '${DB_USERNAME:-sail}',
+                ]
             retries: 3
             timeout: 5s
     mailpit:

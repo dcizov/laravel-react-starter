@@ -26,30 +26,47 @@ type Props = ThemePageProps & {
  * Theme A — Aperture. Editorial rhythm: a wide hero band, then every section on
  * its own generous band, alternating tone so long pages have a beat.
  */
-export default function AperturePage({ page, site, menus, theme, section_data = {} }: Props) {
+export default function AperturePage({
+    page,
+    site,
+    menus,
+    theme,
+    section_data = {},
+}: Props) {
     const blocks = page.content ?? [];
     const noindex = page.robots.includes('noindex');
 
     return (
         <>
             <Head title={page.seo_title}>
-                <meta name="description" content={page.seo_description ?? site.description} />
+                <meta
+                    name="description"
+                    content={page.seo_description ?? site.description}
+                />
                 <meta property="og:title" content={page.seo_title} />
-                <meta property="og:description" content={page.seo_description ?? site.description} />
+                <meta
+                    property="og:description"
+                    content={page.seo_description ?? site.description}
+                />
                 <meta property="og:type" content="website" />
-                {noindex ? <meta name="robots" content="noindex,nofollow" /> : null}
+                {noindex ? (
+                    <meta name="robots" content="noindex,nofollow" />
+                ) : null}
             </Head>
 
             <ThemeShell site={site} menus={menus} theme={theme} variant="wide">
                 {blocks.length === 0 ? (
                     <ThemeBand>
-                        <p className="text-muted-foreground text-center text-sm">
+                        <p className="text-center text-sm text-muted-foreground">
                             This page has no sections yet.
                         </p>
                     </ThemeBand>
                 ) : (
                     blocks.map((block, index) => (
-                        <ThemeBand key={block.id} tone={index % 2 === 1 ? 'muted' : 'plain'}>
+                        <ThemeBand
+                            key={block.id}
+                            tone={index % 2 === 1 ? 'muted' : 'plain'}
+                        >
                             <SectionList blocks={[block]} data={section_data} />
                         </ThemeBand>
                     ))

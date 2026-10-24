@@ -49,7 +49,10 @@ export type SectionBlock = {
 
 export type PageStatus = 'draft' | 'scheduled' | 'published';
 
-export function sectionDef(sections: SectionDef[], key: string): SectionDef | undefined {
+export function sectionDef(
+    sections: SectionDef[],
+    key: string,
+): SectionDef | undefined {
     return sections.find((section) => section.key === key);
 }
 

@@ -48,14 +48,14 @@ white-screening.
 
 ## 2. Tokens
 
-| Token | Used for |
-|---|---|
-| `accent` | buttons, links, the mark, focus accents |
-| `radius` | every rounded corner (`--theme-radius`, `--radius`) |
-| `font` | body font-family |
-| `heading_font` | display headings |
-| `heading_weight` | display weight |
-| `density` | `comfortable` or `compact` spacing |
+| Token            | Used for                                            |
+| ---------------- | --------------------------------------------------- |
+| `accent`         | buttons, links, the mark, focus accents             |
+| `radius`         | every rounded corner (`--theme-radius`, `--radius`) |
+| `font`           | body font-family                                    |
+| `heading_font`   | display headings                                    |
+| `heading_weight` | display weight                                      |
+| `density`        | `comfortable` or `compact` spacing                  |
 
 Tokens are sent with every public payload (`theme.tokens`) and applied by
 `components/themes/theme-shell.tsx` as CSS custom properties on the wrapper. A
@@ -117,15 +117,15 @@ fill its blog teaser from live posts).
 
 ### Fields
 
-| Type | Editor control | Notes |
-|---|---|---|
-| `text`, `textarea`, `richtext`, `url` | input / textarea | `rules` are appended to server validation |
-| `number` | number input | `default`, `min`, `max` via `rules` |
-| `boolean` | switch | |
-| `select` | select | `choices` => `[value => label]` |
-| `media` | media picker | stores the media id; the shell resolves the URL |
-| `color` | colour input | OKLCH or hex |
-| `repeater` | repeatable group | one nesting level |
+| Type                                  | Editor control   | Notes                                           |
+| ------------------------------------- | ---------------- | ----------------------------------------------- |
+| `text`, `textarea`, `richtext`, `url` | input / textarea | `rules` are appended to server validation       |
+| `number`                              | number input     | `default`, `min`, `max` via `rules`             |
+| `boolean`                             | switch           |                                                 |
+| `select`                              | select           | `choices` => `[value => label]`                 |
+| `media`                               | media picker     | stores the media id; the shell resolves the URL |
+| `color`                               | colour input     | OKLCH or hex                                    |
+| `repeater`                            | repeatable group | one nesting level                               |
 
 Each field can declare `required`, `default`, `rules` and a `hint`. The inspector
 is generated from this schema — there is no hand-written form per section
@@ -144,9 +144,20 @@ Every theme page receives the same props — nothing is invented per theme:
 
 ```ts
 type ThemePageProps = {
-    site: { name: string; tagline: string; description: string; home_url: string; year: number };
-    menus: Record<string, MenuLink[]>;        // from menu_items, never hardcoded
-    theme: { handle: string; name: string; tokens: Record<string, string>; degraded: boolean };
+    site: {
+        name: string;
+        tagline: string;
+        description: string;
+        home_url: string;
+        year: number;
+    };
+    menus: Record<string, MenuLink[]>; // from menu_items, never hardcoded
+    theme: {
+        handle: string;
+        name: string;
+        tokens: Record<string, string>;
+        degraded: boolean;
+    };
 };
 ```
 
@@ -156,7 +167,11 @@ menus and tokens for free:
 
 ```tsx
 <ThemeShell site={site} menus={menus} theme={theme} variant="wide">
-    <SectionList sections={page.content} schema={sections} data={section_data} />
+    <SectionList
+        sections={page.content}
+        schema={sections}
+        data={section_data}
+    />
 </ThemeShell>
 ```
 

@@ -33,8 +33,13 @@ export function SectionRenderer({
     }
 
     return (
-        <section className={cn('px-6 py-14 sm:py-20', className)} data-section={block.section}>
-            <div className="mx-auto w-full max-w-5xl">{render(block.section, block.content, data)}</div>
+        <section
+            className={cn('px-6 py-14 sm:py-20', className)}
+            data-section={block.section}
+        >
+            <div className="mx-auto w-full max-w-5xl">
+                {render(block.section, block.content, data)}
+            </div>
         </section>
     );
 }
@@ -55,7 +60,7 @@ function render(section: string, content: SectionContent, data?: SectionData) {
             return <BlogTeaser content={content} data={data} />;
         default:
             return (
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                     Section “{section}” has no renderer.
                 </p>
             );
@@ -68,9 +73,14 @@ function Hero({ content }: { content: SectionContent }) {
     const url = safeHref(str(content.cta_url));
 
     return (
-        <div className={cn('max-w-3xl space-y-5', align === 'center' ? 'mx-auto text-center' : '')}>
+        <div
+            className={cn(
+                'max-w-3xl space-y-5',
+                align === 'center' ? 'mx-auto text-center' : '',
+            )}
+        >
             {str(content.eyebrow) ? (
-                <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+                <p className="text-xs font-semibold tracking-[0.18em] text-primary uppercase">
                     {str(content.eyebrow)}
                 </p>
             ) : null}
@@ -78,12 +88,14 @@ function Hero({ content }: { content: SectionContent }) {
                 {str(content.heading, 'Untitled hero')}
             </h1>
             {str(content.body) ? (
-                <p className="text-muted-foreground text-lg text-balance">{str(content.body)}</p>
+                <p className="text-lg text-balance text-muted-foreground">
+                    {str(content.body)}
+                </p>
             ) : null}
             {label && url ? (
                 <a
                     href={url}
-                    className="bg-primary text-primary-foreground inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium"
+                    className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
                 >
                     {label}
                     <ArrowRight className="size-4" />
@@ -94,8 +106,11 @@ function Hero({ content }: { content: SectionContent }) {
 }
 
 function RichText({ content }: { content: SectionContent }) {
-    const width = str(content.width, 'narrow') === 'narrow' ? 'max-w-2xl' : 'max-w-4xl';
-    const paragraphs = str(content.body).split(/\n{2,}/).filter(Boolean);
+    const width =
+        str(content.width, 'narrow') === 'narrow' ? 'max-w-2xl' : 'max-w-4xl';
+    const paragraphs = str(content.body)
+        .split(/\n{2,}/)
+        .filter(Boolean);
 
     return (
         <div className={cn('space-y-4', width)}>
@@ -105,10 +120,13 @@ function RichText({ content }: { content: SectionContent }) {
                 </h2>
             ) : null}
             {paragraphs.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No content yet.</p>
+                <p className="text-sm text-muted-foreground">No content yet.</p>
             ) : (
                 paragraphs.map((paragraph, index) => (
-                    <p key={paragraph.slice(0, 24) + String(index)} className="text-muted-foreground leading-relaxed">
+                    <p
+                        key={paragraph.slice(0, 24) + String(index)}
+                        className="leading-relaxed text-muted-foreground"
+                    >
                         {paragraph}
                     </p>
                 ))
@@ -128,26 +146,34 @@ function FeatureGrid({ content }: { content: SectionContent }) {
                         {str(content.heading)}
                     </h2>
                     {str(content.intro) ? (
-                        <p className="text-muted-foreground">{str(content.intro)}</p>
+                        <p className="text-muted-foreground">
+                            {str(content.intro)}
+                        </p>
                     ) : null}
                 </div>
             ) : null}
 
             {features.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No features yet.</p>
+                <p className="text-sm text-muted-foreground">
+                    No features yet.
+                </p>
             ) : (
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {features.map((feature, index) => {
-                        const Icon = featureIcons[str(feature.icon, 'sparkles')] ?? Sparkles;
+                        const Icon =
+                            featureIcons[str(feature.icon, 'sparkles')] ??
+                            Sparkles;
 
                         return (
                             <div
                                 key={str(feature.title) + String(index)}
                                 className="rounded-lg border border-border bg-card p-5"
                             >
-                                <Icon className="text-primary mb-3 size-5" />
-                                <h3 className="text-sm font-semibold">{str(feature.title)}</h3>
-                                <p className="text-muted-foreground mt-1 text-sm">
+                                <Icon className="mb-3 size-5 text-primary" />
+                                <h3 className="text-sm font-semibold">
+                                    {str(feature.title)}
+                                </h3>
+                                <p className="mt-1 text-sm text-muted-foreground">
                                     {str(feature.body)}
                                 </p>
                             </div>
@@ -166,13 +192,17 @@ function Cta({ content }: { content: SectionContent }) {
     return (
         <div
             className="rounded-xl px-6 py-10 text-center text-white sm:px-10"
-            style={{ backgroundColor: str(content.accent, 'oklch(0.51 0.19 264)') }}
+            style={{
+                backgroundColor: str(content.accent, 'oklch(0.51 0.19 264)'),
+            }}
         >
             <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
                 {str(content.heading, 'Get in touch')}
             </h2>
             {str(content.body) ? (
-                <p className="mx-auto mt-3 max-w-xl text-white/80">{str(content.body)}</p>
+                <p className="mx-auto mt-3 max-w-xl text-white/80">
+                    {str(content.body)}
+                </p>
             ) : null}
             {label && url ? (
                 <a
@@ -187,15 +217,31 @@ function Cta({ content }: { content: SectionContent }) {
     );
 }
 
-type TeaserPost = { id: number; title: string; excerpt: string | null; url: string; date: string | null; category: string | null };
+type TeaserPost = {
+    id: number;
+    title: string;
+    excerpt: string | null;
+    url: string;
+    date: string | null;
+    category: string | null;
+};
 
 /**
  * PostCraft's teaser. The posts arrive as server-resolved section data, so this
  * component never fetches anything and keeps working with JS disabled.
  */
-function BlogTeaser({ content, data }: { content: SectionContent; data?: SectionData }) {
-    const posts = Array.isArray(data?.posts) ? (data.posts as TeaserPost[]) : [];
-    const blogUrl = typeof data?.blog_url === 'string' ? data.blog_url : '/blog';
+function BlogTeaser({
+    content,
+    data,
+}: {
+    content: SectionContent;
+    data?: SectionData;
+}) {
+    const posts = Array.isArray(data?.posts)
+        ? (data.posts as TeaserPost[])
+        : [];
+    const blogUrl =
+        typeof data?.blog_url === 'string' ? data.blog_url : '/blog';
 
     return (
         <div className="space-y-8">
@@ -205,30 +251,41 @@ function BlogTeaser({ content, data }: { content: SectionContent; data?: Section
                         {str(content.heading, 'From the journal')}
                     </h2>
                     {str(content.intro) ? (
-                        <p className="text-muted-foreground">{str(content.intro)}</p>
+                        <p className="text-muted-foreground">
+                            {str(content.intro)}
+                        </p>
                     ) : null}
                 </div>
-                <a href={blogUrl} className="text-sm font-medium underline-offset-4 hover:underline">
+                <a
+                    href={blogUrl}
+                    className="text-sm font-medium underline-offset-4 hover:underline"
+                >
                     All posts
                 </a>
             </div>
 
             {posts.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No posts published yet.</p>
+                <p className="text-sm text-muted-foreground">
+                    No posts published yet.
+                </p>
             ) : (
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {posts.map((post) => (
                         <a
                             key={post.id}
                             href={post.url}
-                            className="hover:border-primary/50 group rounded-lg border border-border p-5 transition-colors"
+                            className="group rounded-lg border border-border p-5 transition-colors hover:border-primary/50"
                         >
-                            <p className="text-muted-foreground text-[11px] tracking-wide uppercase">
+                            <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
                                 {post.category ?? 'Journal'} · {post.date ?? ''}
                             </p>
-                            <h3 className="mt-2 text-sm font-semibold group-hover:underline">{post.title}</h3>
+                            <h3 className="mt-2 text-sm font-semibold group-hover:underline">
+                                {post.title}
+                            </h3>
                             {post.excerpt ? (
-                                <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">{post.excerpt}</p>
+                                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                                    {post.excerpt}
+                                </p>
                             ) : null}
                         </a>
                     ))}
@@ -254,21 +311,26 @@ function StatBand({ content }: { content: SectionContent }) {
                     </h2>
                 ) : null}
                 {str(content.intro) ? (
-                    <p className="text-muted-foreground">{str(content.intro)}</p>
+                    <p className="text-muted-foreground">
+                        {str(content.intro)}
+                    </p>
                 ) : null}
             </div>
 
             {stats.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No figures yet.</p>
+                <p className="text-sm text-muted-foreground">No figures yet.</p>
             ) : (
                 <dl className="grid gap-6 sm:grid-cols-3">
                     {stats.map((stat, index) => (
                         <div
                             key={str(stat.label) + String(index)}
                             className="border-l-2 pl-4"
-                            style={{ borderColor: 'var(--theme-accent, var(--color-primary))' }}
+                            style={{
+                                borderColor:
+                                    'var(--theme-accent, var(--color-primary))',
+                            }}
                         >
-                            <dt className="text-muted-foreground order-2 text-xs tracking-wide uppercase">
+                            <dt className="order-2 text-xs tracking-wide text-muted-foreground uppercase">
                                 {str(stat.label)}
                             </dt>
                             <dd className="text-3xl font-semibold tracking-tight">
@@ -293,14 +355,20 @@ export function SectionList({
 }) {
     if (blocks.length === 0) {
         return (
-            <p className="text-muted-foreground px-6 py-16 text-center text-sm">{emptyLabel}</p>
+            <p className="px-6 py-16 text-center text-sm text-muted-foreground">
+                {emptyLabel}
+            </p>
         );
     }
 
     return (
         <>
             {blocks.map((block) => (
-                <SectionRenderer key={block.id} block={block} data={data[block.id]} />
+                <SectionRenderer
+                    key={block.id}
+                    block={block}
+                    data={data[block.id]}
+                />
             ))}
         </>
     );

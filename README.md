@@ -247,25 +247,26 @@ sail up -d`, then `sail composer dev` in a single terminal.
   variable in the container reaches the host process. Compose is reading an
   environment that never had them.
 
-  Both values now default to `1000` in `compose.yaml`, so a first user gets no
-  warning and a correct build. Set them in **`.env`** when your ids differ: that
-  file is parsed by compose on the host, so it is the one channel that survives
-  the host-exec boundary (a value exported in your shell does not). While the
-  values were blank, two things were quietly wrong: the image entrypoint runs
-  `usermod -u $WWWUSER sail` only when the variable is non-empty, so PHP kept
-  the image's uid **1337** and everything it wrote into the bind mount
-  (`storage/logs`, `storage/framework`, `bootstrap/cache`, `public/build`) was
-  no longer yours; and the next image build would fail, because
-  `groupadd --force -g $WWWGROUP sail` had no group id (`--force-recreate`
-  reuses the existing image, so that one only shows up when you rebuild). Files
-  already written by 1337: `sudo chown -R "$USER":"$(id -gn)" storage
-  bootstrap/cache`.
+    Both values now default to `1000` in `compose.yaml`, so a first user gets no
+    warning and a correct build. Set them in **`.env`** when your ids differ: that
+    file is parsed by compose on the host, so it is the one channel that survives
+    the host-exec boundary (a value exported in your shell does not). While the
+    values were blank, two things were quietly wrong: the image entrypoint runs
+    `usermod -u $WWWUSER sail` only when the variable is non-empty, so PHP kept
+    the image's uid **1337** and everything it wrote into the bind mount
+    (`storage/logs`, `storage/framework`, `bootstrap/cache`, `public/build`) was
+    no longer yours; and the next image build would fail, because
+    `groupadd --force -g $WWWGROUP sail` had no group id (`--force-recreate`
+    reuses the existing image, so that one only shows up when you rebuild). Files
+    already written by 1337: `sudo chown -R "$USER":"$(id -gn)" storage
+bootstrap/cache`.
 
-  Unrelated but nearby: if `type -a sail` answers an alias running `sh
-  vendor/bin/sail`, that script is **bash**, and `sh` is dash on Debian/Ubuntu —
-  no `$UID`, plus bash-only syntax that dash rejects, so Sail's own `.env`
-  sourcing and `SAIL_*` forwarding silently stop working. Use a bash alias or a
-  function: `sail() { "$([ -f sail ] && echo ./sail || echo ./vendor/bin/sail)" "$@"; }`
+    Unrelated but nearby: if `type -a sail` answers an alias running `sh
+vendor/bin/sail`, that script is **bash**, and `sh` is dash on Debian/Ubuntu —
+    no `$UID`, plus bash-only syntax that dash rejects, so Sail's own `.env`
+    sourcing and `SAIL_*` forwarding silently stop working. Use a bash alias or a
+    function: `sail() { "$([ -f sail ] && echo ./sail || echo ./vendor/bin/sail)" "$@"; }`
+
 - **The browser cannot reach `localhost:8000` under Sail** — the port is
   published only by the current `compose.yaml`; older checkouts served nginx on
   `80` instead. Pull, `sail down && sail up -d`, then check `sail ps` (both

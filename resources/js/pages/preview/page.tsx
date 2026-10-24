@@ -26,22 +26,36 @@ type Props = ThemePageProps & {
  * Draft preview: the real content inside the active theme's tokens, with a
  * banner that says exactly what is being previewed and how to get back.
  */
-export default function PreviewPage({ page, site, menus, theme, edit_url, section_data = {} }: Props) {
+export default function PreviewPage({
+    page,
+    site,
+    menus,
+    theme,
+    edit_url,
+    section_data = {},
+}: Props) {
     return (
         <>
             <Head title={`Preview · ${page.seo_title ?? page.title}`}>
                 <meta name="robots" content="noindex,nofollow" />
             </Head>
 
-            <div className="bg-status-scheduled-soft text-status-scheduled border-status-scheduled/30 sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b px-4 py-2 text-xs">
+            <div className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-status-scheduled/30 bg-status-scheduled-soft px-4 py-2 text-xs text-status-scheduled">
                 <span className="flex items-center gap-2 font-medium">
                     <Eye className="size-3.5" />
                     Preview · {page.status} · /{page.slug} · theme {theme.name}
                 </span>
                 <span className="flex items-center gap-2">
-                    <span className="hidden sm:inline">This URL is signed and expires in six hours.</span>
+                    <span className="hidden sm:inline">
+                        This URL is signed and expires in six hours.
+                    </span>
                     {edit_url ? (
-                        <Button asChild size="sm" variant="outline" className="h-7">
+                        <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="h-7"
+                        >
                             <Link href={edit_url}>
                                 <ArrowLeft className="size-3.5" />
                                 Back to editor
@@ -53,7 +67,11 @@ export default function PreviewPage({ page, site, menus, theme, edit_url, sectio
 
             <ThemeShell site={site} menus={menus} theme={theme} variant="wide">
                 <ThemeBand>
-                    <SectionList blocks={page.content ?? []} data={section_data} emptyLabel="Nothing to preview yet." />
+                    <SectionList
+                        blocks={page.content ?? []}
+                        data={section_data}
+                        emptyLabel="Nothing to preview yet."
+                    />
                 </ThemeBand>
             </ThemeShell>
         </>

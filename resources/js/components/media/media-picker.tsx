@@ -34,7 +34,14 @@ export type MediaItem = {
     usages: number;
 };
 
-type FolderOption = { id: number; name: string; slug: string; parent_id: number | null; depth: number; count: number };
+type FolderOption = {
+    id: number;
+    name: string;
+    slug: string;
+    parent_id: number | null;
+    depth: number;
+    count: number;
+};
 
 type BrowseQuery = { q: string; folder: string };
 
@@ -73,7 +80,11 @@ export function MediaPicker({
     // The hook reads its query through this ref, so a filter change and the
     // request that follows it never race.
     const queryRef = useRef<BrowseQuery>({ q: '', folder: '' });
-    const browse = useHttp<BrowseQuery, BrowseResponse>('get', BROWSE_URL, () => queryRef.current);
+    const browse = useHttp<BrowseQuery, BrowseResponse>(
+        'get',
+        BROWSE_URL,
+        () => queryRef.current,
+    );
 
     useEffect(() => {
         if (!open) {
@@ -107,13 +118,14 @@ export function MediaPicker({
                 <DialogHeader>
                     <DialogTitle>Choose media</DialogTitle>
                     <DialogDescription>
-                        Pick a file from the library. Alt text lives with the file — edit it in the media library.
+                        Pick a file from the library. Alt text lives with the
+                        file — edit it in the media library.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="relative min-w-40 flex-1">
-                        <Search className="text-muted-foreground absolute top-2.5 left-2.5 size-4" />
+                        <Search className="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
                         <Input
                             value={query}
                             onChange={(event) => setQuery(event.target.value)}
@@ -130,7 +142,10 @@ export function MediaPicker({
                         <SelectContent>
                             <SelectItem value="all">All folders</SelectItem>
                             {folders.map((option) => (
-                                <SelectItem key={option.id} value={String(option.id)}>
+                                <SelectItem
+                                    key={option.id}
+                                    value={String(option.id)}
+                                >
                                     {option.name}
                                 </SelectItem>
                             ))}
@@ -142,15 +157,22 @@ export function MediaPicker({
                     {loading ? (
                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                             {[0, 1, 2, 3, 4, 5, 6, 7].map((slot) => (
-                                <Skeleton key={slot} className="aspect-[4/3] w-full" />
+                                <Skeleton
+                                    key={slot}
+                                    className="aspect-[4/3] w-full"
+                                />
                             ))}
                         </div>
                     ) : items.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-                            <ImagePlus className="text-muted-foreground size-6" />
-                            <p className="text-sm font-medium">No files match</p>
-                            <p className="text-muted-foreground text-xs">
-                                {canUpload ? 'Upload files in the media library, then come back here.' : 'Try another search term.'}
+                            <ImagePlus className="size-6 text-muted-foreground" />
+                            <p className="text-sm font-medium">
+                                No files match
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {canUpload
+                                    ? 'Upload files in the media library, then come back here.'
+                                    : 'Try another search term.'}
                             </p>
                         </div>
                     ) : (
@@ -165,29 +187,40 @@ export function MediaPicker({
                                         onClick={() => onSelect(item)}
                                         className={cn(
                                             'group overflow-hidden rounded-md border text-left transition-colors',
-                                            active ? 'border-primary ring-primary/30 ring-2' : 'border-border hover:border-primary/50',
+                                            active
+                                                ? 'border-primary ring-2 ring-primary/30'
+                                                : 'border-border hover:border-primary/50',
                                         )}
                                     >
-                                        <div className="bg-muted relative aspect-[4/3]">
+                                        <div className="relative aspect-[4/3] bg-muted">
                                             {item.thumbnail_url ? (
                                                 <img
                                                     src={item.thumbnail_url}
-                                                    alt={item.alt ?? item.original_name}
+                                                    alt={
+                                                        item.alt ??
+                                                        item.original_name
+                                                    }
                                                     loading="lazy"
                                                     className="size-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="text-muted-foreground flex size-full items-center justify-center text-[11px]">
-                                                    {(item.original_name.split('.').pop() ?? '').toUpperCase()}
+                                                <div className="flex size-full items-center justify-center text-[11px] text-muted-foreground">
+                                                    {(
+                                                        item.original_name
+                                                            .split('.')
+                                                            .pop() ?? ''
+                                                    ).toUpperCase()}
                                                 </div>
                                             )}
                                             {active ? (
-                                                <span className="bg-primary text-primary-foreground absolute top-1 right-1 rounded-full p-0.5">
+                                                <span className="absolute top-1 right-1 rounded-full bg-primary p-0.5 text-primary-foreground">
                                                     <Check className="size-3" />
                                                 </span>
                                             ) : null}
                                         </div>
-                                        <p className="truncate px-1.5 py-1 text-[11px]">{item.original_name}</p>
+                                        <p className="truncate px-1.5 py-1 text-[11px]">
+                                            {item.original_name}
+                                        </p>
                                     </button>
                                 );
                             })}
@@ -196,10 +229,11 @@ export function MediaPicker({
                 </div>
 
                 <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-2">
-                    <p className="text-muted-foreground text-[11px]">
+                    <p className="text-[11px] text-muted-foreground">
                         {loading ? (
                             <span className="flex items-center gap-1">
-                                <Loader2 className="size-3 animate-spin" /> Loading…
+                                <Loader2 className="size-3 animate-spin" />{' '}
+                                Loading…
                             </span>
                         ) : (
                             `${items.length} file${items.length === 1 ? '' : 's'}`
@@ -207,7 +241,11 @@ export function MediaPicker({
                     </p>
                     {canUpload ? (
                         <Button variant="ghost" size="sm" asChild>
-                            <a href="/admin/media" target="_blank" rel="noreferrer">
+                            <a
+                                href="/admin/media"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
                                 Upload in media library
                             </a>
                         </Button>
@@ -240,10 +278,20 @@ export function MediaField({
         <div className="space-y-2" id={id}>
             {value ? (
                 <div className="relative overflow-hidden rounded-md border border-border">
-                    <img src={value} alt="" className="aspect-video w-full object-cover" />
+                    <img
+                        src={value}
+                        alt=""
+                        className="aspect-video w-full object-cover"
+                    />
                     {!disabled ? (
                         <div className="absolute top-1 right-1 flex gap-1">
-                            <Button type="button" size="sm" variant="secondary" className="h-7" onClick={() => setOpen(true)}>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="secondary"
+                                className="h-7"
+                                onClick={() => setOpen(true)}
+                            >
                                 Replace
                             </Button>
                             <Button
@@ -264,7 +312,7 @@ export function MediaField({
                     type="button"
                     disabled={disabled}
                     onClick={() => setOpen(true)}
-                    className="text-muted-foreground hover:border-primary/50 hover:text-foreground flex w-full flex-col items-center gap-1 rounded-md border border-dashed border-border px-3 py-6 text-xs transition-colors disabled:opacity-50"
+                    className="flex w-full flex-col items-center gap-1 rounded-md border border-dashed border-border px-3 py-6 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:opacity-50"
                 >
                     <ImagePlus className="size-5" />
                     Choose an image

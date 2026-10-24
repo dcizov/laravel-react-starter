@@ -35,7 +35,9 @@ export type NotificationsProp = {
  * empty bell is a normal state, not an error.
  */
 export function NotificationBell() {
-    const { notifications } = usePage<{ notifications?: NotificationsProp | null }>().props;
+    const { notifications } = usePage<{
+        notifications?: NotificationsProp | null;
+    }>().props;
 
     const loading = notifications === undefined;
     const items = notifications?.items ?? [];
@@ -64,10 +66,19 @@ export function NotificationBell() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative size-8" aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative size-8"
+                    aria-label={
+                        unread > 0
+                            ? `Notifications, ${unread} unread`
+                            : 'Notifications'
+                    }
+                >
                     <Bell className="size-4" />
                     {unread > 0 ? (
-                        <span className="bg-status-error absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-full text-[9px] font-semibold text-white">
+                        <span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-full bg-status-error text-[9px] font-semibold text-white">
                             {unread > 9 ? '9+' : unread}
                         </span>
                     ) : null}
@@ -80,9 +91,16 @@ export function NotificationBell() {
                     {unread > 0 && notifications ? (
                         <button
                             type="button"
-                            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-[11px] font-normal"
+                            className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground hover:text-foreground"
                             onClick={() =>
-                                router.post(notifications.read_all_url, {}, { preserveScroll: true, onSuccess: refresh })
+                                router.post(
+                                    notifications.read_all_url,
+                                    {},
+                                    {
+                                        preserveScroll: true,
+                                        onSuccess: refresh,
+                                    },
+                                )
                             }
                         >
                             <CheckCheck className="size-3.5" />
@@ -93,7 +111,11 @@ export function NotificationBell() {
                 <DropdownMenuSeparator />
 
                 {loading ? (
-                    <div className="space-y-2 p-2" aria-busy="true" aria-label="Loading notifications">
+                    <div
+                        className="space-y-2 p-2"
+                        aria-busy="true"
+                        aria-label="Loading notifications"
+                    >
                         {[0, 1, 2].map((row) => (
                             <div key={row} className="flex gap-2">
                                 <Skeleton className="size-2 rounded-full" />
@@ -105,7 +127,9 @@ export function NotificationBell() {
                         ))}
                     </div>
                 ) : items.length === 0 ? (
-                    <p className="text-muted-foreground px-3 py-6 text-center text-xs">You’re all caught up.</p>
+                    <p className="px-3 py-6 text-center text-xs text-muted-foreground">
+                        You’re all caught up.
+                    </p>
                 ) : (
                     items.map((item) => (
                         <DropdownMenuItem
@@ -116,14 +140,29 @@ export function NotificationBell() {
                             <span
                                 className={cn(
                                     'mt-1.5 size-1.5 shrink-0 rounded-full',
-                                    item.read ? 'bg-transparent' : item.level === 'error' ? 'bg-status-error' : 'bg-primary',
+                                    item.read
+                                        ? 'bg-transparent'
+                                        : item.level === 'error'
+                                          ? 'bg-status-error'
+                                          : 'bg-primary',
                                 )}
                             />
                             <span className="min-w-0 flex-1">
-                                <span className={cn('block truncate text-xs', item.read ? 'text-muted-foreground' : 'font-medium')}>
+                                <span
+                                    className={cn(
+                                        'block truncate text-xs',
+                                        item.read
+                                            ? 'text-muted-foreground'
+                                            : 'font-medium',
+                                    )}
+                                >
                                     {item.title}
                                 </span>
-                                {item.body ? <span className="text-muted-foreground block text-[11px]">{item.body}</span> : null}
+                                {item.body ? (
+                                    <span className="block text-[11px] text-muted-foreground">
+                                        {item.body}
+                                    </span>
+                                ) : null}
                             </span>
                         </DropdownMenuItem>
                     ))

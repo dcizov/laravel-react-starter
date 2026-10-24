@@ -27,29 +27,46 @@ type Props = ThemePageProps & {
  * fallback when the active theme cannot boot. It reads the same props as a
  * theme, so falling back never changes the payload contract.
  */
-export default function PublicPage({ page, site, menus, theme, section_data = {} }: Props) {
+export default function PublicPage({
+    page,
+    site,
+    menus,
+    theme,
+    section_data = {},
+}: Props) {
     const noindex = page.robots.includes('noindex');
 
     return (
         <>
             <Head title={page.seo_title}>
-                <meta name="description" content={page.seo_description ?? site.description} />
+                <meta
+                    name="description"
+                    content={page.seo_description ?? site.description}
+                />
                 <meta property="og:title" content={page.seo_title} />
-                <meta property="og:description" content={page.seo_description ?? site.description} />
+                <meta
+                    property="og:description"
+                    content={page.seo_description ?? site.description}
+                />
                 <meta property="og:type" content="website" />
-                {noindex ? <meta name="robots" content="noindex,nofollow" /> : null}
+                {noindex ? (
+                    <meta name="robots" content="noindex,nofollow" />
+                ) : null}
             </Head>
 
             <ThemeShell site={site} menus={menus} theme={theme} variant="wide">
                 {(page.content ?? []).length === 0 ? (
                     <ThemeBand>
-                        <p className="text-muted-foreground text-center text-sm">
+                        <p className="text-center text-sm text-muted-foreground">
                             This page has no sections yet.
                         </p>
                     </ThemeBand>
                 ) : (
                     <ThemeBand>
-                        <SectionList blocks={page.content} data={section_data} />
+                        <SectionList
+                            blocks={page.content}
+                            data={section_data}
+                        />
                     </ThemeBand>
                 )}
             </ThemeShell>
