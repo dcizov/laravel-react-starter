@@ -1081,7 +1081,7 @@ adds a motion primitive that cannot break hydration.
   the Wayfinder-generated `@/routes/*` and `@/actions/*` modules, which are not
   present in this sandbox.
 - `npx eslint` over every changed file — clean.
-- `npx vitest run` — 9 files, 54 tests, no unhandled errors.
+- `npx vitest run` — 8 files, 47 tests, no unhandled errors.
 - `npx prettier --check` over the changed files — clean.
 
 ### Not executed here
