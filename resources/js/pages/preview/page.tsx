@@ -1,10 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Eye } from 'lucide-react';
 import { SectionList } from '@/components/sections/section-renderer';
+import { ThemeBand, ThemeShell } from '@/components/themes/theme-shell';
+import type { ThemePageProps } from '@/components/themes/theme-shell';
 import { Button } from '@/components/ui/button';
 import type { PageStatus, SectionBlock } from '@/lib/sections';
 
-type Props = {
+type Props = ThemePageProps & {
     page: {
         id: number;
         title: string;
@@ -17,31 +19,40 @@ type Props = {
     edit_url: string | null;
 };
 
-export default function PreviewPage({ page, edit_url }: Props) {
+/**
+ * Draft preview: the real content inside the active theme's tokens, with a
+ * banner that says exactly what is being previewed and how to get back.
+ */
+export default function PreviewPage({ page, site, menus, theme, edit_url }: Props) {
     return (
         <>
             <Head title={`Preview · ${page.seo_title ?? page.title}`}>
                 <meta name="robots" content="noindex,nofollow" />
             </Head>
 
-            <div className="bg-status-scheduled-soft text-status-scheduled flex flex-wrap items-center justify-between gap-3 border-b border-status-scheduled/30 px-4 py-2 text-xs">
+            <div className="bg-status-scheduled-soft text-status-scheduled border-status-scheduled/30 sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b px-4 py-2 text-xs">
                 <span className="flex items-center gap-2 font-medium">
                     <Eye className="size-3.5" />
-                    Preview · {page.status} · /{page.slug}
+                    Preview · {page.status} · /{page.slug} · theme {theme.name}
                 </span>
-                {edit_url ? (
-                    <Button asChild size="sm" variant="outline" className="h-7">
-                        <Link href={edit_url}>
-                            <ArrowLeft className="size-3.5" />
-                            Back to editor
-                        </Link>
-                    </Button>
-                ) : null}
+                <span className="flex items-center gap-2">
+                    <span className="hidden sm:inline">This URL is signed and expires in six hours.</span>
+                    {edit_url ? (
+                        <Button asChild size="sm" variant="outline" className="h-7">
+                            <Link href={edit_url}>
+                                <ArrowLeft className="size-3.5" />
+                                Back to editor
+                            </Link>
+                        </Button>
+                    ) : null}
+                </span>
             </div>
 
-            <div className="bg-background text-foreground min-h-screen">
-                <SectionList blocks={page.content ?? []} emptyLabel="Nothing to preview yet." />
-            </div>
+            <ThemeShell site={site} menus={menus} theme={theme} variant="wide">
+                <ThemeBand>
+                    <SectionList blocks={page.content ?? []} emptyLabel="Nothing to preview yet." />
+                </ThemeBand>
+            </ThemeShell>
         </>
     );
 }

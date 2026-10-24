@@ -43,6 +43,8 @@ function render(section: string, content: SectionContent) {
             return <FeatureGrid content={content} />;
         case 'cta':
             return <Cta content={content} />;
+        case 'stat-band':
+            return <StatBand content={content} />;
         default:
             return (
                 <p className="text-muted-foreground text-sm">
@@ -173,6 +175,50 @@ function Cta({ content }: { content: SectionContent }) {
                     <ArrowRight className="size-4" />
                 </a>
             ) : null}
+        </div>
+    );
+}
+
+/**
+ * Theme section: figures with an editorial intro. Declared by the Aperture
+ * theme's provider, so it is editable and validatable like any core section.
+ */
+function StatBand({ content }: { content: SectionContent }) {
+    const stats = rows(content.stats);
+
+    return (
+        <div className="space-y-8">
+            <div className="max-w-2xl space-y-2">
+                {str(content.heading) ? (
+                    <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                        {str(content.heading)}
+                    </h2>
+                ) : null}
+                {str(content.intro) ? (
+                    <p className="text-muted-foreground">{str(content.intro)}</p>
+                ) : null}
+            </div>
+
+            {stats.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No figures yet.</p>
+            ) : (
+                <dl className="grid gap-6 sm:grid-cols-3">
+                    {stats.map((stat, index) => (
+                        <div
+                            key={str(stat.label) + String(index)}
+                            className="border-l-2 pl-4"
+                            style={{ borderColor: 'var(--theme-accent, var(--color-primary))' }}
+                        >
+                            <dt className="text-muted-foreground order-2 text-xs tracking-wide uppercase">
+                                {str(stat.label)}
+                            </dt>
+                            <dd className="text-3xl font-semibold tracking-tight">
+                                {str(stat.value)}
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
+            )}
         </div>
     );
 }

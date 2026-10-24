@@ -359,5 +359,33 @@ Full suite: 127 tests / 750 assertions; pint (155 files), tsc, eslint
 (0 warnings) and build green; `/sitemap.xml`, `/robots.txt` and `/` all 200 in
 the running preview.
 
-**Next: S5.3 — the theme React layers** (Aperture + Meridian layouts, themed
-404, preview banner) which turns `themes/{handle}/page` into a real component.
+**Done (S5.3)**
+
+- `components/themes/theme-shell.tsx`: the public chrome shared by the core
+  renderer and both themes — skip link, sticky header with the `main` menu (last
+  item becomes the accent CTA), footer with the `footer` menu and site identity.
+  It publishes the theme tokens as CSS custom properties
+  (`--theme-accent`, `--theme-radius`, `--radius`) and sets `data-theme`, so the
+  markup reads tokens and never sneaks in a theme name. `ThemeBand` gives the
+  two rhythms (wide editorial / compact).
+- `pages/themes/aperture/{page,not-found}.tsx` — wide editorial rhythm,
+  alternating band tone per section, `<Head>` SEO incl. Open Graph, themed 404.
+- `pages/themes/meridian/{page,not-found}.tsx` — same components, compact
+  rhythm, mono display type, continuous canvas: proof that a theme is a token
+  layer rather than a fork of the renderer.
+- Core `public/page.tsx` and `public/not-found.tsx` now use the same shell, so
+  Safe Mode fallback changes nothing but the component name.
+- `preview/page.tsx`: banner now names the active theme and states that the URL
+  is signed and expires, then renders the draft in the theme's tokens.
+- `section-renderer.tsx` gained the `stat-band` renderer for the section the
+  Aperture provider registers — the full path theme provider → registry →
+  editor schema → canvas → public site is now exercised end to end.
+
+**Accept (S5.3):** switching themes changes the live site (verified against the
+running preview: `/` renders `themes/aperture/page`, then `themes/meridian/page`
+after activation, then back); an errored theme falls back to the core component;
+themed 404; the theme's section shows up in the editor's schema. 2 new feature
+tests. Full suite: 129 tests / 796 assertions; pint (155 files), tsc, eslint
+(0 warnings) and build green.
+
+**Next: S6 — addons UI and PostCraft.**

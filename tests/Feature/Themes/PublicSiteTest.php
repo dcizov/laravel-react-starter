@@ -1,5 +1,6 @@
 <?php
 
+use App\Cms\Boot\ProviderLoader;
 use App\Cms\Menus\MenuRepository;
 use App\Cms\Repositories\ThemeRepository;
 use App\Cms\Themes\ThemeManager;
@@ -56,6 +57,45 @@ it('resolves menu items to pages and degrades unpublished targets', function () 
     expect($tree)->toHaveCount(1)
         ->and($tree[0]['url'])->toBe('/')
         ->and($tree[0]['children'])->toBe([]);
+});
+
+it('renders the active theme components, not just their names', function () {
+    $page = Page::factory()->published()->create(['slug' => 'about', 'title' => 'About']);
+
+    app(ThemeRepository::class)->activate('meridian');
+
+    $this->get('/about')
+        ->assertOk()
+        ->assertInertia(fn ($inertia) => $inertia
+            ->component('themes/meridian/page')
+            ->where('theme.handle', 'meridian')
+            ->where('theme.tokens.accent', 'oklch(0.55 0.12 190)')
+            ->where('theme.tokens.radius', '0.125rem'));
+
+    $this->get('/missing-page')
+        ->assertNotFound()
+        ->assertInertia(fn ($inertia) => $inertia->component('themes/meridian/not-found'));
+
+    app(ThemeRepository::class)->activate('aperture');
+
+    $this->get('/about')->assertInertia(fn ($inertia) => $inertia->component('themes/aperture/page'));
+
+    $this->get('/missing-page')
+        ->assertNotFound()
+        ->assertInertia(fn ($inertia) => $inertia->component('themes/aperture/not-found'));
+});
+
+it('exposes the theme section to the editor once the theme is active', function () {
+    app(ThemeRepository::class)->activate('aperture');
+    app(ProviderLoader::class)->reload();
+
+    $page = Page::factory()->create(['author_id' => null]);
+
+    $this->actingAs(User::factory()->create()->assignRole('Admin'))
+        ->get("/admin/pages/{$page->id}/edit")
+        ->assertOk()
+        ->assertInertia(fn ($inertia) => $inertia
+            ->where('sections', fn ($sections) => collect($sections)->pluck('key')->contains('stat-band')));
 });
 
 it('nests children under their parent', function () {
