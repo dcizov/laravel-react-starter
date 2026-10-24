@@ -65,7 +65,7 @@ Consequences worth knowing:
   connection resolver is wired, so `AddonRepository`/`ThemeRepository` never touch
   a model.
 - **The database decides, the disk only describes.** A folder on disk is a
-  *candidate*. Activation writes a row, and only the row makes a provider boot.
+  _candidate_. Activation writes a row, and only the row makes a provider boot.
   The manifest stored in the row wins over the file, so editing a folder cannot
   silently change what the running site requires.
 
@@ -89,7 +89,7 @@ authorizes again with a gate or a policy plus a FormRequest. The client's
 
 `GET /` is answered by `App\Cms\Content\Homepage`, which reads the
 `content.homepage_slug` setting (schema default `home`) and only accepts a page
-that is publicly visible *right now*. A draft, scheduled, expired or trashed
+that is publicly visible _right now_. A draft, scheduled, expired or trashed
 homepage leaves the core landing page (`welcome`) in place. The same helper
 decides which slug the sitemap writes as `/` and which menu items link to `/`,
 so there is one answer to "which page is the homepage" in the whole app.
@@ -108,7 +108,7 @@ during render:
 3. `resources/js/hooks/use-appearance.tsx` seeds its store from the shared props
    (`withApp` runs before the first render on both sides) and falls back to the
    html attributes, so the first client render is byte-identical to the SSR
-   pass. Only *after* hydration does a listener re-resolve `system` against
+   pass. Only _after_ hydration does a listener re-resolve `system` against
    `matchMedia`, correct the document and refresh the cookie.
 
 Nothing renders from `matchMedia` during render, which is what keeps
@@ -139,6 +139,38 @@ ad-hoc API**:
   `npm run build`.
 - The only JSON endpoint outside Inertia is `/admin/media/browse`, used by the
   media picker so opening it never re-renders the page being edited.
+
+## Lists and tables
+
+There is exactly one table in the app: `resources/js/components/data-table.tsx`.
+It is built on TanStack Table v9, where features are registered explicitly
+(`dataTableFeatures`) so row models the app does not use are tree-shaken away.
+Columns are declared per screen in a sibling `columns.tsx` and typed against
+that shared registry.
+
+Two hosting modes, chosen by the backend rather than by taste:
+
+- **Server mode** (`serverPagination`): the controller already paginated, so the
+  table never slices `data`. Paging, sorting and filtering call back into the
+  page, which issues Inertia visits. Laravel's sort tokens are single-direction
+  (`?sort=title` ascends, `?sort=updated` descends), so the header advertises
+  the direction it requests instead of offering a client-side illusion.
+- **Client mode** (default): TanStack paginates, sorts and filters an array the
+  server sent in full. Use it only for lists that are short by construction.
+
+The table owns the three states every list needs — skeleton rows while loading,
+the caller's empty state, an inline retryable error — so a screen cannot ship a
+blank grid. Column visibility, row selection and search are part of the
+component, not copy-pasted per page.
+
+### Motion
+
+Animation is CSS, not JavaScript. `@utility reveal` in `resources/css/app.css`
+plus `<Reveal />` give sections a deterministic stagger: the same class and the
+same custom property on both sides of hydration, and `prefers-reduced-motion`
+resolved by the stylesheet before paint. A JavaScript media query would only
+run after hydration, which is exactly where mismatches come from (see
+`### Appearance (light/dark) and hydration`).
 
 ## Data
 

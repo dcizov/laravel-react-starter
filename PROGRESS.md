@@ -986,7 +986,7 @@ a data accident, not a configuration change. `SitemapController` and
 disagree with `/` as well.
 
 **Hydration.** `use-appearance.tsx` derived `resolvedAppearance` from
-`window.matchMedia` *during render*, with a module default of `system` and a
+`window.matchMedia` _during render_, with a module default of `system` and a
 `getServerSnapshot` of `system`. Under SSR the server always rendered the light
 branch; a browser with a dark OS preference rendered the dark one, and React
 reported the difference while hydrating. Reproduced in jsdom before the fix:
@@ -1028,24 +1028,24 @@ stays clean.
 
 ### Fixes
 
-| Area | Change |
-| --- | --- |
-| Homepage | `App\Cms\Content\Homepage` resolves the configured slug and requires `isPubliclyVisible()`; `PublicPageController` uses it, and so do `SitemapController` and `MenuItem::href()`. |
-| Shared state | `HandleAppearance::read()` returns `{appearance, resolved}` once; the root template and `HandleInertiaRequests` both use it (`appearance` shared prop). |
-| Root template | `<html>` carries `class="dark"` plus `data-appearance` / `data-appearance-resolved`; the pre-paint script now also refreshes the `appearance_resolved` cookie so later SSR passes match the browser. |
-| Client store | `use-appearance.tsx` is a single cached snapshot seeded before hydration (`seedAppearance`, called from `withApp`), never resolving `matchMedia` during render; `system` is reconciled in an effect after hydration and on OS change. |
-| Toaster | Receives `resolvedAppearance` instead of `'system'`. |
-| Cookies | `appearance_resolved` added to the `EncryptCookies` exceptions next to `appearance`. |
-| Tests | `resources/js/__tests__/{appearance-hydration,inertia-runtime}.test.tsx` (SSR → hydrate), `tests/Feature/Http/HomeTest.php`, `tests/Feature/Http/AppearanceTest.php`. |
+| Area          | Change                                                                                                                                                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage      | `App\Cms\Content\Homepage` resolves the configured slug and requires `isPubliclyVisible()`; `PublicPageController` uses it, and so do `SitemapController` and `MenuItem::href()`.                                                     |
+| Shared state  | `HandleAppearance::read()` returns `{appearance, resolved}` once; the root template and `HandleInertiaRequests` both use it (`appearance` shared prop).                                                                               |
+| Root template | `<html>` carries `class="dark"` plus `data-appearance` / `data-appearance-resolved`; the pre-paint script now also refreshes the `appearance_resolved` cookie so later SSR passes match the browser.                                  |
+| Client store  | `use-appearance.tsx` is a single cached snapshot seeded before hydration (`seedAppearance`, called from `withApp`), never resolving `matchMedia` during render; `system` is reconciled in an effect after hydration and on OS change. |
+| Toaster       | Receives `resolvedAppearance` instead of `'system'`.                                                                                                                                                                                  |
+| Cookies       | `appearance_resolved` added to the `EncryptCookies` exceptions next to `appearance`.                                                                                                                                                  |
+| Tests         | `resources/js/__tests__/{appearance-hydration,inertia-runtime}.test.tsx` (SSR → hydrate), `tests/Feature/Http/HomeTest.php`, `tests/Feature/Http/AppearanceTest.php`.                                                                 |
 
 ### Verified here
 
-* `npx vitest run` — 6 files, 37 tests, no unhandled errors. `inertia-runtime`
+- `npx vitest run` — 6 files, 37 tests, no unhandled errors. `inertia-runtime`
   covers the four reported URLs (`/`, `/blog`, `/blog/why-we-still-draw-with-a-pencil`
   plus the shared shell) with a fresh SSR load, hydration and a client visit.
-* `npx eslint` over every changed JS/TS file — clean.
-* `npx prettier --check` over the new files — clean.
-* Before/after in the hydration harness: `/admin/pages` (admin top bar) reported
+- `npx eslint` over every changed JS/TS file — clean.
+- `npx prettier --check` over the new files — clean.
+- Before/after in the hydration harness: `/admin/pages` (admin top bar) reported
   the `aria-label`/icon mismatch before the change and reports nothing after.
 
 ### Not executed here
@@ -1057,3 +1057,48 @@ are covered by tests that are written but **unexecuted**. Browser-level checks
 appearance switches, authenticated `/admin/pages`) are likewise **not executed** —
 jsdom reproduces React's hydration and flushSync diagnostics, but it is not a
 browser.
+
+## UI/UX modernization: one table, CSS motion
+
+Hand-rolled list markup was the main source of inconsistency in the admin: each
+screen had its own table, its own pagination and its own idea of what "loading",
+"empty" and "error" looked like. This pass replaces that with one component and
+adds a motion primitive that cannot break hydration.
+
+| Area            | Change                                                                                                                                                                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table primitive | `resources/js/components/ui/table.tsx` (shadcn-compatible, no behaviour).                                                                                                                                                                                                 |
+| Data table      | `resources/js/components/data-table.tsx` rewritten on TanStack Table v9 with an explicit feature registry, client + server hosting, skeletons, empty/error states, column visibility, selection, pagination, server search and filter tabs.                               |
+| Pages list      | `pages/admin/pages/{index,columns}.tsx`: server sort tokens, status/trash filter tabs, search, Laravel pagination. The sort `Select` stays for narrow screens where the sortable header column is hidden.                                                                 |
+| Posts list      | `pages/posts/{index,columns}.tsx` (PostCraft addon): same table, status counts, search, pagination; the title is a real link, not a click handler on a button.                                                                                                            |
+| Motion          | `components/reveal.tsx` + `@utility reveal`: CSS-only stagger, capped at six steps, disabled wholesale under `prefers-reduced-motion`. Applied to the dashboard KPIs, dashboard grids and the auth card.                                                                  |
+| Dependencies    | `@tanstack/react-table@^9.3.1` added. `motion` was installed while researching and removed again: nothing consumed it, and an unused dependency is a liability.                                                                                                           |
+| Tests           | `resources/js/__tests__/data-table.test.tsx` (7 cases: render, empty, error+retry, loading skeleton, client paging, server paging callback, column hiding) and `reveal.test.tsx` (3 cases: deterministic SSR markup, capped delay, SSR → hydrate with no console output). |
+
+### Verified here
+
+- `npx tsc --noEmit` — clean, apart from the pre-existing `TS2307` errors for
+  the Wayfinder-generated `@/routes/*` and `@/actions/*` modules, which are not
+  present in this sandbox.
+- `npx eslint` over every changed file — clean.
+- `npx vitest run` — 9 files, 54 tests, no unhandled errors.
+- `npx prettier --check` over the changed files — clean.
+
+### Not executed here
+
+- `npm run build` / `vp build` cannot run: both `lattice:discover` and the
+  Wayfinder plugin shell out to `php`, which this sandbox does not have. The
+  bundle is therefore **not** verified by a build.
+- PHP gates (Pest, PHPStan, Pint) — no PHP binary, no `vendor/`. No PHP files
+  were changed in this pass.
+- Browser checks (DevTools console, real navigation, reduced-motion toggle) —
+  **not executed**; jsdom reproduces React's hydration diagnostics, not layout
+  or paint.
+
+### Left deliberately alone
+
+`pages/admin/users/index.tsx` is a `ul` of rows with a role `Select` and an
+activate/deactivate control per person; a table would make it worse on narrow
+screens. `pages/admin/activity/index.tsx` is a grouped timeline, not a table.
+`pages/admin/media/index.tsx` is a grid. Each already renders the shared empty
+state, so they stay as they are rather than being forced into the table.
