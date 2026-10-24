@@ -4,7 +4,10 @@ import { ThemeBand, ThemeShell } from '@/components/themes/theme-shell';
 import type { ThemePageProps } from '@/components/themes/theme-shell';
 import type { SectionBlock } from '@/lib/sections';
 
+type SectionDataMap = Record<string, Record<string, unknown>>;
+
 type Props = ThemePageProps & {
+    section_data?: SectionDataMap;
     page: {
         id: number;
         title: string;
@@ -23,7 +26,7 @@ type Props = ThemePageProps & {
  * Theme A — Aperture. Editorial rhythm: a wide hero band, then every section on
  * its own generous band, alternating tone so long pages have a beat.
  */
-export default function AperturePage({ page, site, menus, theme }: Props) {
+export default function AperturePage({ page, site, menus, theme, section_data = {} }: Props) {
     const blocks = page.content ?? [];
     const noindex = page.robots.includes('noindex');
 
@@ -47,7 +50,7 @@ export default function AperturePage({ page, site, menus, theme }: Props) {
                 ) : (
                     blocks.map((block, index) => (
                         <ThemeBand key={block.id} tone={index % 2 === 1 ? 'muted' : 'plain'}>
-                            <SectionList blocks={[block]} />
+                            <SectionList blocks={[block]} data={section_data} />
                         </ThemeBand>
                     ))
                 )}

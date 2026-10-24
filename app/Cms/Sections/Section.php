@@ -2,6 +2,7 @@
 
 namespace App\Cms\Sections;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
@@ -23,6 +24,7 @@ final class Section implements Arrayable
         public readonly string $icon = 'layout-grid',
         public readonly array $fields = [],
         public readonly ?string $theme = null,
+        public readonly ?Closure $data = null,
     ) {}
 
     /**
@@ -37,6 +39,9 @@ final class Section implements Arrayable
             icon: (string) ($options['icon'] ?? 'layout-grid'),
             fields: $fields,
             theme: $options['theme'] ?? null,
+            // Optional server-side data for the renderer, e.g. the latest posts.
+            // Kept as a closure so the core never imports an addon class.
+            data: $options['data'] ?? null,
         );
     }
 
@@ -101,6 +106,27 @@ final class Section implements Arrayable
         }
 
         return $attributes;
+    }
+
+    public function hasData(): bool
+    {
+        return $this->data !== null;
+    }
+
+    /**
+     * Resolve this section's render data, or null when it needs none.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function resolveData(): ?array
+    {
+        if ($this->data === null) {
+            return null;
+        }
+
+        $resolved = ($this->data)();
+
+        return is_array($resolved) ? $resolved : null;
     }
 
     /**

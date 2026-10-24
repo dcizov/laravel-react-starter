@@ -4,7 +4,10 @@ import { ThemeBand, ThemeShell } from '@/components/themes/theme-shell';
 import type { ThemePageProps } from '@/components/themes/theme-shell';
 import type { SectionBlock } from '@/lib/sections';
 
+type SectionDataMap = Record<string, Record<string, unknown>>;
+
 type Props = ThemePageProps & {
+    section_data?: SectionDataMap;
     page: {
         id: number;
         title: string;
@@ -24,7 +27,7 @@ type Props = ThemePageProps & {
  * fallback when the active theme cannot boot. It reads the same props as a
  * theme, so falling back never changes the payload contract.
  */
-export default function PublicPage({ page, site, menus, theme }: Props) {
+export default function PublicPage({ page, site, menus, theme, section_data = {} }: Props) {
     const noindex = page.robots.includes('noindex');
 
     return (
@@ -46,7 +49,7 @@ export default function PublicPage({ page, site, menus, theme }: Props) {
                     </ThemeBand>
                 ) : (
                     <ThemeBand>
-                        <SectionList blocks={page.content} />
+                        <SectionList blocks={page.content} data={section_data} />
                     </ThemeBand>
                 )}
             </ThemeShell>

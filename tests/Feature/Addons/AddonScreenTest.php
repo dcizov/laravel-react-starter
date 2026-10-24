@@ -34,11 +34,12 @@ it('lists installed and discovered addons with the incompatible one blocked', fu
         ->assertInertia(fn ($page) => $page
             ->component('admin/addons/index')
             ->where('can.manage', true)
-            ->has('addons', 2)
+            ->has('addons', 3)
             ->where('addons.0.handle', 'Demo')
-            ->where('addons.1.handle', 'Shopper')
-            ->where('addons.1.status', 'blocked')
-            ->where('addons.1.installed', false)
+            ->where('addons.1.handle', 'PostCraft')
+            ->where('addons.2.handle', 'Shopper')
+            ->where('addons.2.status', 'blocked')
+            ->where('addons.2.installed', false)
             ->where('counts.blocked', 1));
 });
 

@@ -76,6 +76,7 @@ class PublicPageController extends Controller
                 'seo_description' => $page->seo_description,
             ],
             'sections' => $this->sectionSchema(),
+            'section_data' => $this->sectionData($page->content),
             'edit_url' => auth()->check() ? route('admin.pages.edit', $page) : null,
         ]);
     }
@@ -96,6 +97,7 @@ class PublicPageController extends Controller
                 'updated_at' => $page->updated_at?->toIso8601String(),
             ],
             'sections' => $this->sectionSchema(),
+            'section_data' => $this->sectionData($page->content),
         ]);
     }
 
@@ -133,6 +135,42 @@ class PublicPageController extends Controller
             'tokens' => $this->themes->tokens(),
             'degraded' => $active['degraded'] ?? false,
         ];
+    }
+
+    /**
+     * Render data for sections that need server state (PostCraft's teaser, for
+     * example). Keyed by block id; the section supplies its own resolver.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function sectionData(mixed $content): array
+    {
+        if (! is_array($content)) {
+            return [];
+        }
+
+        $data = [];
+
+        foreach ($content as $block) {
+            if (! is_array($block) || ! is_string($block['section'] ?? null)) {
+                continue;
+            }
+
+            $section = $this->sections->find($block['section']);
+
+            if ($section === null || ! $section->hasData()) {
+                continue;
+            }
+
+            $resolved = $section->resolveData();
+            $id = $block['id'] ?? null;
+
+            if ($resolved !== null && is_string($id)) {
+                $data[$id] = $resolved;
+            }
+        }
+
+        return $data;
     }
 
     /**

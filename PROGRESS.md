@@ -427,5 +427,47 @@ unknown handle rejected. Full suite: 137 tests / 854 assertions; pint
 (159 files), tsc, eslint (0 warnings) and build green; `/admin/addons` renders
 200 for admin/editor and 403 for author.
 
-**Next: S6.2 — PostCraft** (posts/categories/tags, admin CRUD, public `/blog`
-+ `/blog/{slug}`, RSS and a blog-teaser section).
+**Done (S6.2)**
+
+- `app/Addons/PostCraft/`: `addon.json` (permissions `posts.view|create|update|
+  delete|publish`, nav entry under *Content*, section `blog-teaser`), one
+  migration for `categories`, `tags`, `posts`, `post_tag` (FKs to `media` and
+  `users`), `Models/{Post,Category,Tag}` with collision-safe slugs,
+  `Activator` (grants the post abilities to Editor and Author; idempotent, so a
+  re-activation after a late role seed still works), `PostCraftServiceProvider`
+  (admin + public routes, views, section) and `routes/{admin,public}.php`.
+- Admin: `PostController` (index with search/status filters, create, store,
+  edit, update, publish, unpublish, soft delete) and `TaxonomyController`
+  (categories and tags, create/rename/delete) — explicit routes, each action
+  authorized by a `posts.*` permission and validated inline; changes are
+  written to the activity log. Screens: `pages/posts/{index,edit,taxonomy}.tsx`
+  with a plain-text body editor (`## ` heading, `> ` quote, blank line =
+  paragraph) and a live word/reading-time readout.
+- Public: `BlogController` renders through the **active theme's** chrome and
+  tokens (`blog/index`, `blog/show`), paginates 9 posts, shows only live
+  (`status = published` and `published_at <= now()`) posts, and serves
+  `/blog/rss.xml` registered above `blog/{slug}`.
+- Core hook: `App\Cms\Sections\Section` takes an optional `data` closure;
+  `PublicPageController` resolves it per block into `section_data`, which
+  `section-renderer.tsx` passes to the `BlogTeaser` case. So a page can drop in
+  a "Blog teaser" section and PostCraft fills it — the core still knows nothing
+  about posts.
+- `App\Cms\Addons\Middleware\EnsureAddonActive` guards every PostCraft route
+  (404 unless the addon row is active), so a cached route table or a
+  long-lived worker can never serve a deactivated addon.
+
+**Accept (S6.2):** 9 feature tests — activation migrates and grants roles;
+`/blog`, `/blog/{slug}` and the RSS feed render; drafts and future-dated posts
+stay off the public site; full admin CRUD over HTTP; authors write but cannot
+publish; taxonomy CRUD; **deactivation removes the nav entry and 404s both
+admin and public routes while every row remains**; **re-activation restores
+routes, navigation and content**; the blog-teaser section resolves live data.
+The tests boot a second application (`refreshApplication`) so the addon's
+routes register in the order a real request sees them — `tests/Pest.php` now
+runs `Feature/Addons` on `DatabaseMigrations` for that reason.
+Full suite: **146 tests / 947 assertions**; pint (173 files), `tsc`, eslint
+(0 warnings) and `npm run build` green. Smoke: `/blog`, `/blog/{slug}`,
+`/blog/rss.xml`, `/admin/posts` and `/admin/posts/taxonomy` answer 200 for
+admin/editor/author (per-role abilities enforced in the controllers).
+
+**Next: S7 — dashboard, settings and activity.**

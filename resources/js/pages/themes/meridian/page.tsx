@@ -4,7 +4,10 @@ import { ThemeShell } from '@/components/themes/theme-shell';
 import type { ThemePageProps } from '@/components/themes/theme-shell';
 import type { SectionBlock } from '@/lib/sections';
 
+type SectionDataMap = Record<string, Record<string, unknown>>;
+
 type Props = ThemePageProps & {
+    section_data?: SectionDataMap;
     page: {
         id: number;
         title: string;
@@ -24,7 +27,7 @@ type Props = ThemePageProps & {
  * single continuous canvas, condensed headings. It exists to prove that a theme
  * is a token layer, not a fork of the renderer.
  */
-export default function MeridianPage({ page, site, menus, theme }: Props) {
+export default function MeridianPage({ page, site, menus, theme, section_data = {} }: Props) {
     const blocks = page.content ?? [];
 
     return (
@@ -41,6 +44,7 @@ export default function MeridianPage({ page, site, menus, theme }: Props) {
                 <div className="mx-auto w-full max-w-5xl divide-y divide-border/60 px-6">
                     <SectionList
                         blocks={blocks}
+                        data={section_data}
                         emptyLabel="This page has no sections yet."
                     />
                 </div>

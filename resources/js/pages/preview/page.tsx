@@ -6,7 +6,10 @@ import type { ThemePageProps } from '@/components/themes/theme-shell';
 import { Button } from '@/components/ui/button';
 import type { PageStatus, SectionBlock } from '@/lib/sections';
 
+type SectionDataMap = Record<string, Record<string, unknown>>;
+
 type Props = ThemePageProps & {
+    section_data?: SectionDataMap;
     page: {
         id: number;
         title: string;
@@ -23,7 +26,7 @@ type Props = ThemePageProps & {
  * Draft preview: the real content inside the active theme's tokens, with a
  * banner that says exactly what is being previewed and how to get back.
  */
-export default function PreviewPage({ page, site, menus, theme, edit_url }: Props) {
+export default function PreviewPage({ page, site, menus, theme, edit_url, section_data = {} }: Props) {
     return (
         <>
             <Head title={`Preview · ${page.seo_title ?? page.title}`}>
@@ -50,7 +53,7 @@ export default function PreviewPage({ page, site, menus, theme, edit_url }: Prop
 
             <ThemeShell site={site} menus={menus} theme={theme} variant="wide">
                 <ThemeBand>
-                    <SectionList blocks={page.content ?? []} emptyLabel="Nothing to preview yet." />
+                    <SectionList blocks={page.content ?? []} data={section_data} emptyLabel="Nothing to preview yet." />
                 </ThemeBand>
             </ThemeShell>
         </>
