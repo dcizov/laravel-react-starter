@@ -13,41 +13,37 @@ export type GeneratedNavSection = {
 
 export const navigationSections: GeneratedNavSection[] = [
     {
-        label: 'Content',
+        label: "Content",
         items: [
-            { label: 'Pages', route: '/admin/pages', icon: 'file-text' },
-            { label: 'Media', route: '/admin/media', icon: 'image' },
+            { label: "Pages", route: "/admin/pages", icon: "file-text" },
+            { label: "Media", route: "/admin/media", icon: "image" },
         ],
     },
     {
-        label: 'Site',
+        label: "Site",
         items: [
-            {
-                label: 'Appearance',
-                route: '/admin/appearance',
-                icon: 'palette',
-            },
-            { label: 'Addons', route: '/admin/addons', icon: 'plug' },
-            { label: 'Demo', route: '/admin/demo', icon: 'flask-conical' },
+            { label: "Appearance", route: "/admin/appearance", icon: "palette" },
+            { label: "Addons", route: "/admin/addons", icon: "plug" },
+            { label: "Demo", route: "/admin/demo", icon: "flask-conical" },
         ],
     },
     {
-        label: 'System',
+        label: "System",
         items: [
-            { label: 'Settings', route: '/admin/settings', icon: 'settings' },
+            { label: "Settings", route: "/admin/settings", icon: "settings" },
         ],
     },
     {
-        label: 'Team',
+        label: "Team",
         items: [
-            { label: 'Users', route: '/admin/users', icon: 'users' },
-            { label: 'Activity', route: '/admin/activity', icon: 'activity' },
+            { label: "Users", route: "/admin/users", icon: "users" },
+            { label: "Activity", route: "/admin/activity", icon: "activity" },
         ],
     },
     {
-        label: 'Workspace',
+        label: "Workspace",
         items: [
-            { label: 'Dashboard', route: '/admin', icon: 'layout-dashboard' },
+            { label: "Dashboard", route: "/admin", icon: "layout-dashboard" },
         ],
     },
 ];

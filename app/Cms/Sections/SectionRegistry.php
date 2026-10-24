@@ -53,9 +53,13 @@ final class SectionRegistry
         return $this->all()[$key] ?? null;
     }
 
+    /**
+     * Register a section. Themes and addons call this from their provider,
+     * which runs before anything asks for the list, so this must not mark the
+     * registry as loaded — the core set still has to be merged in afterwards.
+     */
     public function add(Section $section): void
     {
-        $this->loaded = true;
         $this->sections[$section->key] = $section;
     }
 

@@ -6,6 +6,7 @@ use App\Cms\Boot\ProviderLoader;
 use App\Cms\Registries\Navigation;
 use App\Cms\Repositories\AddonRepository;
 use App\Cms\Repositories\ThemeRepository;
+use App\Cms\Sections\SectionRegistry;
 use App\Cms\Support\SafeMode;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -26,6 +27,12 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(Navigation::class, fn (): Navigation => new Navigation);
         $this->app->singleton(AddonRepository::class, fn (Application $app): AddonRepository => new AddonRepository($app));
         $this->app->singleton(ThemeRepository::class, fn (Application $app): ThemeRepository => new ThemeRepository($app));
+        // Shared, because themes and addons register their sections into it at
+        // boot and every request (editor, validator, renderer) must see them.
+        $this->app->singleton(SectionRegistry::class, fn (Application $app): SectionRegistry => new SectionRegistry(
+            $app->make(AddonRepository::class),
+            $app->make(ThemeRepository::class),
+        ));
         $this->app->singleton(SafeMode::class, fn (Application $app): SafeMode => new SafeMode(
             $app,
             $app->make(AddonRepository::class),

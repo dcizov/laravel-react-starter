@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\AppearanceController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PageController;
@@ -27,6 +28,9 @@ Route::middleware(['auth', 'verified', 'active'])->prefix('admin')->group(functi
     Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 
     Route::get('activity', [ActivityController::class, 'index'])->name('admin.activity.index');
+
+    Route::get('appearance', [AppearanceController::class, 'index'])->name('admin.appearance.index');
+    Route::post('appearance/{handle}/activate', [AppearanceController::class, 'activate'])->name('admin.appearance.activate');
 
     Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
     Route::post('media', [MediaController::class, 'upload'])->name('admin.media.upload');

@@ -293,4 +293,44 @@ endpoint covered by 2 feature tests (payload, filters, protection). Full suite:
 110 tests / 635 assertions; pint (144 files), tsc, eslint (0 warnings) and build
 green; browse endpoint returns 200 for editor and author.
 
-**Next: S5 — themes and the public site.**
+## S5 — Themes & public site
+
+Split into S5.1 (theme lifecycle + appearance screen, done) and S5.2 (theme
+layouts A/B, themed public site, sitemap/robots/404/preview banner).
+
+**Done (S5.1)**
+
+- Two themes on disk, each a folder with `theme.json` + a provider:
+  `app/Themes/Aperture` (editorial default, registers the `stat-band` section)
+  and `app/Themes/Meridian` (token variant: teal accent, tight radius,
+  condensed headings, reuses every component). `theme.json` now carries
+  `components` (`page`, `not_found`) so a theme declares which Inertia
+  component renders each public route.
+- `App\Cms\Themes\ThemeManager`: lists installed rows plus folders found on
+  disk, activates by handle (installing the row if needed), refuses themes whose
+  version constraints fail, keeps exactly one active row, exposes merged tokens
+  (accent/radius/fonts/weight/density with defaults), and resolves the public
+  component — falling back to `public/page` when no theme is active or the
+  theme is in `error` state after Safe Mode caught its provider.
+- **Fix found by S5:** `SectionRegistry` was resolved fresh per injection, so a
+  theme provider's `add()` landed in a throwaway instance and `add()` also set
+  the `loaded` flag, which would have hidden the core sections. It is now a
+  singleton bound in `CoreServiceProvider`, and `add()` no longer flips
+  `loaded`. `stat-band` proves the whole path (provider → registry → editor
+  schema → validator rules).
+- `/admin/appearance` (`AppearanceController` + `pages/admin/appearance/index.tsx`):
+  theme cards with token swatches, live/error badges, an active-theme summary
+  row, and **optimistic activation** via `router.optimistic(...)` with a
+  "Change reverted" toast when the server refuses. Authorized by the
+  `themes.view` / `themes.activate` gates (author 403).
+
+**Accept (S5.1):** 9 feature tests — both themes discovered with their tokens,
+activation leaves exactly one active, tokens/components resolve for the active
+theme, core fallback when none is active, unknown handle refused, theme section
+merged on top of the core set, appearance screen render + permission flags, HTTP
+activation + activity row, author 403 and unknown-handle validation error. Full
+suite: 119 tests / 683 assertions; pint (149 files), tsc, eslint (0 warnings) and
+build green; `lattice:install` registers both themes and `/admin/appearance`
+renders 200 for admin/editor, 403 for author.
+
+**Next: S5.2 — theme layouts and the themed public site.**

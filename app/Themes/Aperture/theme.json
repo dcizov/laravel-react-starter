@@ -1,0 +1,22 @@
+{
+    "handle": "aperture",
+    "name": "Aperture",
+    "version": "1.0.0",
+    "description": "Editorial default: wide hero, generous whitespace, deep indigo accent. Ships the stat band section.",
+    "provider": "App\\Themes\\Aperture\\ApertureServiceProvider",
+    "requires": {
+        "lattice": "^0.1"
+    },
+    "tokens": {
+        "accent": "oklch(0.51 0.19 264)",
+        "radius": "0.625rem",
+        "font": "Inter",
+        "heading_font": "Inter",
+        "heading_weight": "650",
+        "density": "comfortable"
+    },
+    "components": {
+        "page": "themes/aperture/page",
+        "not_found": "themes/aperture/not-found"
+    }
+}

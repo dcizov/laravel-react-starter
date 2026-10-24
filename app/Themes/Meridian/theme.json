@@ -1,0 +1,22 @@
+{
+    "handle": "meridian",
+    "name": "Meridian",
+    "version": "1.0.0",
+    "description": "Token variant of Aperture: tighter radius, condensed headings, teal accent. Reuses every section component.",
+    "provider": "App\\Themes\\Meridian\\MeridianServiceProvider",
+    "requires": {
+        "lattice": "^0.1"
+    },
+    "tokens": {
+        "accent": "oklch(0.55 0.12 190)",
+        "radius": "0.125rem",
+        "font": "Inter",
+        "heading_font": "Inter Tight",
+        "heading_weight": "800",
+        "density": "compact"
+    },
+    "components": {
+        "page": "themes/meridian/page",
+        "not_found": "themes/meridian/not-found"
+    }
+}

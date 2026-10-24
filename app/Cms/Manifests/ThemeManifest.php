@@ -14,6 +14,7 @@ final class ThemeManifest implements Arrayable
     /**
      * @param  array<string, mixed>  $requires
      * @param  array<string, mixed>  $tokens
+     * @param  array<string, string>  $components
      */
     public function __construct(
         public readonly string $handle,
@@ -25,6 +26,7 @@ final class ThemeManifest implements Arrayable
         public readonly string $screenshot = '',
         public readonly array $requires = [],
         public readonly array $tokens = [],
+        public readonly array $components = [],
     ) {}
 
     /**
@@ -42,6 +44,13 @@ final class ThemeManifest implements Arrayable
             screenshot: (string) ($data['screenshot'] ?? ''),
             requires: (array) ($data['requires'] ?? []),
             tokens: (array) ($data['tokens'] ?? []),
+            components: array_filter(
+                array_map(
+                    fn (mixed $component): string => is_string($component) ? $component : '',
+                    (array) ($data['components'] ?? []),
+                ),
+                fn (string $component): bool => $component !== '',
+            ),
         );
     }
 
@@ -65,6 +74,14 @@ final class ThemeManifest implements Arrayable
         return self::fromArray($decoded, rtrim($path, '/'));
     }
 
+    /**
+     * The Inertia component the theme wants for a public route, if it ships one.
+     */
+    public function component(string $key): ?string
+    {
+        return $this->components[$key] ?? null;
+    }
+
     public function constraint(string $key): ?string
     {
         $value = $this->requires[$key] ?? null;
@@ -86,6 +103,7 @@ final class ThemeManifest implements Arrayable
             'provider' => $this->provider,
             'requires' => $this->requires,
             'tokens' => $this->tokens,
+            'components' => $this->components,
         ];
     }
 }
