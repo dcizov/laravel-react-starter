@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Cms\Content\Homepage;
 use App\Models\Page;
 use Illuminate\Http\Response;
 
@@ -11,6 +14,8 @@ use Illuminate\Http\Response;
  */
 class SitemapController extends Controller
 {
+    public function __construct(private readonly Homepage $homepage) {}
+
     public function sitemap(): Response
     {
         $pages = Page::query()
@@ -20,11 +25,13 @@ class SitemapController extends Controller
             ->orderByDesc('updated_at')
             ->get(['slug', 'updated_at']);
 
+        $homepage = $this->homepage->slug();
+
         $xml = ['<?xml version="1.0" encoding="UTF-8"?>'];
         $xml[] = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 
         foreach ($pages as $page) {
-            $location = $page->slug === 'home' ? url('/') : url('/'.$page->slug);
+            $location = $page->slug === $homepage ? url('/') : url('/'.$page->slug);
 
             $xml[] = '  <url>';
             $xml[] = '    <loc>'.htmlspecialchars($location, ENT_XML1).'</loc>';

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Cms\Boot\ProviderLoader;
 use App\Cms\Menus\MenuRepository;
 use App\Cms\Repositories\ThemeRepository;

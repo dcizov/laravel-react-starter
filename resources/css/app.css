@@ -185,4 +185,17 @@
     :focus-visible {
         @apply outline-2 outline-offset-2 outline-ring/70;
     }
+
+    /* Motion is decoration here: the sidebar, dialogs and toasts all animate.
+       Users who ask their system for less motion get the end state instead. */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
 }

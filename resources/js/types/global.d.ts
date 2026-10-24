@@ -15,6 +15,11 @@ declare module '@inertiajs/core' {
             auth: Auth;
             navigation: NavigationSection[];
             sidebarOpen: boolean;
+            /** Server-resolved appearance; see HandleAppearance. */
+            appearance: {
+                appearance: 'light' | 'dark' | 'system';
+                resolved: 'light' | 'dark';
+            };
             [key: string]: unknown;
         };
     }

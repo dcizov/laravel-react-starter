@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Cms\Addons\AddonCatalog;
 use App\Cms\Repositories\AddonRepository;
 use App\Models\User;

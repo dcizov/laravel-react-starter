@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Cms\Pages\PageRepository;
@@ -58,19 +60,38 @@ class PageController extends Controller
         return Inertia::render('admin/pages/index', [
             'pages' => $pages,
             'filters' => [...$filters, 'trashed' => $request->boolean('trashed')],
-            'counts' => [
-                'all' => Page::query()->count(),
-                'draft' => Page::query()->where('status', Page::STATUS_DRAFT)->count(),
-                'scheduled' => Page::query()->where('status', Page::STATUS_SCHEDULED)->count(),
-                'published' => Page::query()->where('status', Page::STATUS_PUBLISHED)->count(),
-                'trashed' => Page::onlyTrashed()->count(),
-            ],
+            'counts' => $this->counts(),
             'can' => [
                 'create' => $request->user()?->can('pages.create') ?? false,
                 'publish' => $request->user()?->can('pages.publish') ?? false,
                 'delete' => $request->user()?->can('pages.delete') ?? false,
             ],
         ]);
+    }
+
+    /**
+     * One grouped query for the status strip instead of one per badge.
+     *
+     * @return array{all: int, draft: int, scheduled: int, published: int, trashed: int}
+     */
+    private function counts(): array
+    {
+        $byStatus = Page::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $trashed = Page::onlyTrashed()->count();
+
+        $count = fn (string $status): int => (int) $byStatus->get($status, 0);
+
+        return [
+            'all' => (int) $byStatus->sum(),
+            'draft' => $count(Page::STATUS_DRAFT),
+            'scheduled' => $count(Page::STATUS_SCHEDULED),
+            'published' => $count(Page::STATUS_PUBLISHED),
+            'trashed' => $trashed,
+        ];
     }
 
     public function create(): Response
@@ -158,7 +179,12 @@ class PageController extends Controller
 
     public function update(UpdatePageRequest $request, Page $page): RedirectResponse
     {
-        $this->pages->update($page, $request->validated(), $request->user());
+        $this->pages->update(
+            $page,
+            $request->safe()->except('base_version'),
+            $request->user(),
+            baseVersion: $request->integer('base_version') ?: null,
+        );
 
         activity('pages')->performedOn($page)->event('updated')->log('Updated page "'.$page->title.'"');
 
@@ -171,7 +197,13 @@ class PageController extends Controller
      */
     public function autosave(UpdatePageRequest $request, Page $page): JsonResponse
     {
-        $this->pages->update($page, $request->validated(), $request->user(), 'Autosaved');
+        $this->pages->update(
+            $page,
+            $request->safe()->except('base_version'),
+            $request->user(),
+            'Autosaved',
+            $request->integer('base_version') ?: null,
+        );
 
         return response()->json([
             'saved_at' => now()->toIso8601String(),
@@ -278,6 +310,7 @@ class PageController extends Controller
             'published_at' => $page->published_at?->toIso8601String(),
             'scheduled_at' => $page->scheduled_at?->toIso8601String(),
             'updated_at' => $page->updated_at?->toIso8601String(),
+            'version' => $page->version,
             'has_content' => is_array($page->content) && $page->content !== [],
             'urls' => [
                 'edit' => route('admin.pages.edit', $page),

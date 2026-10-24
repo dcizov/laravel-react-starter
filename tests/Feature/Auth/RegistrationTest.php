@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 test('public registration is disabled', function () {
     $this->get('/register')->assertNotFound();
 });

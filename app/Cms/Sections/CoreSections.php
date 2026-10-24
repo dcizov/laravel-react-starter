@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cms\Sections;
+
+use App\Rules\SafeLink;
 
 /**
  * The base set of sections every theme can render.
@@ -31,7 +35,7 @@ final class CoreSections
                 'default' => 'center',
             ]),
             Field::text('cta_label', 'Button label', ['rules' => ['string', 'max:40']]),
-            Field::url('cta_url', 'Button link', ['rules' => ['string', 'max:255']]),
+            Field::url('cta_url', 'Button link', ['rules' => ['string', 'max:255', new SafeLink]]),
             Field::media('image', 'Background image'),
         ], [
             'description' => 'The first thing a visitor sees.',
@@ -84,7 +88,7 @@ final class CoreSections
             Field::text('heading', 'Heading', ['required' => true, 'rules' => ['string', 'max:120']]),
             Field::textarea('body', 'Body', ['rules' => ['string', 'max:300']]),
             Field::text('button_label', 'Button label', ['rules' => ['string', 'max:40']]),
-            Field::url('button_url', 'Button link', ['rules' => ['string', 'max:255']]),
+            Field::url('button_url', 'Button link', ['rules' => ['string', 'max:255', new SafeLink]]),
             Field::color('accent', 'Accent', ['default' => 'oklch(0.51 0.19 264)']),
         ], [
             'description' => 'A closing band with one action.',

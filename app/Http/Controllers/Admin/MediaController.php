@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Cms\Media\MediaLibrary;
@@ -34,7 +36,7 @@ class MediaController extends Controller
         ];
 
         $media = Media::query()
-            ->with(['uploader:id,name', 'folder:id,name', 'usages.usable'])
+            ->with(['uploader:id,name', 'folder:id,name'])
             ->withCount('usages')
             ->when($filters['trashed'], fn ($query) => $query->onlyTrashed())
             ->when($filters['q'] !== '', fn ($query) => $query->where(function ($query) use ($filters): void {
@@ -228,8 +230,21 @@ class MediaController extends Controller
     }
 
     /**
-     * Where the item is used, resolved from the eager-loaded relation so the
-     * index costs one query per page instead of one per tile.
+     * Where one item is used. The index deliberately ships only the count, so
+     * this is fetched when the drawer opens: the payload then scales with what
+     * the operator is looking at rather than with every reused image on screen.
+     */
+    public function usages(Media $media): JsonResponse
+    {
+        $this->authorize('view', $media);
+
+        $media->load('usages.usable');
+
+        return response()->json(['usages' => $this->usageRows($media)]);
+    }
+
+    /**
+     * Where the item is used, resolved from the eager-loaded relation.
      *
      * @return list<array{id: int, title: string, field: string|null, url: string|null}>
      */
@@ -277,13 +292,13 @@ class MediaController extends Controller
             'folder' => $media->folder?->name,
             'uploaded_by' => $media->uploader?->name,
             'usages' => (int) ($media->usages_count ?? $media->usages()->count()),
-            'usages_detail' => $this->usageRows($media),
             'is_trashed' => $media->trashed(),
             'created_at' => $media->created_at?->toIso8601String(),
             'urls' => [
                 'update' => route('admin.media.update', $media),
                 'destroy' => route('admin.media.destroy', $media),
                 'restore' => route('admin.media.restore', $media->id),
+                'usages' => route('admin.media.usages', $media),
             ],
         ];
     }

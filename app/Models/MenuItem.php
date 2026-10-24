@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
+
+use App\Cms\Content\Homepage;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -52,7 +56,7 @@ class MenuItem extends Model
                 return '/';
             }
 
-            return $page->slug === 'home' ? '/' : '/'.$page->slug;
+            return app(Homepage::class)->isHome($page) ? '/' : '/'.$page->slug;
         }
 
         return $this->url !== null && $this->url !== '' ? $this->url : '/';

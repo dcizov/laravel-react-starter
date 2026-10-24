@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cms\Console\Commands;
 
 use App\Cms\Addons\AddonManager;
@@ -66,12 +68,14 @@ class InstallCommand extends Command
             Artisan::call('storage:link');
         }
 
-        Artisan::call('lattice:discover', [], $this->output);
-
         if ($this->option('demo')) {
             $this->components->info('Seeding the demo site…');
             Artisan::call('db:seed', ['--class' => DemoSeeder::class, '--force' => true], $this->output);
         }
+
+        // Registries are written last: the demo seeder activates PostCraft, and
+        // the generated navigation has to describe that state.
+        Artisan::call('lattice:discover', [], $this->output);
 
         $navigation->flush();
 

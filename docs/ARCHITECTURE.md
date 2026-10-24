@@ -85,6 +85,35 @@ Admin requests then go through `auth`, `verified`, `active`, and each action
 authorizes again with a gate or a policy plus a FormRequest. The client's
 `auth.can` map hides affordances; it never authorizes anything.
 
+### The public root
+
+`GET /` is answered by `App\Cms\Content\Homepage`, which reads the
+`content.homepage_slug` setting (schema default `home`) and only accepts a page
+that is publicly visible *right now*. A draft, scheduled, expired or trashed
+homepage leaves the core landing page (`welcome`) in place. The same helper
+decides which slug the sitemap writes as `/` and which menu items link to `/`,
+so there is one answer to "which page is the homepage" in the whole app.
+
+### Appearance (light/dark) and hydration
+
+`system` cannot be resolved on the server, so the decision is never derived
+during render:
+
+1. `HandleAppearance::read()` normalises the `appearance` cookie and pairs it
+   with `appearance_resolved` — the value the browser reported last time
+   (light on a first visit).
+2. The root template writes both onto `<html>` (`class="dark"`,
+   `data-appearance`, `data-appearance-resolved`), and `HandleInertiaRequests`
+   shares the same pair as the `appearance` prop.
+3. `resources/js/hooks/use-appearance.tsx` seeds its store from the shared props
+   (`withApp` runs before the first render on both sides) and falls back to the
+   html attributes, so the first client render is byte-identical to the SSR
+   pass. Only *after* hydration does a listener re-resolve `system` against
+   `matchMedia`, correct the document and refresh the cookie.
+
+Nothing renders from `matchMedia` during render, which is what keeps
+`ThemeToggle` and the toaster in agreement with their server output.
+
 ## Authorization
 
 Policies and gates are named after permissions (`pages.update`,

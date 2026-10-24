@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Cms\Repositories\ThemeRepository;
 use App\Cms\Themes\ThemeManager;
 use App\Models\Page;

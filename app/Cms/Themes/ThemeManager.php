@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cms\Themes;
 
 use App\Cms\Manifests\ThemeManifest;

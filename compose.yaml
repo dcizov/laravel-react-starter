@@ -4,7 +4,17 @@ services:
             context: ./vendor/laravel/sail/runtimes/8.5
             dockerfile: Dockerfile
             args:
-                WWWGROUP: '${WWWGROUP}'
+                # 1000 is the first user on virtually every distribution, so the
+                # image builds without configuration. Override in `.env` when
+                # your uid/gid differ (`id -u`, `id -g`).
+                #
+                # The value has to come from `.env`, not from the invoking shell:
+                # under distrobox `docker` is `distrobox-host-exec` → `host-spawn`,
+                # which forwards only TERM and PWD (its `--env` default), so
+                # anything Sail exports inside the container never reaches the
+                # docker CLI running on the host. `.env` is read by compose
+                # itself, on the host, and is therefore the reliable channel.
+                WWWGROUP: '${WWWGROUP:-1000}'
         image: sail-8.5/app
         extra_hosts:
             - 'host.docker.internal:host-gateway'
@@ -14,7 +24,11 @@ services:
             - '${FORWARD_SERVE_PORT:-8000}:8000'
             - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
         environment:
-            WWWUSER: '${WWWUSER}'
+            # Same reasoning as the build arg above: `.env` is the channel that
+            # survives a distrobox host-exec boundary. The entrypoint runs
+            # `usermod -u $WWWUSER sail` when this is non-empty, which is what
+            # keeps `storage/` and `bootstrap/cache` owned by you.
+            WWWUSER: '${WWWUSER:-1000}'
             LARAVEL_SAIL: 1
             # `artisan serve` binds 127.0.0.1 by default, which a published
             # port cannot reach; listen on every interface inside the container.

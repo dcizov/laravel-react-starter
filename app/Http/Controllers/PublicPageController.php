@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Cms\Content\Homepage;
 use App\Cms\Menus\MenuRepository;
 use App\Cms\Sections\SectionRegistry;
 use App\Cms\Themes\ThemeManager;
@@ -24,14 +27,20 @@ class PublicPageController extends Controller
         private readonly SectionRegistry $sections,
         private readonly ThemeManager $themes,
         private readonly MenuRepository $menus,
+        private readonly Homepage $homepage,
     ) {}
 
+    /**
+     * `/` renders the page named by the `content.homepage_slug` setting.
+     *
+     * The decision is made in one place, so the same database always produces
+     * the same homepage: a configured-but-unpublished page leaves the core
+     * landing page in place instead of silently switching between the theme and
+     * the starter page depending on residual rows.
+     */
     public function home(): HttpResponse|Response
     {
-        $page = Page::query()
-            ->where('status', Page::STATUS_PUBLISHED)
-            ->where('slug', 'home')
-            ->first();
+        $page = $this->homepage->page();
 
         if ($page === null) {
             return Inertia::render('welcome');

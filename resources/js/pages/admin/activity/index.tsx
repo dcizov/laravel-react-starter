@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { Activity as ActivityIcon, Search, X } from 'lucide-react';
 import { useState } from 'react';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 type ActivityRow = {
@@ -40,9 +40,20 @@ type Props = {
         from: number | null;
         to: number | null;
     };
-    filters: { log: string; event: string; causer: number | null; q: string; from: string | null; to: string | null };
+    filters: {
+        log: string;
+        event: string;
+        causer: number | null;
+        q: string;
+        from: string | null;
+        to: string | null;
+    };
     active: boolean;
-    options: { logs: string[]; events: string[]; causers: { id: number; name: string }[] };
+    options: {
+        logs: string[];
+        events: string[];
+        causers: { id: number; name: string }[];
+    };
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -50,10 +61,18 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Activity', href: '/admin/activity' },
 ];
 
-export default function ActivityIndex({ groups, pagination, filters, active, options }: Props) {
+export default function ActivityIndex({
+    groups,
+    pagination,
+    filters,
+    active,
+    options,
+}: Props) {
     const [log, setLog] = useState(filters.log || 'all');
     const [event, setEvent] = useState(filters.event || 'all');
-    const [causer, setCauser] = useState(filters.causer ? String(filters.causer) : 'all');
+    const [causer, setCauser] = useState(
+        filters.causer ? String(filters.causer) : 'all',
+    );
     const [query, setQuery] = useState(filters.q);
     const [from, setFrom] = useState(filters.from ?? '');
     const [to, setTo] = useState(filters.to ?? '');
@@ -90,8 +109,10 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
 
     const rows = groups.flatMap((group) => group.items);
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Activity" />
 
             <div className="space-y-5">
@@ -115,11 +136,13 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
                                 Search
                             </Label>
                             <div className="relative">
-                                <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+                                <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     id="activity-q"
                                     value={query}
-                                    onChange={(event) => setQuery(event.target.value)}
+                                    onChange={(event) =>
+                                        setQuery(event.target.value)
+                                    }
                                     onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
                                             apply();
@@ -131,33 +154,81 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
                             </div>
                         </div>
 
-                        <FilterSelect id="activity-log" label="Log" value={log} onChange={setLog} options={options.logs.map((value) => ({ value, label: value }))} />
-                        <FilterSelect id="activity-event" label="Event" value={event} onChange={setEvent} options={options.events.map((value) => ({ value, label: value }))} />
+                        <FilterSelect
+                            id="activity-log"
+                            label="Log"
+                            value={log}
+                            onChange={setLog}
+                            options={options.logs.map((value) => ({
+                                value,
+                                label: value,
+                            }))}
+                        />
+                        <FilterSelect
+                            id="activity-event"
+                            label="Event"
+                            value={event}
+                            onChange={setEvent}
+                            options={options.events.map((value) => ({
+                                value,
+                                label: value,
+                            }))}
+                        />
                         <FilterSelect
                             id="activity-causer"
                             label="Person"
                             value={causer}
                             onChange={setCauser}
-                            options={options.causers.map((user) => ({ value: String(user.id), label: user.name }))}
+                            options={options.causers.map((user) => ({
+                                value: String(user.id),
+                                label: user.name,
+                            }))}
                         />
 
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1.5">
-                                <Label htmlFor="activity-from" className="text-[11px]">
+                                <Label
+                                    htmlFor="activity-from"
+                                    className="text-[11px]"
+                                >
                                     From
                                 </Label>
-                                <Input id="activity-from" type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="h-8 text-xs" />
+                                <Input
+                                    id="activity-from"
+                                    type="date"
+                                    value={from}
+                                    onChange={(event) =>
+                                        setFrom(event.target.value)
+                                    }
+                                    className="h-8 text-xs"
+                                />
                             </div>
                             <div className="space-y-1.5">
-                                <Label htmlFor="activity-to" className="text-[11px]">
+                                <Label
+                                    htmlFor="activity-to"
+                                    className="text-[11px]"
+                                >
                                     To
                                 </Label>
-                                <Input id="activity-to" type="date" value={to} onChange={(event) => setTo(event.target.value)} className="h-8 text-xs" />
+                                <Input
+                                    id="activity-to"
+                                    type="date"
+                                    value={to}
+                                    onChange={(event) =>
+                                        setTo(event.target.value)
+                                    }
+                                    className="h-8 text-xs"
+                                />
                             </div>
                         </div>
 
                         <div className="flex items-end">
-                            <Button size="sm" className="h-8 w-full" onClick={apply} disabled={loading}>
+                            <Button
+                                size="sm"
+                                className="h-8 w-full"
+                                onClick={apply}
+                                disabled={loading}
+                            >
                                 {loading ? 'Filtering…' : 'Apply filters'}
                             </Button>
                         </div>
@@ -166,7 +237,11 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
 
                 {loading ? (
                     <Card className="gap-0 py-0">
-                        <CardContent className="space-y-3 p-4" aria-busy="true" aria-label="Loading activity">
+                        <CardContent
+                            className="space-y-3 p-4"
+                            aria-busy="true"
+                            aria-label="Loading activity"
+                        >
                             {[0, 1, 2, 3, 4].map((row) => (
                                 <div key={row} className="flex gap-3">
                                     <Skeleton className="size-7 rounded-full" />
@@ -185,7 +260,11 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
                             title="No activity matches these filters"
                             description="Try a wider date range, another person, or clear the filters to see everything."
                             action={
-                                <Button size="sm" variant="outline" onClick={reset}>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={reset}
+                                >
                                     Clear filters
                                 </Button>
                             }
@@ -201,29 +280,45 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
                     <div className="space-y-5">
                         {groups.map((group) => (
                             <section key={group.date} aria-label={group.label}>
-                                <h2 className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-wide uppercase">
+                                <h2 className="mb-2 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                                     {group.label}
                                 </h2>
                                 <Card className="gap-0 py-0">
                                     <ol className="divide-y divide-border/60">
                                         {group.items.map((activity) => (
-                                            <li key={activity.id} className="flex gap-3 px-4 py-3">
-                                                <span className="bg-muted text-muted-foreground mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full">
+                                            <li
+                                                key={activity.id}
+                                                className="flex gap-3 px-4 py-3"
+                                            >
+                                                <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                                                     <ActivityIcon className="size-3.5" />
                                                 </span>
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-sm">
                                                         {activity.description}
                                                         {activity.subject_type ? (
-                                                            <span className="text-muted-foreground"> · {activity.subject_type}</span>
+                                                            <span className="text-muted-foreground">
+                                                                {' '}
+                                                                ·{' '}
+                                                                {
+                                                                    activity.subject_type
+                                                                }
+                                                            </span>
                                                         ) : null}
                                                     </p>
-                                                    <p className="text-muted-foreground mt-0.5 text-[11px]">
-                                                        {activity.causer ?? 'System'}
-                                                        {activity.event ? ` · ${activity.event}` : ''}
-                                                        {activity.log ? ` · ${activity.log}` : ''}
+                                                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                                                        {activity.causer ??
+                                                            'System'}
+                                                        {activity.event
+                                                            ? ` · ${activity.event}`
+                                                            : ''}
+                                                        {activity.log
+                                                            ? ` · ${activity.log}`
+                                                            : ''}
                                                         {' · '}
-                                                        {time(activity.created_at)}
+                                                        {time(
+                                                            activity.created_at,
+                                                        )}
                                                     </p>
                                                 </div>
                                             </li>
@@ -234,8 +329,9 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
                         ))}
 
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="text-muted-foreground text-xs">
-                                Showing {pagination.from ?? 0}–{pagination.to ?? 0} of {pagination.total}
+                            <p className="text-xs text-muted-foreground">
+                                Showing {pagination.from ?? 0}–
+                                {pagination.to ?? 0} of {pagination.total}
                             </p>
                             <div className="flex items-center gap-1">
                                 {pager(pagination.links).map((link) => (
@@ -245,7 +341,9 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
                                         variant="ghost"
                                         className="h-7"
                                         disabled={link.url === null}
-                                        onClick={() => link.url && visitLink(link.url)}
+                                        onClick={() =>
+                                            link.url && visitLink(link.url)
+                                        }
                                     >
                                         {link.label}
                                     </Button>
@@ -255,7 +353,7 @@ export default function ActivityIndex({ groups, pagination, filters, active, opt
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }
 
@@ -264,7 +362,9 @@ function visitLink(url: string) {
 }
 
 /** Laravel's paginator gives `&laquo; Previous`; the buttons want plain words. */
-function pager(links: { url: string | null; label: string; active: boolean }[]) {
+function pager(
+    links: { url: string | null; label: string; active: boolean }[],
+) {
     const previous = links[0];
     const next = links[links.length - 1];
     const page = links.find((link) => link.active);
@@ -277,7 +377,10 @@ function pager(links: { url: string | null; label: string; active: boolean }[]) 
 }
 
 function plain(label: string): string {
-    return label.replace(/&laquo;/g, '«').replace(/&raquo;/g, '»').replace(/&amp;/g, '&');
+    return label
+        .replace(/&laquo;/g, '«')
+        .replace(/&raquo;/g, '»')
+        .replace(/&amp;/g, '&');
 }
 
 function FilterSelect({
@@ -320,5 +423,8 @@ function time(value: string | null): string {
         return '';
     }
 
-    return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    return new Date(value).toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
 }

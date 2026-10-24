@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cms\Console\Commands\Addon;
 
 use App\Cms\Repositories\AddonRepository;

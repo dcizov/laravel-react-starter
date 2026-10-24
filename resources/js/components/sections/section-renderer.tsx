@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { SectionBlock, SectionContent } from '@/lib/sections';
 
 import { bool, num, rows, str } from '@/lib/sections';
+import { safeHref } from '@/lib/url';
 import { cn } from '@/lib/utils';
 
 const featureIcons: Record<string, LucideIcon> = {
@@ -64,7 +65,7 @@ function render(section: string, content: SectionContent, data?: SectionData) {
 function Hero({ content }: { content: SectionContent }) {
     const align = str(content.align, 'center');
     const label = str(content.cta_label);
-    const url = str(content.cta_url);
+    const url = safeHref(str(content.cta_url));
 
     return (
         <div className={cn('max-w-3xl space-y-5', align === 'center' ? 'mx-auto text-center' : '')}>
@@ -160,7 +161,7 @@ function FeatureGrid({ content }: { content: SectionContent }) {
 
 function Cta({ content }: { content: SectionContent }) {
     const label = str(content.button_label);
-    const url = str(content.button_url);
+    const url = safeHref(str(content.button_url));
 
     return (
         <div

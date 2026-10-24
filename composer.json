@@ -52,6 +52,7 @@
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php -r \"file_exists('database/testing.sqlite') || touch('database/testing.sqlite');\"",
             "@php artisan lattice:install --force",
+            "@wayfinder",
             "npm install",
             "npm run build"
         ],
@@ -70,9 +71,12 @@
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
+            "@registry",
+            "@wayfinder",
             "npm run check",
             "npm run types:check",
-            "@test"
+            "npm run test",
+            "@php artisan test"
         ],
         "types:check": [
             "phpstan analyse"
@@ -102,6 +106,12 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "registry": [
+            "@php artisan lattice:discover --quiet"
+        ],
+        "wayfinder": [
+            "@php artisan wayfinder:generate --with-form"
         ]
     },
     "extra": {

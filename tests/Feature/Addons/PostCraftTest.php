@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Addons\PostCraft\Models\Category;
 use App\Addons\PostCraft\Models\Post;
 use App\Addons\PostCraft\Models\Tag;

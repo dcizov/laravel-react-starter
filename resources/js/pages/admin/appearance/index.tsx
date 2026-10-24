@@ -2,12 +2,12 @@ import { Head, router } from '@inertiajs/react';
 import { AlertTriangle, Check, Palette, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
@@ -36,7 +36,12 @@ type ThemeRow = {
 
 type Props = {
     themes: ThemeRow[];
-    active: { handle: string; name: string; tokens: Tokens; degraded: boolean } | null;
+    active: {
+        handle: string;
+        name: string;
+        tokens: Tokens;
+        degraded: boolean;
+    } | null;
     can: { activate: boolean };
 };
 
@@ -79,20 +84,28 @@ export default function AppearanceIndex({ themes, active, can }: Props) {
                 },
                 can: props.can,
             }))
-            .post(theme.urls.activate, {}, {
-                preserveScroll: true,
-                preserveState: true,
-                onFinish: () => setPending(null),
-                onError: (errors) => {
-                    toast.error('Change reverted', {
-                        description: errors.theme ?? 'The theme could not be activated.',
-                    });
+            .post(
+                theme.urls.activate,
+                {},
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onFinish: () => setPending(null),
+                    onError: (errors) => {
+                        toast.error('Change reverted', {
+                            description:
+                                errors.theme ??
+                                'The theme could not be activated.',
+                        });
+                    },
                 },
-            });
+            );
     };
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Appearance" />
 
             <div className="space-y-6">
@@ -103,17 +116,19 @@ export default function AppearanceIndex({ themes, active, can }: Props) {
 
                 <Card>
                     <CardContent className="flex flex-wrap items-center gap-3 py-4">
-                        <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-md">
+                        <span className="flex size-9 items-center justify-center rounded-md bg-primary/10 text-primary">
                             <Palette className="size-4" />
                         </span>
                         <div className="min-w-0">
                             <p className="text-sm font-medium">
                                 Active theme: {active?.name ?? 'none'}
                                 {active?.degraded ? (
-                                    <span className="text-status-scheduled ml-2 text-xs">running in fallback</span>
+                                    <span className="ml-2 text-xs text-status-scheduled">
+                                        running in fallback
+                                    </span>
                                 ) : null}
                             </p>
-                            <p className="text-muted-foreground text-xs">
+                            <p className="text-xs text-muted-foreground">
                                 {active
                                     ? `Accent ${active.tokens.accent ?? '—'} · radius ${active.tokens.radius ?? '—'} · ${active.tokens.heading_font ?? 'Inter'} headings`
                                     : 'No theme is active. Public pages fall back to the core renderer.'}
@@ -138,7 +153,9 @@ export default function AppearanceIndex({ themes, active, can }: Props) {
                                     key={theme.handle}
                                     className={cn(
                                         'overflow-hidden py-0 transition-shadow',
-                                        theme.is_active ? 'border-primary/50 ring-primary/20 ring-1' : 'hover:shadow-md',
+                                        theme.is_active
+                                            ? 'border-primary/50 ring-1 ring-primary/20'
+                                            : 'hover:shadow-md',
                                     )}
                                 >
                                     <div
@@ -155,9 +172,15 @@ export default function AppearanceIndex({ themes, active, can }: Props) {
                                             />
                                         ) : (
                                             <div className="space-y-1.5">
-                                                <div className="h-2.5 w-24 rounded-full" style={{ background: theme.tokens.accent }} />
-                                                <div className="bg-foreground/20 h-1.5 w-16 rounded-full" />
-                                                <div className="bg-foreground/10 h-1.5 w-20 rounded-full" />
+                                                <div
+                                                    className="h-2.5 w-24 rounded-full"
+                                                    style={{
+                                                        background:
+                                                            theme.tokens.accent,
+                                                    }}
+                                                />
+                                                <div className="h-1.5 w-16 rounded-full bg-foreground/20" />
+                                                <div className="h-1.5 w-20 rounded-full bg-foreground/10" />
                                             </div>
                                         )}
                                         <div className="relative ml-auto flex items-center gap-1.5">
@@ -174,24 +197,37 @@ export default function AppearanceIndex({ themes, active, can }: Props) {
                                     <CardContent className="space-y-3 p-4">
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <h2 className="text-sm font-semibold">{theme.name}</h2>
-                                                <span className="text-muted-foreground text-[11px]">v{theme.version}</span>
+                                                <h2 className="text-sm font-semibold">
+                                                    {theme.name}
+                                                </h2>
+                                                <span className="text-[11px] text-muted-foreground">
+                                                    v{theme.version}
+                                                </span>
                                             </div>
-                                            <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{theme.description}</p>
+                                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                                {theme.description}
+                                            </p>
                                         </div>
 
                                         <div className="flex items-center gap-2 text-[11px]">
                                             <span
                                                 className="size-3 rounded-full border border-border"
-                                                style={{ background: theme.tokens.accent }}
+                                                style={{
+                                                    background:
+                                                        theme.tokens.accent,
+                                                }}
                                                 aria-hidden="true"
                                             />
-                                            <span className="text-muted-foreground font-mono">{theme.tokens.radius}</span>
-                                            <span className="text-muted-foreground ml-auto">{theme.tokens.heading_font}</span>
+                                            <span className="font-mono text-muted-foreground">
+                                                {theme.tokens.radius}
+                                            </span>
+                                            <span className="ml-auto text-muted-foreground">
+                                                {theme.tokens.heading_font}
+                                            </span>
                                         </div>
 
                                         {theme.error ? (
-                                            <p className="border-status-error/30 bg-status-error-soft text-status-error flex items-start gap-1.5 rounded border px-2 py-1.5 text-[11px]">
+                                            <p className="flex items-start gap-1.5 rounded border border-status-error/30 bg-status-error-soft px-2 py-1.5 text-[11px] text-status-error">
                                                 <AlertTriangle className="mt-0.5 size-3 shrink-0" />
                                                 {theme.error}
                                             </p>
@@ -200,8 +236,16 @@ export default function AppearanceIndex({ themes, active, can }: Props) {
                                         <div className="flex items-center gap-2">
                                             <Button
                                                 size="sm"
-                                                variant={theme.is_active ? 'secondary' : 'default'}
-                                                disabled={theme.is_active || !can.activate || busy}
+                                                variant={
+                                                    theme.is_active
+                                                        ? 'secondary'
+                                                        : 'default'
+                                                }
+                                                disabled={
+                                                    theme.is_active ||
+                                                    !can.activate ||
+                                                    busy
+                                                }
                                                 onClick={() => activate(theme)}
                                                 className="flex-1"
                                             >
@@ -220,7 +264,9 @@ export default function AppearanceIndex({ themes, active, can }: Props) {
                                                 )}
                                             </Button>
                                             {!theme.installed ? (
-                                                <span className="text-muted-foreground text-[11px]">on disk</span>
+                                                <span className="text-[11px] text-muted-foreground">
+                                                    on disk
+                                                </span>
                                             ) : null}
                                         </div>
                                     </CardContent>
@@ -230,6 +276,6 @@ export default function AppearanceIndex({ themes, active, can }: Props) {
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }

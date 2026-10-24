@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
@@ -32,7 +33,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem, PageRow } from '@/types';
 
@@ -47,7 +47,13 @@ type Paginated<T> = {
 type Props = {
     pages: Paginated<PageRow>;
     filters: { q: string; status: string; sort: string; trashed: boolean };
-    counts: { all: number; draft: number; scheduled: number; published: number; trashed: number };
+    counts: {
+        all: number;
+        draft: number;
+        scheduled: number;
+        published: number;
+        trashed: number;
+    };
     can: { create: boolean; publish: boolean; delete: boolean };
     errors?: Record<string, string>;
 };
@@ -78,16 +84,28 @@ function formatDate(value: string | null): string {
 }
 
 export default function PagesIndex({ pages, filters, counts, can }: Props) {
+    // Gap links ("...") repeat their label, so the position is part of the key.
+    const pagination = pages.links.map((link, position) => ({
+        link,
+        key: link.url ?? `gap-${position}`,
+    }));
+
     const [search, setSearch] = useState(filters.q);
     const [busyId, setBusyId] = useState<number | null>(null);
     const [pending, setPending] = useState<number[]>([]);
 
-    const visit = (params: Record<string, string | number | boolean | undefined>) => {
-        router.get('/admin/pages', params as Record<string, string | number | boolean>, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
+    const visit = (
+        params: Record<string, string | number | boolean | undefined>,
+    ) => {
+        router.get(
+            '/admin/pages',
+            params as Record<string, string | number | boolean>,
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            },
+        );
     };
 
     /**
@@ -103,7 +121,12 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                     ...props.pages,
                     data: props.pages.data.map((row) =>
                         row.id === page.id
-                            ? { ...row, status: publishing ? ('published' as const) : ('draft' as const) }
+                            ? {
+                                  ...row,
+                                  status: publishing
+                                      ? ('published' as const)
+                                      : ('draft' as const),
+                              }
                             : row,
                     ),
                 },
@@ -116,7 +139,8 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                     preserveState: true,
                     onError: () => {
                         toast.error('Change reverted', {
-                            description: 'The server rejected the update. Your page is unchanged.',
+                            description:
+                                'The server rejected the update. Your page is unchanged.',
                         });
                     },
                 },
@@ -142,17 +166,26 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                 preserveScroll: true,
                 preserveState: true,
                 onError: () => {
-                    setPending((current) => current.filter((id) => id !== page.id));
+                    setPending((current) =>
+                        current.filter((id) => id !== page.id),
+                    );
                     toast.error('Change reverted', {
                         description: 'The page could not be deleted.',
                     });
                 },
                 onSuccess: () => {
-                    setPending((current) => current.filter((id) => id !== page.id));
+                    setPending((current) =>
+                        current.filter((id) => id !== page.id),
+                    );
                     toast.success(`“${page.title}” moved to trash`, {
                         action: {
                             label: 'Undo',
-                            onClick: () => router.post(page.urls.restore, {}, { preserveScroll: true }),
+                            onClick: () =>
+                                router.post(
+                                    page.urls.restore,
+                                    {},
+                                    { preserveScroll: true },
+                                ),
                         },
                         duration: 8000,
                     });
@@ -163,17 +196,25 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
     const duplicate = (page: PageRow) => {
         setBusyId(page.id);
 
-        router.post(page.urls.duplicate, {}, {
-            preserveScroll: true,
-            onFinish: () => setBusyId(null),
-        });
+        router.post(
+            page.urls.duplicate,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setBusyId(null),
+            },
+        );
     };
 
-    const visiblePages = pages.data.filter((page) => !pending.includes(page.id));
+    const visiblePages = pages.data.filter(
+        (page) => !pending.includes(page.id),
+    );
     const isEmpty = visiblePages.length === 0;
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Pages" />
 
             <div className="space-y-6">
@@ -205,32 +246,57 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                             <Button
                                 key={label}
                                 size="sm"
-                                variant={!filters.trashed && filters.status === value ? 'secondary' : 'ghost'}
-                                onClick={() => visit({ ...filters, status: value, trashed: undefined })}
+                                variant={
+                                    !filters.trashed && filters.status === value
+                                        ? 'secondary'
+                                        : 'ghost'
+                                }
+                                onClick={() =>
+                                    visit({
+                                        ...filters,
+                                        status: value,
+                                        trashed: undefined,
+                                    })
+                                }
                             >
                                 {label}
-                                <span className="text-muted-foreground ml-1 text-xs">{count}</span>
+                                <span className="ml-1 text-xs text-muted-foreground">
+                                    {count}
+                                </span>
                             </Button>
                         ))}
 
                         {counts.trashed > 0 || filters.trashed ? (
                             <Button
                                 size="sm"
-                                variant={filters.trashed ? 'secondary' : 'ghost'}
-                                onClick={() => visit({ ...filters, trashed: filters.trashed ? undefined : 1 })}
+                                variant={
+                                    filters.trashed ? 'secondary' : 'ghost'
+                                }
+                                onClick={() =>
+                                    visit({
+                                        ...filters,
+                                        trashed: filters.trashed
+                                            ? undefined
+                                            : 1,
+                                    })
+                                }
                             >
                                 Trash
-                                <span className="text-muted-foreground ml-1 text-xs">{counts.trashed}</span>
+                                <span className="ml-1 text-xs text-muted-foreground">
+                                    {counts.trashed}
+                                </span>
                             </Button>
                         ) : null}
                     </div>
 
                     <div className="flex items-center gap-2">
                         <div className="relative">
-                            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+                            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 value={search}
-                                onChange={(event) => setSearch(event.target.value)}
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
                                 onKeyDown={(event) => {
                                     if (event.key === 'Enter') {
                                         visit({ ...filters, q: search });
@@ -242,12 +308,22 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                             />
                         </div>
 
-                        <Select value={filters.sort} onValueChange={(value) => visit({ ...filters, sort: value })}>
-                            <SelectTrigger className="h-9 w-36" aria-label="Sort pages">
+                        <Select
+                            value={filters.sort}
+                            onValueChange={(value) =>
+                                visit({ ...filters, sort: value })
+                            }
+                        >
+                            <SelectTrigger
+                                className="h-9 w-36"
+                                aria-label="Sort pages"
+                            >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="updated">Last updated</SelectItem>
+                                <SelectItem value="updated">
+                                    Last updated
+                                </SelectItem>
                                 <SelectItem value="created">Newest</SelectItem>
                                 <SelectItem value="title">Title</SelectItem>
                             </SelectContent>
@@ -276,7 +352,13 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                         }
                         action={
                             filters.q ? (
-                                <Button variant="outline" onClick={() => { setSearch(''); visit({ sort: filters.sort }); }}>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setSearch('');
+                                        visit({ sort: filters.sort });
+                                    }}
+                                >
                                     Clear search
                                 </Button>
                             ) : can.create ? (
@@ -296,19 +378,34 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                                 <caption className="sr-only">Pages</caption>
                                 <thead className="bg-muted/40">
                                     <tr className="border-b border-border">
-                                        <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                        <th
+                                            scope="col"
+                                            className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                                        >
                                             Page
                                         </th>
-                                        <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                        <th
+                                            scope="col"
+                                            className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                                        >
                                             Status
                                         </th>
-                                        <th scope="col" className="hidden px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase sm:table-cell">
+                                        <th
+                                            scope="col"
+                                            className="hidden px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase sm:table-cell"
+                                        >
                                             Author
                                         </th>
-                                        <th scope="col" className="hidden px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase md:table-cell">
+                                        <th
+                                            scope="col"
+                                            className="hidden px-4 py-2.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase md:table-cell"
+                                        >
                                             Updated
                                         </th>
-                                        <th scope="col" className="px-4 py-2.5 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                        <th
+                                            scope="col"
+                                            className="px-4 py-2.5 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                                        >
                                             Actions
                                         </th>
                                     </tr>
@@ -319,18 +416,19 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                                             key={page.id}
                                             className={cn(
                                                 'border-b border-border/60 transition-colors last:border-0 hover:bg-muted/40',
-                                                busyId === page.id && 'opacity-60',
+                                                busyId === page.id &&
+                                                    'opacity-60',
                                             )}
                                         >
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col">
                                                     <Link
                                                         href={page.urls.edit}
-                                                        className="font-medium hover:text-primary transition-colors"
+                                                        className="font-medium transition-colors hover:text-primary"
                                                     >
                                                         {page.title}
                                                     </Link>
-                                                    <span className="text-muted-foreground text-xs">
+                                                    <span className="text-xs text-muted-foreground">
                                                         /{page.slug}
                                                     </span>
                                                 </div>
@@ -343,64 +441,137 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                                                         variant="ghost"
                                                         size="sm"
                                                         className="-ml-2 h-7"
-                                                        onClick={() => togglePublish(page)}
-                                                        disabled={!can.publish || page.status === 'scheduled'}
+                                                        onClick={() =>
+                                                            togglePublish(page)
+                                                        }
+                                                        disabled={
+                                                            !can.publish ||
+                                                            page.status ===
+                                                                'scheduled'
+                                                        }
                                                         title={
                                                             can.publish
                                                                 ? 'Toggle publish state'
                                                                 : 'You are not allowed to publish'
                                                         }
                                                     >
-                                                        <StatusBadge status={page.status} />
+                                                        <StatusBadge
+                                                            status={page.status}
+                                                        />
                                                     </Button>
                                                 )}
                                             </td>
-                                            <td className="text-muted-foreground hidden px-4 py-3 text-xs sm:table-cell">
+                                            <td className="hidden px-4 py-3 text-xs text-muted-foreground sm:table-cell">
                                                 {page.author ?? '—'}
                                             </td>
-                                            <td className="text-muted-foreground hidden px-4 py-3 text-xs md:table-cell">
+                                            <td className="hidden px-4 py-3 text-xs text-muted-foreground md:table-cell">
                                                 {formatDate(page.updated_at)}
                                             </td>
                                             <td className="px-4 py-3 text-right">
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="size-8" aria-label={`Actions for ${page.title}`}>
+                                                    <DropdownMenuTrigger
+                                                        asChild
+                                                    >
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-8"
+                                                            aria-label={`Actions for ${page.title}`}
+                                                        >
                                                             <MoreHorizontal className="size-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-44">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={page.urls.edit}>Edit</Link>
+                                                    <DropdownMenuContent
+                                                        align="end"
+                                                        className="w-44"
+                                                    >
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={
+                                                                    page.urls
+                                                                        .edit
+                                                                }
+                                                            >
+                                                                Edit
+                                                            </Link>
                                                         </DropdownMenuItem>
                                                         {page.urls.preview ? (
-                                                            <DropdownMenuItem asChild>
-                                                                <a href={page.urls.preview} target="_blank" rel="noreferrer">
+                                                            <DropdownMenuItem
+                                                                asChild
+                                                            >
+                                                                <a
+                                                                    href={
+                                                                        page
+                                                                            .urls
+                                                                            .preview
+                                                                    }
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                >
                                                                     <Eye className="size-3.5" />
                                                                     Preview
                                                                 </a>
                                                             </DropdownMenuItem>
                                                         ) : null}
                                                         {page.urls.public ? (
-                                                            <DropdownMenuItem asChild>
-                                                                <a href={page.urls.public} target="_blank" rel="noreferrer">
+                                                            <DropdownMenuItem
+                                                                asChild
+                                                            >
+                                                                <a
+                                                                    href={
+                                                                        page
+                                                                            .urls
+                                                                            .public
+                                                                    }
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                >
                                                                     View live
                                                                 </a>
                                                             </DropdownMenuItem>
                                                         ) : null}
-                                                        {can.create && !page.is_trashed ? (
-                                                            <DropdownMenuItem onClick={() => duplicate(page)}>
+                                                        {can.create &&
+                                                        !page.is_trashed ? (
+                                                            <DropdownMenuItem
+                                                                onClick={() =>
+                                                                    duplicate(
+                                                                        page,
+                                                                    )
+                                                                }
+                                                            >
                                                                 <Copy className="size-3.5" />
                                                                 Duplicate
                                                             </DropdownMenuItem>
                                                         ) : null}
                                                         <DropdownMenuSeparator />
                                                         {page.is_trashed ? (
-                                                            <DropdownMenuItem onClick={() => router.post(page.urls.restore, {}, { preserveScroll: true })}>
+                                                            <DropdownMenuItem
+                                                                onClick={() =>
+                                                                    router.post(
+                                                                        page
+                                                                            .urls
+                                                                            .restore,
+                                                                        {},
+                                                                        {
+                                                                            preserveScroll: true,
+                                                                        },
+                                                                    )
+                                                                }
+                                                            >
                                                                 <RotateCcw className="size-3.5" />
                                                                 Restore
                                                             </DropdownMenuItem>
                                                         ) : can.delete ? (
-                                                            <DropdownMenuItem variant="destructive" onClick={() => destroy(page)}>
+                                                            <DropdownMenuItem
+                                                                variant="destructive"
+                                                                onClick={() =>
+                                                                    destroy(
+                                                                        page,
+                                                                    )
+                                                                }
+                                                            >
                                                                 <Trash2 className="size-3.5" />
                                                                 Move to trash
                                                             </DropdownMenuItem>
@@ -416,22 +587,41 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                     </Card>
                 )}
 
-                {pages.links.length > 3 ? (
-                    <nav className="flex flex-wrap items-center justify-center gap-1" aria-label="Pagination">
-                        {pages.links.map((link, slot) =>
+                {pagination.length > 3 ? (
+                    <nav
+                        className="flex flex-wrap items-center justify-center gap-1"
+                        aria-label="Pagination"
+                    >
+                        {pagination.map(({ link, key }) =>
                             link.url ? (
                                 <Button
-                                    key={link.url}
+                                    key={key}
                                     size="sm"
-                                    variant={link.active ? 'secondary' : 'ghost'}
-                                    onClick={() => router.get(link.url as string, {}, { preserveState: true, preserveScroll: true })}
+                                    variant={
+                                        link.active ? 'secondary' : 'ghost'
+                                    }
+                                    onClick={() =>
+                                        router.get(
+                                            link.url as string,
+                                            {},
+                                            {
+                                                preserveState: true,
+                                                preserveScroll: true,
+                                            },
+                                        )
+                                    }
                                 >
                                     {plainLabel(link.label)}
                                 </Button>
                             ) : (
                                 // Disabled gap ("...") links share a label, so position is the key.
-                                // eslint-disable-next-line @eslint-react/no-array-index-key
-                                <Button key={`gap-${slot}`} size="sm" variant="ghost" disabled>
+
+                                <Button
+                                    key={key}
+                                    size="sm"
+                                    variant="ghost"
+                                    disabled
+                                >
                                     {plainLabel(link.label)}
                                 </Button>
                             ),
@@ -439,7 +629,7 @@ export default function PagesIndex({ pages, filters, counts, can }: Props) {
                     </nav>
                 ) : null}
             </div>
-        </AppLayout>
+        </>
     );
 }
 

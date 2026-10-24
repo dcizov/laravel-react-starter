@@ -2,6 +2,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ImagePlus, RotateCcw, Save, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { MediaPicker } from '@/components/media/media-picker';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
@@ -24,7 +24,16 @@ type FieldOption = { value: string; label: string };
 type SettingsField = {
     key: string;
     label: string;
-    type: 'string' | 'text' | 'integer' | 'boolean' | 'select' | 'email' | 'secret' | 'media' | 'color';
+    type:
+        | 'string'
+        | 'text'
+        | 'integer'
+        | 'boolean'
+        | 'select'
+        | 'email'
+        | 'secret'
+        | 'media'
+        | 'color';
     hint: string | null;
     required: boolean;
     options: FieldOption[];
@@ -37,7 +46,13 @@ type GroupLink = { key: string; label: string; icon: string; url: string };
 
 type Props = {
     groups: GroupLink[];
-    group: { key: string; label: string; description: string; fields: SettingsField[]; url: string };
+    group: {
+        key: string;
+        label: string;
+        description: string;
+        fields: SettingsField[];
+        url: string;
+    };
     can: { update: boolean };
 };
 
@@ -56,11 +71,17 @@ export default function Settings({ groups, group, can }: Props) {
     const editable = group.fields.filter((field) => field.type !== 'boolean');
 
     const form = useForm<Record<string, FormValue>>(
-        Object.fromEntries(editable.map((field) => [field.key, initial(field)])),
+        Object.fromEntries(
+            editable.map((field) => [field.key, initial(field)]),
+        ),
     );
 
     const [previews, setPreviews] = useState<Record<string, string | null>>(
-        Object.fromEntries(group.fields.filter((field) => field.type === 'media').map((field) => [field.key, field.preview])),
+        Object.fromEntries(
+            group.fields
+                .filter((field) => field.type === 'media')
+                .map((field) => [field.key, field.preview]),
+        ),
     );
     const [picking, setPicking] = useState<string | null>(null);
 
@@ -68,12 +89,17 @@ export default function Settings({ groups, group, can }: Props) {
         form.patch(group.url, {
             preserveScroll: true,
             onSuccess: () => toast.success('Settings saved'),
-            onError: (errors) => toast.error('Could not save', { description: Object.values(errors)[0] }),
+            onError: (errors) =>
+                toast.error('Could not save', {
+                    description: Object.values(errors)[0],
+                }),
         });
     };
 
+    useBreadcrumbs([...breadcrumbs, { title: group.label, href: group.url }]);
+
     return (
-        <AppLayout breadcrumbs={[...breadcrumbs, { title: group.label, href: group.url }]}>
+        <>
             <Head title={`${group.label} settings`} />
 
             <div className="space-y-5 pb-24">
@@ -82,7 +108,10 @@ export default function Settings({ groups, group, can }: Props) {
                     description="Site-wide values. Changes here reach the public site on the next request."
                 />
 
-                <nav className="flex flex-wrap gap-1" aria-label="Settings groups">
+                <nav
+                    className="flex flex-wrap gap-1"
+                    aria-label="Settings groups"
+                >
                     {groups.map((item) => (
                         <Link
                             key={item.key}
@@ -93,7 +122,9 @@ export default function Settings({ groups, group, can }: Props) {
                                     ? 'bg-primary text-primary-foreground'
                                     : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                             )}
-                            aria-current={item.key === group.key ? 'page' : undefined}
+                            aria-current={
+                                item.key === group.key ? 'page' : undefined
+                            }
                         >
                             {item.label}
                         </Link>
@@ -103,17 +134,31 @@ export default function Settings({ groups, group, can }: Props) {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm">{group.label}</CardTitle>
-                        <p className="text-muted-foreground text-xs">{group.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                            {group.description}
+                        </p>
                     </CardHeader>
                     <CardContent className="space-y-5">
                         {group.fields.map((field) => (
-                            <div key={field.key} className="grid gap-2 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:items-start">
+                            <div
+                                key={field.key}
+                                className="grid gap-2 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:items-start"
+                            >
                                 <div className="space-y-0.5">
                                     <Label htmlFor={`settings-${field.key}`}>
                                         {field.label}
-                                        {field.required ? <span className="text-status-error"> *</span> : null}
+                                        {field.required ? (
+                                            <span className="text-status-error">
+                                                {' '}
+                                                *
+                                            </span>
+                                        ) : null}
                                     </Label>
-                                    {field.hint ? <p className="text-muted-foreground text-[11px]">{field.hint}</p> : null}
+                                    {field.hint ? (
+                                        <p className="text-[11px] text-muted-foreground">
+                                            {field.hint}
+                                        </p>
+                                    ) : null}
                                 </div>
 
                                 <div className="space-y-1">
@@ -123,14 +168,27 @@ export default function Settings({ groups, group, can }: Props) {
                                             checked={Boolean(field.value)}
                                             disabled={!can.update}
                                             label={field.label}
-                                            onChange={(next) => toggleBoolean(field, next, group.url)}
+                                            onChange={(next) =>
+                                                toggleBoolean(
+                                                    field,
+                                                    next,
+                                                    group.url,
+                                                )
+                                            }
                                         />
                                     ) : field.type === 'media' ? (
                                         <div className="flex items-center gap-2">
                                             {previews[field.key] ? (
-                                                <img src={previews[field.key] ?? ''} alt="" className="h-12 w-16 rounded-md border border-border object-cover" />
+                                                <img
+                                                    src={
+                                                        previews[field.key] ??
+                                                        ''
+                                                    }
+                                                    alt=""
+                                                    className="h-12 w-16 rounded-md border border-border object-cover"
+                                                />
                                             ) : (
-                                                <span className="text-muted-foreground flex h-12 w-16 items-center justify-center rounded-md border border-dashed border-border">
+                                                <span className="flex h-12 w-16 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
                                                     <ImagePlus className="size-4" />
                                                 </span>
                                             )}
@@ -139,9 +197,13 @@ export default function Settings({ groups, group, can }: Props) {
                                                 size="sm"
                                                 variant="outline"
                                                 disabled={!can.update}
-                                                onClick={() => setPicking(field.key)}
+                                                onClick={() =>
+                                                    setPicking(field.key)
+                                                }
                                             >
-                                                {previews[field.key] ? 'Replace' : 'Choose image'}
+                                                {previews[field.key]
+                                                    ? 'Replace'
+                                                    : 'Choose image'}
                                             </Button>
                                             {previews[field.key] ? (
                                                 <Button
@@ -151,8 +213,17 @@ export default function Settings({ groups, group, can }: Props) {
                                                     aria-label={`Remove ${field.label.toLowerCase()}`}
                                                     disabled={!can.update}
                                                     onClick={() => {
-                                                        form.setData(field.key, null);
-                                                        setPreviews((current) => ({ ...current, [field.key]: null }));
+                                                        form.setData(
+                                                            field.key,
+                                                            null,
+                                                        );
+                                                        setPreviews(
+                                                            (current) => ({
+                                                                ...current,
+                                                                [field.key]:
+                                                                    null,
+                                                            }),
+                                                        );
                                                     }}
                                                 >
                                                     <X className="size-4" />
@@ -161,16 +232,26 @@ export default function Settings({ groups, group, can }: Props) {
                                         </div>
                                     ) : field.type === 'select' ? (
                                         <Select
-                                            value={String(form.data[field.key] ?? '')}
-                                            onValueChange={(value) => form.setData(field.key, value)}
+                                            value={String(
+                                                form.data[field.key] ?? '',
+                                            )}
+                                            onValueChange={(value) =>
+                                                form.setData(field.key, value)
+                                            }
                                             disabled={!can.update}
                                         >
-                                            <SelectTrigger id={`settings-${field.key}`} className="max-w-xs">
+                                            <SelectTrigger
+                                                id={`settings-${field.key}`}
+                                                className="max-w-xs"
+                                            >
                                                 <SelectValue placeholder="Choose…" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {field.options.map((option) => (
-                                                    <SelectItem key={option.value} value={option.value}>
+                                                    <SelectItem
+                                                        key={option.value}
+                                                        value={option.value}
+                                                    >
                                                         {option.label}
                                                     </SelectItem>
                                                 ))}
@@ -181,9 +262,16 @@ export default function Settings({ groups, group, can }: Props) {
                                             id={`settings-${field.key}`}
                                             rows={3}
                                             disabled={!can.update}
-                                            value={String(form.data[field.key] ?? '')}
-                                            onChange={(event) => form.setData(field.key, event.target.value)}
-                                            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 min-h-20 w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-[3px] disabled:opacity-60"
+                                            value={String(
+                                                form.data[field.key] ?? '',
+                                            )}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    field.key,
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-60"
                                         />
                                     ) : (
                                         <div className="flex items-center gap-2">
@@ -192,8 +280,19 @@ export default function Settings({ groups, group, can }: Props) {
                                                     type="color"
                                                     aria-label={`${field.label} colour`}
                                                     disabled={!can.update}
-                                                    value={String(form.data[field.key] ?? '') || '#4f46e5'}
-                                                    onChange={(event) => form.setData(field.key, event.target.value)}
+                                                    value={
+                                                        String(
+                                                            form.data[
+                                                                field.key
+                                                            ] ?? '',
+                                                        ) || '#4f46e5'
+                                                    }
+                                                    onChange={(event) =>
+                                                        form.setData(
+                                                            field.key,
+                                                            event.target.value,
+                                                        )
+                                                    }
                                                     className="h-9 w-12 rounded-md border border-border bg-transparent"
                                                 />
                                             ) : null}
@@ -202,24 +301,40 @@ export default function Settings({ groups, group, can }: Props) {
                                                 type={
                                                     field.type === 'secret'
                                                         ? 'password'
-                                                        : field.type === 'integer'
+                                                        : field.type ===
+                                                            'integer'
                                                           ? 'number'
-                                                          : field.type === 'email'
+                                                          : field.type ===
+                                                              'email'
                                                             ? 'email'
                                                             : 'text'
                                                 }
                                                 autoComplete="off"
                                                 disabled={!can.update}
-                                                placeholder={field.type === 'secret' && field.has_value ? 'Stored — leave blank to keep' : undefined}
-                                                value={String(form.data[field.key] ?? '')}
-                                                onChange={(event) => form.setData(field.key, event.target.value)}
+                                                placeholder={
+                                                    field.type === 'secret' &&
+                                                    field.has_value
+                                                        ? 'Stored — leave blank to keep'
+                                                        : undefined
+                                                }
+                                                value={String(
+                                                    form.data[field.key] ?? '',
+                                                )}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        field.key,
+                                                        event.target.value,
+                                                    )
+                                                }
                                                 className="max-w-md"
                                             />
                                         </div>
                                     )}
 
                                     {form.errors[field.key] ? (
-                                        <p className="text-status-error text-xs">{form.errors[field.key]}</p>
+                                        <p className="text-xs text-status-error">
+                                            {form.errors[field.key]}
+                                        </p>
                                     ) : null}
                                 </div>
                             </div>
@@ -238,7 +353,10 @@ export default function Settings({ groups, group, can }: Props) {
                     }
 
                     form.setData(picking, item.id);
-                    setPreviews((current) => ({ ...current, [picking]: item.thumbnail_url ?? item.url }));
+                    setPreviews((current) => ({
+                        ...current,
+                        [picking]: item.thumbnail_url ?? item.url,
+                    }));
                     setPicking(null);
                 }}
             />
@@ -246,20 +364,37 @@ export default function Settings({ groups, group, can }: Props) {
             {can.update ? (
                 <div
                     className={cn(
-                        'bg-background/95 fixed inset-x-0 bottom-0 z-20 border-t border-border backdrop-blur transition-transform md:left-[var(--sidebar-width,16rem)]',
-                        form.isDirty || form.processing ? 'translate-y-0' : 'translate-y-full',
+                        'fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 backdrop-blur transition-transform md:left-[var(--sidebar-width,16rem)]',
+                        form.isDirty || form.processing
+                            ? 'translate-y-0'
+                            : 'translate-y-full',
                     )}
                 >
                     <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-6 py-3">
-                        <p className="text-muted-foreground text-xs">
-                            {form.processing ? 'Saving…' : form.isDirty ? 'You have unsaved changes.' : 'All changes saved.'}
+                        <p className="text-xs text-muted-foreground">
+                            {form.processing
+                                ? 'Saving…'
+                                : form.isDirty
+                                  ? 'You have unsaved changes.'
+                                  : 'All changes saved.'}
                         </p>
                         <div className="flex items-center gap-2">
-                            <Button type="button" variant="ghost" size="sm" onClick={() => form.reset()} disabled={!form.isDirty || form.processing}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => form.reset()}
+                                disabled={!form.isDirty || form.processing}
+                            >
                                 <RotateCcw className="size-4" />
                                 Discard
                             </Button>
-                            <Button type="button" size="sm" onClick={save} disabled={!form.isDirty || form.processing}>
+                            <Button
+                                type="button"
+                                size="sm"
+                                onClick={save}
+                                disabled={!form.isDirty || form.processing}
+                            >
                                 <Save className="size-4" />
                                 {form.processing ? 'Saving…' : 'Save changes'}
                             </Button>
@@ -267,7 +402,7 @@ export default function Settings({ groups, group, can }: Props) {
                     </div>
                 </div>
             ) : null}
-        </AppLayout>
+        </>
     );
 }
 
@@ -293,7 +428,9 @@ function toggleBoolean(field: SettingsField, next: boolean, url: string) {
             ...props,
             group: {
                 ...props.group,
-                fields: props.group.fields.map((item) => (item.key === field.key ? { ...item, value: next } : item)),
+                fields: props.group.fields.map((item) =>
+                    item.key === field.key ? { ...item, value: next } : item,
+                ),
             },
         }))
         .patch(
@@ -304,7 +441,8 @@ function toggleBoolean(field: SettingsField, next: boolean, url: string) {
                 preserveState: true,
                 onError: (errors: Record<string, string>) => {
                     toast.error('Change reverted', {
-                        description: errors[field.key] ?? 'The setting was not saved.',
+                        description:
+                            errors[field.key] ?? 'The setting was not saved.',
                     });
                 },
             },
@@ -341,7 +479,7 @@ function Switch({
         >
             <span
                 className={cn(
-                    'bg-background size-4 rounded-full shadow transition-transform',
+                    'size-4 rounded-full bg-background shadow transition-transform',
                     checked ? 'translate-x-[1.125rem]' : 'translate-x-0.5',
                 )}
             />

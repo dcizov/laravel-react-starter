@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,9 +23,10 @@ use Tests\TestCase;
 | Test database
 |--------------------------------------------------------------------------
 |
-| `phpunit.xml` pins the suite to SQLite so `sail artisan test` works whatever
-| the application's `.env` points at (Postgres under Sail, SQLite without it).
-| The file is gitignored, so a fresh clone has to create it once.
+| The suite runs against whatever driver the environment names, so CI can
+| exercise Postgres (`DB_CONNECTION=pgsql`) next to SQLite. When nothing is
+| configured — a plain `sail artisan test`, or a clone with no .env — it falls
+| back to the file database in database/testing.sqlite, which it creates once.
 |
 */
 
@@ -32,6 +35,22 @@ $testingDatabase = dirname(__DIR__).'/database/testing.sqlite';
 if (! file_exists($testingDatabase)) {
     touch($testingDatabase);
 }
+
+$connection = getenv('DB_CONNECTION');
+$database = getenv('DB_DATABASE');
+
+if ($connection === false || $connection === '') {
+    $connection = 'sqlite';
+}
+
+if ($connection === 'sqlite' && ($database === false || $database === '' || $database === 'database/testing.sqlite')) {
+    $database = $testingDatabase;
+}
+
+putenv('DB_CONNECTION='.$connection);
+putenv('DB_DATABASE='.$database);
+$_ENV['DB_CONNECTION'] = $_SERVER['DB_CONNECTION'] = $connection;
+$_ENV['DB_DATABASE'] = $_SERVER['DB_DATABASE'] = $database;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Addons\PostCraft\Http\Controllers\Admin;
 
 use App\Addons\PostCraft\Models\Category;
@@ -29,7 +31,7 @@ class PostController
         $status = (string) $request->query('status', '');
 
         $posts = Post::query()
-            ->with(['author:id,name', 'category:id,name', 'tags:id,name'])
+            ->with(['author:id,name', 'category:id,name', 'tags:id,name', 'featuredMedia'])
             ->when($search !== '', fn ($query) => $query->where('title', 'like', "%{$search}%"))
             ->when(in_array($status, Post::STATUSES, true), fn ($query) => $query->where('status', $status))
             ->orderByDesc('id')
@@ -95,6 +97,8 @@ class PostController
     public function edit(Request $request, Post $post): Response
     {
         $this->authorize('posts.view');
+
+        $post->load('featuredMedia');
 
         return Inertia::render('posts/edit', [
             'post' => $this->row($post, detailed: true),
@@ -209,6 +213,12 @@ class PostController
             'updated_at' => $post->updated_at?->toIso8601String(),
             'is_live' => $post->isLive(),
             'reading_minutes' => $post->readingMinutes(),
+            'featured_image' => $post->featuredMedia === null ? null : [
+                'id' => $post->featuredMedia->id,
+                'url' => $post->featuredMedia->url(),
+                'thumbnail_url' => $post->featuredMedia->thumbnailUrl(),
+                'alt' => $post->featuredMedia->alt,
+            ],
             'urls' => [
                 'edit' => route('postcraft.admin.posts.edit', $post),
                 'publish' => route('postcraft.admin.posts.publish', $post),

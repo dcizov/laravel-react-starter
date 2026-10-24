@@ -1,7 +1,17 @@
 import { Head, router } from '@inertiajs/react';
-import { AlertTriangle, Boxes, Check, ChevronRight, PackagePlus, Puzzle, RefreshCw, Trash2 } from 'lucide-react';
+import {
+    AlertTriangle,
+    Boxes,
+    Check,
+    ChevronRight,
+    PackagePlus,
+    Puzzle,
+    RefreshCw,
+    Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
@@ -26,7 +36,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
-import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
@@ -50,7 +59,12 @@ type AddonCard = {
     migrations: boolean;
     activated_at: string | null;
     installed_at: string | null;
-    urls: { install: string; activate: string; deactivate: string; uninstall: string };
+    urls: {
+        install: string;
+        activate: string;
+        deactivate: string;
+        uninstall: string;
+    };
 };
 
 type Props = {
@@ -90,7 +104,12 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
     const [deleteData, setDeleteData] = useState(false);
     const [deleteFiles, setDeleteFiles] = useState(false);
 
-    const run = (card: AddonCard, method: 'post' | 'delete', url: string, data: Payload = {}) => {
+    const run = (
+        card: AddonCard,
+        method: 'post' | 'delete',
+        url: string,
+        data: Payload = {},
+    ) => {
         setBusy(card.handle);
 
         const options = {
@@ -99,7 +118,10 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
             onFinish: () => setBusy(null),
             onError: (errors: Record<string, string>) => {
                 toast.error('Change reverted', {
-                    description: errors.addon ?? Object.values(errors)[0] ?? 'The action was refused.',
+                    description:
+                        errors.addon ??
+                        Object.values(errors)[0] ??
+                        'The action was refused.',
                 });
             },
         };
@@ -131,7 +153,9 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
         router
             .optimistic((props: Props) => ({
                 addons: props.addons.map((row) =>
-                    row.handle === card.handle ? { ...row, status: nextStatus } : row,
+                    row.handle === card.handle
+                        ? { ...row, status: nextStatus }
+                        : row,
                 ),
                 counts: props.counts,
                 can: props.can,
@@ -145,7 +169,9 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                     onFinish: () => setBusy(null),
                     onError: (errors) => {
                         toast.error('Change reverted', {
-                            description: errors.addon ?? 'The addon state was not changed.',
+                            description:
+                                errors.addon ??
+                                'The addon state was not changed.',
                         });
                     },
                 },
@@ -169,8 +195,10 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
         setDeleteFiles(false);
     };
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Addons" />
 
             <div className="space-y-6">
@@ -180,7 +208,9 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                 />
 
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="text-muted-foreground">{counts.all} addons</span>
+                    <span className="text-muted-foreground">
+                        {counts.all} addons
+                    </span>
                     <span className="text-muted-foreground">·</span>
                     <span>{counts.active ?? 0} active</span>
                     <span className="text-muted-foreground">·</span>
@@ -190,7 +220,9 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                     {counts.blocked ? (
                         <>
                             <span className="text-muted-foreground">·</span>
-                            <span className="text-status-error">{counts.blocked} incompatible</span>
+                            <span className="text-status-error">
+                                {counts.blocked} incompatible
+                            </span>
                         </>
                     ) : null}
                 </div>
@@ -212,7 +244,8 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                                     key={card.handle}
                                     className={cn(
                                         'overflow-hidden',
-                                        card.status === 'active' && 'border-primary/40',
+                                        card.status === 'active' &&
+                                            'border-primary/40',
                                         blocked && 'border-status-error/30',
                                     )}
                                 >
@@ -231,35 +264,76 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                                                 </span>
                                                 <div className="min-w-0">
                                                     <div className="flex items-center gap-2">
-                                                        <h2 className="truncate text-sm font-semibold">{card.name}</h2>
-                                                        <span className="text-muted-foreground text-[11px]">v{card.version}</span>
+                                                        <h2 className="truncate text-sm font-semibold">
+                                                            {card.name}
+                                                        </h2>
+                                                        <span className="text-[11px] text-muted-foreground">
+                                                            v{card.version}
+                                                        </span>
                                                     </div>
-                                                    <p className="text-muted-foreground font-mono text-[11px]">{card.handle}</p>
+                                                    <p className="font-mono text-[11px] text-muted-foreground">
+                                                        {card.handle}
+                                                    </p>
                                                 </div>
                                             </div>
 
-                                            <StatusBadge status={statusOf[card.status]} />
+                                            <StatusBadge
+                                                status={statusOf[card.status]}
+                                            />
                                         </div>
 
-                                        <p className="text-muted-foreground line-clamp-2 text-xs">{card.description}</p>
+                                        <p className="line-clamp-2 text-xs text-muted-foreground">
+                                            {card.description}
+                                        </p>
 
                                         {card.error ? (
-                                            <p className="border-status-error/30 bg-status-error-soft text-status-error flex items-start gap-1.5 rounded border px-2 py-1.5 text-[11px]">
+                                            <p className="flex items-start gap-1.5 rounded border border-status-error/30 bg-status-error-soft px-2 py-1.5 text-[11px] text-status-error">
                                                 <AlertTriangle className="mt-0.5 size-3 shrink-0" />
-                                                <span className="min-w-0">{card.error}</span>
+                                                <span className="min-w-0">
+                                                    {card.error}
+                                                </span>
                                             </p>
                                         ) : null}
 
-                                        <div className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
-                                            {card.permissions.length > 0 ? <span>{card.permissions.length} permissions</span> : null}
-                                            {card.navigation.length > 0 ? <span>{card.navigation.length} nav entries</span> : null}
-                                            {card.sections.length > 0 ? <span>{card.sections.length} sections</span> : null}
-                                            {card.migrations ? <span>own migrations</span> : null}
+                                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                                            {card.permissions.length > 0 ? (
+                                                <span>
+                                                    {card.permissions.length}{' '}
+                                                    permissions
+                                                </span>
+                                            ) : null}
+                                            {card.navigation.length > 0 ? (
+                                                <span>
+                                                    {card.navigation.length} nav
+                                                    entries
+                                                </span>
+                                            ) : null}
+                                            {card.sections.length > 0 ? (
+                                                <span>
+                                                    {card.sections.length}{' '}
+                                                    sections
+                                                </span>
+                                            ) : null}
+                                            {card.migrations ? (
+                                                <span>own migrations</span>
+                                            ) : null}
                                         </div>
 
                                         <div className="flex items-center gap-2">
-                                            {!card.installed && !blocked && can.manage ? (
-                                                <Button size="sm" onClick={() => run(card, 'post', card.urls.install)} disabled={isBusy}>
+                                            {!card.installed &&
+                                            !blocked &&
+                                            can.manage ? (
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        run(
+                                                            card,
+                                                            'post',
+                                                            card.urls.install,
+                                                        )
+                                                    }
+                                                    disabled={isBusy}
+                                                >
                                                     <PackagePlus className="size-3.5" />
                                                     Install
                                                 </Button>
@@ -268,30 +342,44 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                                             {card.installed && can.manage ? (
                                                 <Button
                                                     size="sm"
-                                                    variant={card.status === 'active' ? 'secondary' : 'default'}
+                                                    variant={
+                                                        card.status === 'active'
+                                                            ? 'secondary'
+                                                            : 'default'
+                                                    }
                                                     onClick={() => toggle(card)}
                                                     disabled={isBusy}
                                                 >
                                                     {isBusy ? (
                                                         <RefreshCw className="size-3.5 animate-spin" />
-                                                    ) : card.status === 'active' ? (
+                                                    ) : card.status ===
+                                                      'active' ? (
                                                         <Check className="size-3.5" />
                                                     ) : null}
-                                                    {card.status === 'active' ? 'Active' : 'Activate'}
+                                                    {card.status === 'active'
+                                                        ? 'Active'
+                                                        : 'Activate'}
                                                 </Button>
                                             ) : null}
 
-                                            <Button size="sm" variant="ghost" onClick={() => setDetails(card)}>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => setDetails(card)}
+                                            >
                                                 Details
                                                 <ChevronRight className="size-3.5" />
                                             </Button>
 
-                                            {card.can_uninstall && can.manage ? (
+                                            {card.can_uninstall &&
+                                            can.manage ? (
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="text-status-error ml-auto"
-                                                    onClick={() => setUninstall(card)}
+                                                    className="ml-auto text-status-error"
+                                                    onClick={() =>
+                                                        setUninstall(card)
+                                                    }
                                                 >
                                                     <Trash2 className="size-3.5" />
                                                 </Button>
@@ -305,7 +393,10 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                 )}
             </div>
 
-            <Sheet open={details !== null} onOpenChange={(open) => (open ? null : setDetails(null))}>
+            <Sheet
+                open={details !== null}
+                onOpenChange={(open) => (open ? null : setDetails(null))}
+            >
                 <SheetContent className="w-full overflow-y-auto sm:max-w-md">
                     {details ? (
                         <>
@@ -313,30 +404,59 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                                 <SheetTitle>{details.name}</SheetTitle>
                                 <SheetDescription>
                                     {details.handle} · v{details.version}
-                                    {details.author ? ` · ${details.author}` : ''}
+                                    {details.author
+                                        ? ` · ${details.author}`
+                                        : ''}
                                 </SheetDescription>
                             </SheetHeader>
 
                             <div className="space-y-4 px-4 pb-8 text-sm">
-                                <p className="text-muted-foreground text-xs">{details.description}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {details.description}
+                                </p>
 
-                                <Detail label="Status" value={labelOf[details.status]} />
+                                <Detail
+                                    label="Status"
+                                    value={labelOf[details.status]}
+                                />
                                 <Detail
                                     label="Installed"
-                                    value={details.installed_at ? new Date(details.installed_at).toLocaleString() : '—'}
+                                    value={
+                                        details.installed_at
+                                            ? new Date(
+                                                  details.installed_at,
+                                              ).toLocaleString()
+                                            : '—'
+                                    }
                                 />
                                 <Detail
                                     label="Activated"
-                                    value={details.activated_at ? new Date(details.activated_at).toLocaleString() : '—'}
+                                    value={
+                                        details.activated_at
+                                            ? new Date(
+                                                  details.activated_at,
+                                              ).toLocaleString()
+                                            : '—'
+                                    }
                                 />
 
                                 {Object.keys(details.requires).length > 0 ? (
                                     <div className="space-y-1">
-                                        <p className="text-xs font-semibold">Requires</p>
-                                        <ul className="text-muted-foreground space-y-0.5 text-xs">
-                                            {Object.entries(details.requires).map(([key, value]) => (
-                                                <li key={key} className="font-mono">
-                                                    {key}: {Array.isArray(value) ? value.join(', ') : String(value)}
+                                        <p className="text-xs font-semibold">
+                                            Requires
+                                        </p>
+                                        <ul className="space-y-0.5 text-xs text-muted-foreground">
+                                            {Object.entries(
+                                                details.requires,
+                                            ).map(([key, value]) => (
+                                                <li
+                                                    key={key}
+                                                    className="font-mono"
+                                                >
+                                                    {key}:{' '}
+                                                    {Array.isArray(value)
+                                                        ? value.join(', ')
+                                                        : String(value)}
                                                 </li>
                                             ))}
                                         </ul>
@@ -345,19 +465,35 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
 
                                 {[
                                     ['Permissions', details.permissions],
-                                    ['Navigation', details.navigation.map((item) => `${item.label ?? ''} ${item.route ?? ''}`.trim())],
+                                    [
+                                        'Navigation',
+                                        details.navigation.map((item) =>
+                                            `${item.label ?? ''} ${item.route ?? ''}`.trim(),
+                                        ),
+                                    ],
                                     ['Sections', details.sections],
                                     ['Resources', details.resources],
                                 ].map(([label, values]) =>
-                                    Array.isArray(values) && values.length > 0 ? (
-                                        <div key={label as string} className="space-y-1">
-                                            <p className="text-xs font-semibold">{label as string}</p>
-                                            <ul className="text-muted-foreground space-y-0.5 text-xs">
-                                                {(values as string[]).map((value) => (
-                                                    <li key={value} className="font-mono">
-                                                        {value}
-                                                    </li>
-                                                ))}
+                                    Array.isArray(values) &&
+                                    values.length > 0 ? (
+                                        <div
+                                            key={label as string}
+                                            className="space-y-1"
+                                        >
+                                            <p className="text-xs font-semibold">
+                                                {label as string}
+                                            </p>
+                                            <ul className="space-y-0.5 text-xs text-muted-foreground">
+                                                {(values as string[]).map(
+                                                    (value) => (
+                                                        <li
+                                                            key={value}
+                                                            className="font-mono"
+                                                        >
+                                                            {value}
+                                                        </li>
+                                                    ),
+                                                )}
                                             </ul>
                                         </div>
                                     ) : null,
@@ -368,25 +504,37 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                 </SheetContent>
             </Sheet>
 
-            <Dialog open={uninstall !== null} onOpenChange={(open) => (open ? null : setUninstall(null))}>
+            <Dialog
+                open={uninstall !== null}
+                onOpenChange={(open) => (open ? null : setUninstall(null))}
+            >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Uninstall “{uninstall?.name}”?</DialogTitle>
+                        <DialogTitle>
+                            Uninstall “{uninstall?.name}”?
+                        </DialogTitle>
                         <DialogDescription>
-                            Its navigation, routes and permissions disappear immediately. Choose what happens to the
-                            data it created.
+                            Its navigation, routes and permissions disappear
+                            immediately. Choose what happens to the data it
+                            created.
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-3">
                         <div className="space-y-1.5">
                             <Label htmlFor="confirm-handle" className="text-xs">
-                                Type <span className="font-mono font-semibold">{uninstall?.handle}</span> to confirm
+                                Type{' '}
+                                <span className="font-mono font-semibold">
+                                    {uninstall?.handle}
+                                </span>{' '}
+                                to confirm
                             </Label>
                             <Input
                                 id="confirm-handle"
                                 value={confirmation}
-                                onChange={(event) => setConfirmation(event.target.value)}
+                                onChange={(event) =>
+                                    setConfirmation(event.target.value)
+                                }
                                 autoComplete="off"
                                 className="font-mono"
                             />
@@ -395,12 +543,15 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                         <label className="flex items-start gap-2 text-xs">
                             <Checkbox
                                 checked={deleteData}
-                                onCheckedChange={(checked) => setDeleteData(checked === true)}
+                                onCheckedChange={(checked) =>
+                                    setDeleteData(checked === true)
+                                }
                             />
                             <span>
                                 Roll back its migrations and drop its tables
-                                <span className="text-muted-foreground block">
-                                    Off keeps the data so a reinstall picks up where it left off.
+                                <span className="block text-muted-foreground">
+                                    Off keeps the data so a reinstall picks up
+                                    where it left off.
                                 </span>
                             </span>
                         </label>
@@ -408,17 +559,24 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                         <label className="flex items-start gap-2 text-xs">
                             <Checkbox
                                 checked={deleteFiles}
-                                onCheckedChange={(checked) => setDeleteFiles(checked === true)}
+                                onCheckedChange={(checked) =>
+                                    setDeleteFiles(checked === true)
+                                }
                             />
                             <span>
                                 Delete its folder from app/Addons
-                                <span className="text-muted-foreground block">Core files are never touched.</span>
+                                <span className="block text-muted-foreground">
+                                    Core files are never touched.
+                                </span>
                             </span>
                         </label>
                     </div>
 
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setUninstall(null)}>
+                        <Button
+                            variant="ghost"
+                            onClick={() => setUninstall(null)}
+                        >
                             Cancel
                         </Button>
                         <Button
@@ -431,7 +589,7 @@ export default function AddonsIndex({ addons, counts, can }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </AppLayout>
+        </>
     );
 }
 

@@ -58,21 +58,19 @@ must be StudlyCase; `handle`, `name`, `version` and `provider` are required.
     "seeders": [],
     "settings": {},
     "resources": [],
-    "sections": [
-        { "class": "App\\Addons\\Widgets\\Sections\\WidgetStrip" }
-    ]
+    "sections": [{ "class": "App\\Addons\\Widgets\\Sections\\WidgetStrip" }]
 }
 ```
 
-| Key | Meaning |
-|---|---|
-| `requires.php` / `.laravel` / `.lattice` | Composer-style constraints checked **before** install and activation. `Shopper` ships with `lattice: ^2.0` to demonstrate the refusal. |
-| `requires.addons` | Handles that must be installed and active first. |
-| `permissions` | Registered by `RolePermissionSeeder` and granted through the roles screen. `Admin` gets them automatically. |
-| `navigation` | Sidebar entries. `section`, `label`, `route` are required; `permission`, `icon` and `order` are optional. The React sidebar is generated from this — never edited. |
-| `migrations` | `true` (default) makes activation run everything in `database/migrations`, tracked per file in `addon_migrations`. |
-| `sections` | Section classes contributed to the page builder. |
-| `settings`, `resources`, `seeders` | Declared for the addon screen and tooling; seeders run by the seeder, not at activation. |
+| Key                                      | Meaning                                                                                                                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `requires.php` / `.laravel` / `.lattice` | Composer-style constraints checked **before** install and activation. `Shopper` ships with `lattice: ^2.0` to demonstrate the refusal.                             |
+| `requires.addons`                        | Handles that must be installed and active first.                                                                                                                   |
+| `permissions`                            | Registered by `RolePermissionSeeder` and granted through the roles screen. `Admin` gets them automatically.                                                        |
+| `navigation`                             | Sidebar entries. `section`, `label`, `route` are required; `permission`, `icon` and `order` are optional. The React sidebar is generated from this — never edited. |
+| `migrations`                             | `true` (default) makes activation run everything in `database/migrations`, tracked per file in `addon_migrations`.                                                 |
+| `sections`                               | Section classes contributed to the page builder.                                                                                                                   |
+| `settings`, `resources`, `seeders`       | Declared for the addon screen and tooling; seeders run by the seeder, not at activation.                                                                           |
 
 The manifest is copied into the `addons` row at install time. **The stored
 manifest wins**: editing `addon.json` after install does not change what the
@@ -120,13 +118,13 @@ app/Addons/Widgets/database/migrations/2026_10_24_000300_create_widgets_table.ph
 
 Lifecycle (`AddonManager`):
 
-| Step | What happens |
-|---|---|
-| **discovered** | folder on disk, no row; the catalog shows it as *not installed* |
-| **install** | manifest validated → `requires` checked → row written as `inactive`. No tables, no routes. |
-| **activate** | migrations run and are recorded in `addon_migrations` → `Activator::activate()` → caches flushed → health check (provider class must exist). A failure rolls the migrations back and marks the row `error`. |
-| **deactivate** | provider stops booting, navigation entry disappears, routes 404. **Every row is kept.** |
-| **uninstall** | `--keep-data` decides whether the migrations recorded for that addon are rolled back; `--keep-files` decides whether the folder is deleted. |
+| Step           | What happens                                                                                                                                                                                                |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **discovered** | folder on disk, no row; the catalog shows it as _not installed_                                                                                                                                             |
+| **install**    | manifest validated → `requires` checked → row written as `inactive`. No tables, no routes.                                                                                                                  |
+| **activate**   | migrations run and are recorded in `addon_migrations` → `Activator::activate()` → caches flushed → health check (provider class must exist). A failure rolls the migrations back and marks the row `error`. |
+| **deactivate** | provider stops booting, navigation entry disappears, routes 404. **Every row is kept.**                                                                                                                     |
+| **uninstall**  | `--keep-data` decides whether the migrations recorded for that addon are rolled back; `--keep-files` decides whether the folder is deleted.                                                                 |
 
 Because deactivation keeps data and the tables, re-activating is instant and
 lossless. `PostCraft` proves this in `tests/Feature/Addons/PostCraftTest.php`.
@@ -215,6 +213,54 @@ test()->refreshApplication();   // the next request, booting from the database
 
 `tests/Feature/Addons/` runs on `DatabaseMigrations` for exactly that reason.
 
+## The trust model, stated plainly
+
+**An addon is not sandboxed.** Enabling one runs its PHP inside your
+application process, with your database credentials, your `.env`, your queue and
+your filesystem. It can read every row, call every internal class and register
+its own middleware. The manifest, the `enabled` flag and the `EnsureAddonActive`
+middleware are bookkeeping — they decide _whether_ the code boots, not what it
+may do once it has.
+
+That is a deliberate trade: it is what lets an addon add routes, migrations,
+sections and admin screens without a plugin protocol. It also means the only
+real boundary is **who is allowed to drop a folder into `app/Addons`**.
+
+What that implies, concretely:
+
+| Threat                               | Consequence                                                                                                                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| A compromised or malicious addon     | Full application compromise: it can read `users`, exfiltrate secrets through an outbound request, and persist itself in a migration. |
+| An addon installed from a random ZIP | Same, and now with your production data.                                                                                             |
+| A theme (`app/Themes`)               | Identical: a theme is PHP, not CSS.                                                                                                  |
+| A section definition                 | Data, but its renderer is shipped in your JS bundle — review what it does with author input.                                         |
+
+So:
+
+- **Install addons the way you install dependencies**: from a source you would
+  trust with `composer require`, pinned to a version, reviewed before enabling.
+  `php artisan addon:enable` is the equivalent of adding a service provider, not
+  of flipping a UI switch.
+- **Never expose addon upload.** Lattice has no "install from URL" screen on
+  purpose. If you add one, you have added remote code execution behind that
+  screen's permission. There is no safe way to accept PHP you have not seen.
+- **Review the diff, not the manifest.** `provider`, `routes/`, migrations and
+  the service provider's `boot()` are where the code runs. `requires` is a
+  compatibility claim, not a security control.
+- **Deactivation is not a sandbox.** `addon:disable` stops the boot and hides
+  the routes; the files stay on disk and are still autoloadable
+  (`App\Addons\<Handle>\...` is in the PSR-4 map). Uninstall means deleting the
+  folder, and `addon:remove` is the only command that does.
+- **Tests are the review you can automate.** An addon arrives with its own tests;
+  run them in the same suite (`tests/Feature/Addons`) before enabling it
+  anywhere that matters.
+- **A multi-tenant deployment cannot isolate addons per tenant.** One addon per
+  installation, one trust domain. If you need stronger isolation, run separate
+  installations — do not try to bolt a sandbox onto this model.
+
+Shopper, the sample addon in `app/Addons/Shopper`, is a shape to copy, not a
+package to trust: it is not covered by any of the guarantees above.
+
 ## Checklist
 
 - [ ] `handle` StudlyCase, provider class exists
@@ -224,4 +270,6 @@ test()->refreshApplication();   // the next request, booting from the database
 - [ ] navigation entry declares the permission it needs
 - [ ] loading, empty and error states on every screen
 - [ ] deactivation keeps data; uninstall is explicit about what it removes
-- [ ] `php artisan test`, `pint --test`, `tsc`, `eslint`, `npm run build` green
+- [ ] `php artisan test`, `pint --test`, `phpstan`, `npm run test`, `tsc`,
+      `eslint`, `npm run build` green
+- [ ] you have read the addon's PHP, and you know enabling it runs it in-process

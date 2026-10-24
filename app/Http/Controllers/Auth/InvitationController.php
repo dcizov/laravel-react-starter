@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -48,17 +50,38 @@ class InvitationController extends Controller
         }
 
         $user = DB::transaction(function () use ($validated, $invitation): User {
+            // Re-read the row under a lock: the pending check above is a read,
+            // and two concurrent submissions would both pass it. Whoever wins
+            // the lock accepts the invitation, the loser sees it is gone.
+            /** @var Invitation|null $locked */
+            $locked = Invitation::query()
+                ->whereKey($invitation->getKey())
+                ->lockForUpdate()
+                ->first();
+
+            if ($locked === null || ! $locked->isPending()) {
+                throw ValidationException::withMessages([
+                    'email' => 'This invitation has already been accepted.',
+                ]);
+            }
+
+            if (User::query()->where('email', $locked->email)->exists()) {
+                throw ValidationException::withMessages([
+                    'email' => 'An account already exists for this invitation.',
+                ]);
+            }
+
             $user = User::query()->create([
                 'name' => $validated['name'],
-                'email' => $invitation->email,
+                'email' => $locked->email,
                 'password' => $validated['password'],
                 'email_verified_at' => now(),
                 'is_active' => true,
             ]);
 
-            $user->assignRole($invitation->role);
+            $user->assignRole($locked->role);
 
-            $invitation->forceFill(['accepted_at' => now()])->save();
+            $locked->forceFill(['accepted_at' => now()])->save();
 
             return $user;
         });

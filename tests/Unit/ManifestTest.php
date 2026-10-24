@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Cms\Manifests\AddonManifest;
 use App\Cms\Manifests\ManifestValidator;
 use App\Cms\Support\VersionConstraint;

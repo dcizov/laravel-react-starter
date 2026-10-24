@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use App\Cms\Boot\ProviderLoader;
@@ -7,6 +9,7 @@ use App\Cms\Notifications\Inbox;
 use App\Cms\Permissions\AbilityMap;
 use App\Cms\Registries\Navigation;
 use App\Cms\Settings\SettingRepository;
+use App\Http\Middleware\HandleAppearance;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Middleware;
@@ -66,6 +69,10 @@ class HandleInertiaRequests extends Middleware
                 'toast' => fn (): ?array => $request->session()->get('toast'),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            // Server-side appearance, so the client can seed its store before
+            // the first render instead of guessing from `matchMedia` while
+            // React is hydrating. See HandleAppearance.
+            'appearance' => fn (): array => HandleAppearance::read($request),
         ];
     }
 

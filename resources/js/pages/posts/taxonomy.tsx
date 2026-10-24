@@ -1,12 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Plus, Tag as TagIcon } from 'lucide-react';
 import { useState } from 'react';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 type Term = {
@@ -34,8 +34,10 @@ const breadcrumbs: BreadcrumbItem[] = [
  * Categories and tags are the same shape, so one screen drives both lists.
  */
 export default function Taxonomy({ categories, tags, urls, can }: Props) {
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Categories & tags" />
 
             <div className="space-y-5">
@@ -69,7 +71,7 @@ export default function Taxonomy({ categories, tags, urls, can }: Props) {
                     />
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
 

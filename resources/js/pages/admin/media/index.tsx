@@ -11,9 +11,10 @@ import {
     Trash2,
     Upload,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DragEvent, ReactNode } from 'react';
 import { toast } from 'sonner';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,6 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
@@ -67,15 +67,15 @@ type MediaRow = {
     folder: string | null;
     uploaded_by: string | null;
     usages: number;
-    usages_detail: {
-        id: number;
-        title: string;
-        field: string | null;
-        url: string | null;
-    }[];
     is_trashed: boolean;
     created_at: string | null;
-    urls: { update: string; destroy: string; restore: string; show: string };
+    urls: {
+        update: string;
+        destroy: string;
+        restore: string;
+        show: string;
+        usages: string;
+    };
 };
 
 type Folder = {
@@ -351,8 +351,10 @@ export default function MediaIndex({
         (upload) => upload.status === 'queued' || upload.status === 'uploading',
     );
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Media" />
 
             <div className="space-y-5">
@@ -910,7 +912,7 @@ export default function MediaIndex({
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </AppLayout>
+        </>
     );
 }
 
@@ -967,6 +969,65 @@ function MediaDrawer({
     // The drawer is keyed by media id, so these drafts seed once per file.
     const [alt, setAlt] = useState(row?.alt ?? '');
     const [caption, setCaption] = useState(row?.caption ?? '');
+    // The index ships only `usages` (a count). The list of places a file is
+    // used is fetched when the drawer opens, so the payload follows what the
+    // operator is looking at rather than every reused image on the page.
+    const [usages, setUsages] = useState<
+        | {
+              id: number;
+              title: string;
+              field: string | null;
+              url: string | null;
+          }[]
+        | null
+    >(null);
+
+    // The drawer is remounted per file, so a null value means "not loaded yet".
+    const usagesLoading = row !== null && usages === null;
+
+    useEffect(() => {
+        if (row === null) {
+            return;
+        }
+
+        const controller = new AbortController();
+        let active = true;
+
+        fetch(row.urls.usages, {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+            signal: controller.signal,
+        })
+            .then((response) =>
+                response.ok
+                    ? response.json()
+                    : Promise.reject(new Error('Request failed')),
+            )
+            .then(
+                (payload: {
+                    usages?: {
+                        id: number;
+                        title: string;
+                        field: string | null;
+                        url: string | null;
+                    }[];
+                }) => {
+                    if (active) {
+                        setUsages(payload.usages ?? []);
+                    }
+                },
+            )
+            .catch(() => {
+                if (active) {
+                    setUsages([]);
+                }
+            });
+
+        return () => {
+            active = false;
+            controller.abort();
+        };
+    }, [row]);
 
     return (
         <Sheet
@@ -1102,13 +1163,17 @@ function MediaDrawer({
                                     Used in {row.usages} place
                                     {row.usages === 1 ? '' : 's'}
                                 </h3>
-                                {row.usages_detail.length === 0 ? (
+                                {usagesLoading || usages === null ? (
+                                    <p className="text-xs text-muted-foreground">
+                                        Loading…
+                                    </p>
+                                ) : usages.length === 0 ? (
                                     <p className="text-xs text-muted-foreground">
                                         Nothing links to this file yet.
                                     </p>
                                 ) : (
                                     <ul className="space-y-1">
-                                        {row.usages_detail.map((usage) => (
+                                        {usages.map((usage) => (
                                             <li
                                                 key={`${usage.id}-${usage.field ?? 'file'}`}
                                                 className="flex items-center justify-between gap-2 text-xs"

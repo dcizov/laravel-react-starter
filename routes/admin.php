@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\AppearanceController;
@@ -52,6 +54,7 @@ Route::middleware(['auth', 'verified', 'active'])->prefix('admin')->group(functi
     Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
     Route::post('media', [MediaController::class, 'upload'])->name('admin.media.upload');
     Route::get('media/browse', [MediaController::class, 'browse'])->name('admin.media.browse');
+    Route::get('media/{media}/usages', [MediaController::class, 'usages'])->name('admin.media.usages');
     Route::patch('media/{media}', [MediaController::class, 'update'])->name('admin.media.update');
     Route::delete('media/{media}', [MediaController::class, 'destroy'])->name('admin.media.destroy');
     Route::post('media/{id}/restore', [MediaController::class, 'restore'])->whereNumber('id')->name('admin.media.restore');

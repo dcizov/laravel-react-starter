@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cms\Pages;
 
 use App\Cms\Sections\SectionRegistry;
@@ -8,6 +10,7 @@ use App\Models\PageRevision;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Everything that mutates a page in more than one place at once.
@@ -46,9 +49,36 @@ final class PageRepository
 
     /**
      * @param  array<string, mixed>  $data
+     * @param  int|null  $baseVersion  the version the editor loaded; a save that
+     *                                 started before someone else's save is rejected
+     *                                 rather than silently overwriting it
      */
-    public function update(Page $page, array $data, User $editor, string $label = 'Saved'): Page
+    public function update(Page $page, array $data, User $editor, string $label = 'Saved', ?int $baseVersion = null): Page
     {
+        if ($baseVersion !== null) {
+            // The check and the write share one transaction, and the row is
+            // locked, so two saves can never both read the same version.
+            return DB::transaction(fn (): Page => $this->applyUpdate($page, $data, $editor, $label, $baseVersion));
+        }
+
+        return $this->applyUpdate($page, $data, $editor, $label, null);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function applyUpdate(Page $page, array $data, User $editor, string $label, ?int $baseVersion): Page
+    {
+        $current = Page::query()->whereKey($page->getKey())->lockForUpdate()->firstOrFail();
+
+        if ($baseVersion !== null && $current->version !== $baseVersion) {
+            throw ValidationException::withMessages([
+                'page' => 'This page was saved somewhere else. Reload it to see the newer version before saving again.',
+            ]);
+        }
+
+        $page = $current;
+
         if (array_key_exists('slug', $data) && is_string($data['slug']) && $data['slug'] !== '') {
             $this->slugs->rename($page, $data['slug']);
         }

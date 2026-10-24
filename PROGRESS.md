@@ -275,8 +275,7 @@ non-empty-delete guard, and search/type/trash filters. Full suite: 108 tests /
 - `admin.media.browse` JSON endpoint (newest 60 matches, `q` + `folder`
   filters, folders and `can.upload` in the payload) — the picker reads the
   library without a page visit, so opening it inside the editor never reloads
-  or discards the page being edited. Guests get 401, users without `media.view`
-  403.
+  or discards the page being edited. Guests get 401, users without `media.view` 403.
 - `resources/js/components/media/media-picker.tsx`: `MediaPicker` dialog
   (search, folder filter, thumbnail grid, current selection marked, skeletons
   while loading) plus `MediaField`, the editor control that shows a preview with
@@ -411,7 +410,7 @@ Split into S6.1 (addons screen, done) and S6.2 (PostCraft addon).
 - Authorization: `addons.view` to look, `addons.manage` to change — Editor gets
   a read-only screen, Author gets 403.
 - `app/Addons/Shopper/` ships on disk with `requires: {php: ^8.5,
-  lattice: ^2.0, addons: [Payments]}`: the catalog shows it as *Incompatible*
+lattice: ^2.0, addons: [Payments]}`: the catalog shows it as _Incompatible_
   with the readable reason and installing it is refused before anything changes.
 - Screen `pages/admin/addons/index.tsx`: status cards, optimistic
   activate/deactivate with a "Change reverted" toast, details sheet (requires,
@@ -430,7 +429,7 @@ unknown handle rejected. Full suite: 137 tests / 854 assertions; pint
 **Done (S6.2)**
 
 - `app/Addons/PostCraft/`: `addon.json` (permissions `posts.view|create|update|
-  delete|publish`, nav entry under *Content*, section `blog-teaser`), one
+delete|publish`, nav entry under _Content_, section `blog-teaser`), one
   migration for `categories`, `tags`, `posts`, `post_tag` (FKs to `media` and
   `users`), `Models/{Post,Category,Tag}` with collision-safe slugs,
   `Activator` (grants the post abilities to Editor and Author; idempotent, so a
@@ -642,26 +641,26 @@ schedule entry. Full suite: **179 tests / 1324 assertions**; pint, `tsc
 **Audit method.** Every admin screen and every list was read against four
 questions: does it have a loading state, an empty state and an error path; does
 every destructive action ask first; does it survive dark mode; can it be driven
-from the keyboard. What follows is only what the audit *changed* — everything
+from the keyboard. What follows is only what the audit _changed_ — everything
 else already held.
 
-| Screen | Loading | Empty | Error | Confirm | Notes |
-|---|---|---|---|---|---|
-| Dashboard | deferred notifications paint as skeletons | empty states on drafts and activity | toast per action | — | |
-| Pages list | row skeletons | four variants (no pages / no results / empty trash) | toast + retry | trash is reversible and offers Undo | |
-| Page editor | — | — | inline alert | — | block list decides Enter *and* Space |
-| Media library | grid + table skeletons | empty library, empty folder | toast, keep selection | delete dialog names the usage count | |
-| Users | — | empty state | toast | dialog with password | |
-| Addons | — | empty catalog | error status per addon | uninstall requires typing the handle | |
-| Activity | row skeletons | empty + filtered-empty | toast | — | |
-| Settings | — | — | toast echoing the first validation error | — | booleans save optimistically |
-| Posts list / editor | — | empty + filtered-empty | toast | **was missing** → dialog now | |
-| Taxonomy | — | "nothing here yet" | toast | **was missing** → dialog now | |
+| Screen              | Loading                                   | Empty                                               | Error                                    | Confirm                              | Notes                                |
+| ------------------- | ----------------------------------------- | --------------------------------------------------- | ---------------------------------------- | ------------------------------------ | ------------------------------------ |
+| Dashboard           | deferred notifications paint as skeletons | empty states on drafts and activity                 | toast per action                         | —                                    |                                      |
+| Pages list          | row skeletons                             | four variants (no pages / no results / empty trash) | toast + retry                            | trash is reversible and offers Undo  |                                      |
+| Page editor         | —                                         | —                                                   | inline alert                             | —                                    | block list decides Enter _and_ Space |
+| Media library       | grid + table skeletons                    | empty library, empty folder                         | toast, keep selection                    | delete dialog names the usage count  |                                      |
+| Users               | —                                         | empty state                                         | toast                                    | dialog with password                 |                                      |
+| Addons              | —                                         | empty catalog                                       | error status per addon                   | uninstall requires typing the handle |                                      |
+| Activity            | row skeletons                             | empty + filtered-empty                              | toast                                    | —                                    |                                      |
+| Settings            | —                                         | —                                                   | toast echoing the first validation error | —                                    | booleans save optimistically         |
+| Posts list / editor | —                                         | empty + filtered-empty                              | toast                                    | **was missing** → dialog now         |                                      |
+| Taxonomy            | —                                         | "nothing here yet"                                  | toast                                    | **was missing** → dialog now         |                                      |
 
 **Changed (5 files)**
 
 - `resources/js/components/confirm-dialog.tsx` — one confirmation for
-  destructive actions; *Cancel* is the first tab stop so an Enter on an opened
+  destructive actions; _Cancel_ is the first tab stop so an Enter on an opened
   dialog can never destroy anything.
 - `resources/js/pages/posts/index.tsx`, `posts/edit.tsx`,
   `posts/taxonomy.tsx` — the three delete paths that fired immediately. The
@@ -678,16 +677,16 @@ else already held.
 **QA run.** Fresh database via `lattice:reset-demo --force` (migrate + seed +
 registries), then the README walkthrough end to end:
 
-| Check | Result |
-|---|---|
-| `/`, `/services`, `/about`, `/contact`, `/imprint` | 200 |
-| `/blog`, `/blog/why-we-still-draw-with-a-pencil`, `/sitemap.xml`, `/robots.txt` | 200 |
-| `/login` (guests) | 200, `/admin` → 302 to it, `/admin/login` 404 |
-| `/dashboard` (not a Lattice route) | 404 |
-| `php artisan lattice:doctor` | *No problems found* (core tables, addons, theme, storage link) |
-| `php artisan theme:activate meridian` → back to `aperture` | both announce the new theme, content untouched |
-| `php artisan schedule:list` | `pages:publish-scheduled` every minute |
-| Gates | pint clean · `tsc --noEmit` clean · eslint 0 warnings · `npm run build` ok · **179 tests / 1324 assertions** |
+| Check                                                                           | Result                                                                                                       |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `/`, `/services`, `/about`, `/contact`, `/imprint`                              | 200                                                                                                          |
+| `/blog`, `/blog/why-we-still-draw-with-a-pencil`, `/sitemap.xml`, `/robots.txt` | 200                                                                                                          |
+| `/login` (guests)                                                               | 200, `/admin` → 302 to it, `/admin/login` 404                                                                |
+| `/dashboard` (not a Lattice route)                                              | 404                                                                                                          |
+| `php artisan lattice:doctor`                                                    | _No problems found_ (core tables, addons, theme, storage link)                                               |
+| `php artisan theme:activate meridian` → back to `aperture`                      | both announce the new theme, content untouched                                                               |
+| `php artisan schedule:list`                                                     | `pages:publish-scheduled` every minute                                                                       |
+| Gates                                                                           | pint clean · `tsc --noEmit` clean · eslint 0 warnings · `npm run build` ok · **179 tests / 1324 assertions** |
 
 **Deviation, recorded:** the S8 scope asks for screenshots in the README. The
 build sandbox has no browser (no Chromium/WebKit binary and the Playwright CDN
@@ -774,21 +773,21 @@ Two follow-ups from the same local run:
 - **Postgres is possible.** `compose.pgsql.yaml` is an opt-in override that adds
   the `pgsql` service and volume back without touching the base file:
 
-  ```
-  SAIL_FILES=compose.yaml:compose.pgsql.yaml sail up -d
-  ```
+    ```
+    SAIL_FILES=compose.yaml:compose.pgsql.yaml sail up -d
+    ```
 
-  Sail reads `SAIL_FILES` itself (`vendor/laravel/sail/bin/sail`), so the
-  command works without `docker compose -f …`. The README documents the `.env`
-  block and `lattice:reset-demo --force` for the first build. Nothing in the
-  code is SQLite-specific any more; `phpunit.xml` now pins
-  `DB_CONNECTION=sqlite` so the suite still runs on the file database whatever
-  the app is configured to use.
+    Sail reads `SAIL_FILES` itself (`vendor/laravel/sail/bin/sail`), so the
+    command works without `docker compose -f …`. The README documents the `.env`
+    block and `lattice:reset-demo --force` for the first build. Nothing in the
+    code is SQLite-specific any more; `phpunit.xml` now pins
+    `DB_CONNECTION=sqlite` so the suite still runs on the file database whatever
+    the app is configured to use.
 
-  Postgres itself could not be exercised here (no Docker in this sandbox) — the
-  override file is validated as YAML and the credentials match Sail's
-  conventions, but the first real `sail up` on a machine with Docker is the
-  proof.
+    Postgres itself could not be exercised here (no Docker in this sandbox) — the
+    override file is validated as YAML and the credentials match Sail's
+    conventions, but the first real `sail up` on a machine with Docker is the
+    proof.
 
 Two stale-checkout traps are now in the README's troubleshooting section:
 `There are no commands defined in the "setup" namespace` means the clone
@@ -798,10 +797,11 @@ means an `.env` copied from the old starter.
 ### S8.6 — `sail composer dev` on port 8000
 
 The base branch let `composer dev` (which is `php artisan dev` → `artisan serve`
-+ queue + pail + Vite) be opened at `localhost:8000`; after S8.4 nothing
-answered there, because `compose.yaml` published only `80:80` and `artisan
+
+- queue + pail + Vite) be opened at `localhost:8000`; after S8.4 nothing
+  answered there, because `compose.yaml` published only `80:80` and `artisan
 serve` binds `127.0.0.1` inside the container — a published port cannot reach a
-loopback-only listener.
+  loopback-only listener.
 
 **Fixed in `compose.yaml`:**
 
@@ -823,12 +823,12 @@ the choice next to `APP_URL`.
 `resources/js/lib/generated/{addons,navigation}.ts` were modified. Two causes,
 both real:
 
-- `addons.ts` embedded `generatedAt: now()`, so *every* run of
+- `addons.ts` embedded `generatedAt: now()`, so _every_ run of
   `lattice:discover` produced different bytes. The field was not read by
   anything. Dropped — the registry is now a pure function of the addon table.
 - The test suite ran `lattice:discover` against `resources/js/lib/generated`
   too, so `vendor/bin/pest` left the working tree dirty and could even commit a
-  registry generated from the *testing* database (that is how the committed
+  registry generated from the _testing_ database (that is how the committed
   `addons.ts` ended up saying `PostCraft: inactive`).
 
 **Fixed:** `config('lattice.generated_path')` now honours
@@ -877,7 +877,7 @@ existed now actually gates the app container.
 
 ### S8.9 — The admin shell wrapped the public site
 
-Reported from a real browser: `/` rendered the homepage *inside* the admin
+Reported from a real browser: `/` rendered the homepage _inside_ the admin
 sidebar. `createInertiaApp({ layout })` in `resources/js/app.tsx` defaulted to
 `AppLayout` for every component name that was not `auth/*` or `settings/*` —
 including `public/page`, `blog/*` and `themes/*`, all of which already render
@@ -911,13 +911,149 @@ which bundle it is.
 
 `lattice:doctor` now ends with a `Frontend assets` row:
 
-| Output | Meaning |
-|---|---|
-| `built 2026-10-24 13:21` | production assets, newer than every source file |
-| `dev server http://localhost:5173` | `public/hot` exists — Vite is the source of truth |
-| `stale (sources changed after the build — run npm run build)` | the build predates the code |
-| `not built (run npm run build)` | no manifest; counted as a problem |
+| Output                                                        | Meaning                                           |
+| ------------------------------------------------------------- | ------------------------------------------------- |
+| `built 2026-10-24 13:21`                                      | production assets, newer than every source file   |
+| `dev server http://localhost:5173`                            | `public/hot` exists — Vite is the source of truth |
+| `stale (sources changed after the build — run npm run build)` | the build predates the code                       |
+| `not built (run npm run build)`                               | no manifest; counted as a problem                 |
 
 `tests/Feature/Cms/DoctorTest.php` covers the hot-file and stale branches (the
 second restores both mtimes, so the checkout is left as it was).
 
+## Remediation of the code audit
+
+`CODE_AUDIT.md` was written against `e71d4fd`; this pass implements it against
+the tree as it stood afterwards (`eb5825b`), so findings were re-located in the
+current code rather than pasted from the report.
+
+### What changed, finding by finding
+
+| Finding                            | Outcome                                                                                                                                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| H-01 stored XSS via authored links | `SafeLink` (PHP) and `safeHref` (TS) allow only `http`, `https`, site-relative, `#` and `?`; section validation and the renderer both refuse the rest.                                                             |
+| H-02 trusted-proxy spoofing        | `TrustProxies` is configured from `config/lattice.php` instead of trusting `*`; rate limits key on the real peer.                                                                                                  |
+| M-01 generated registries          | Deterministic output, untracked, regenerated by `lattice:discover`, `composer setup`, `npm run registry`, `lattice:doctor`.                                                                                        |
+| M-02 gate ordering                 | One generation step: `composer ci:check` and `npm run {build,check,types:check}` regenerate what they need; README documents the prerequisite per gate.                                                            |
+| M-03 … M-05                        | Fixed in `eb5825b` (validation, dark-mode bootstrap, landmarks).                                                                                                                                                   |
+| M-06 featured images               | End to end: picker in the editor, `featured_media_id` in the form and request, thumbnail in the list, image on the blog index and post page with intrinsic size and alt.                                           |
+| M-07 media payload                 | Index carries a usage count; the detail is fetched from `admin/media/{media}/usages` when the drawer opens, with an abort on close.                                                                                |
+| M-08 page counts                   | One `group by` instead of five `count()` queries.                                                                                                                                                                  |
+| M-09 CI database                   | Postgres matrix leg (production parity) plus a SQLite leg; `phpunit.xml` no longer pins a driver.                                                                                                                  |
+| M-10 security headers              | `SecurityHeaders` middleware: nonce-based CSP, nosniff, referrer policy, frame options, permissions policy. Loosened only for `APP_ENV=local`.                                                                     |
+| M-11 build dependencies            | Build tooling moved to `devDependencies`; `npm run audit:prod` is the gate (0 advisories); residual dev-only advisories are recorded in the README with advisory IDs.                                              |
+| L-01 appearance cookie             | Validated before it reaches the inline script.                                                                                                                                                                     |
+| L-02 invitation race               | Throttled routes; re-read under `lockForUpdate` inside the transaction; duplicate email and taken invitation are validation errors.                                                                                |
+| L-03 strict types                  | `declare(strict_types=1)` everywhere via Pint (`declare_strict_types`), in one mechanical commit.                                                                                                                  |
+| L-04 posts table                   | `<caption class="sr-only">` and `scope="col"`.                                                                                                                                                                     |
+| L-05 dead search control           | Removed.                                                                                                                                                                                                           |
+| L-06 reduced motion                | Global `prefers-reduced-motion` block.                                                                                                                                                                             |
+| L-07 frontend tests                | Vitest + Testing Library in jsdom, 26 assertions over `safeHref`, the section renderer, `StatusBadge` and `ConfirmDialog`; `tests/Unit/ExampleTest.php` deleted.                                                   |
+| L-08 autosave ordering             | Client sends `base_version` and ignores answers from superseded requests; the server re-reads the page under a row lock inside the transaction and refuses a version mismatch with a validation error.             |
+| L-09 media usage index             | **Divergence:** `morphs('usable')` already creates `(usable_type, usable_id)`; verified by introspecting the migrated schema. No redundant migration — a test guards the index instead.                            |
+| L-10 document delivery             | Documents are streamed by `MediaDownloadController` with `Content-Disposition: attachment`, a pinned content type, `nosniff` and a sandboxing CSP.                                                                 |
+| (a) admin shell                    | Persistent via `createInertiaApp({ layout })`: one `AppLayout` for dashboard, demo, `admin/*` and `posts/*`, one `SettingsLayout` for settings, one auth layout. Breadcrumbs travel through `BreadcrumbsProvider`. |
+| (b) addon trust model              | `docs/ADDON_DEVELOPMENT.md` now states that an addon is unsandboxed PHP and what follows from that.                                                                                                                |
+
+### Environment
+
+The audit was verified here with PHP 8.5.10 under WebAssembly
+(`@php-wasm/cli`), because the sandbox has no PHP and Packagist is blocked. That
+environment was enough to rebuild `vendor/` from a reconstructed lockfile, run
+`php artisan` (including `lattice:install`, `lattice:discover`, `wayfinder`,
+`lattice:doctor`), Pint (204 files) and PHPStan/Larastan level 7, and to
+dispatch real requests through the HTTP kernel to check headers.
+
+It is **not** enough to run the Pest suite: every test that uses
+`RefreshDatabase` or `DatabaseMigrations` traps the WebAssembly VM
+(`RuntimeError: unreachable` in `zend_leave_helper`, raised while a Laravel
+console command started from `PendingCommand::__destruct` returns). `tests/Unit`
+runs; `tests/Feature` cannot, so those results are reported as unexecuted rather
+than green. The same applies to `composer validate`, `composer audit` and
+`composer setup` — there is no Composer binary that can reach the network here.
+
+## Public rendering: homepage determinism, hydration and flushSync
+
+### Root causes
+
+**Two homepages.** `PublicPageController::home()` looked for a page whose slug
+was literally `home` and whose `status` column was `published`, ignoring the
+documented `content.homepage_slug` setting. The public root therefore flipped
+between the theme (`themes/<theme>/page`) and the core landing page (`welcome`)
+whenever that one row was absent, renamed, scheduled, trashed or duplicated —
+a data accident, not a configuration change. `SitemapController` and
+`MenuItem::href()` repeated the same `slug === 'home'` assumption, so they could
+disagree with `/` as well.
+
+**Hydration.** `use-appearance.tsx` derived `resolvedAppearance` from
+`window.matchMedia` *during render*, with a module default of `system` and a
+`getServerSnapshot` of `system`. Under SSR the server always rendered the light
+branch; a browser with a dark OS preference rendered the dark one, and React
+reported the difference while hydrating. Reproduced in jsdom before the fix:
+
+```
+Hydration failed because the server rendered HTML didn't match the client.
+  <ThemeToggle>
+    <button ...>
++     aria-label="Switch to light mode"      (client)
+-     aria-label="Switch to dark mode"       (server)
++     className="lucide lucide-sun size-4"
+-     className="lucide lucide-moon size-4"
+```
+
+The toaster had a second, independent copy of the same bug: it passed the raw
+`'system'` value to Sonner, which resolves it with its own `matchMedia` call
+inside `useState`. The store also wrote only `localStorage`, which the server
+cannot read, so nothing tied the two sides together.
+
+**flushSync.** `@inertiajs/react` 3.9.1 installs `swapComponent` in a
+`useEffect` and flushes it with `flushSync` (`dist/index.js:117-140`), and the
+module-level stub buffers any swap that completes before that effect
+(`dist/index.js:65-69`). React refuses a `flushSync` issued from a lifecycle
+method, so a visit that is pending at mount time produces:
+
+```
+flushSync was called from inside a lifecycle method. React cannot flush when
+React is already rendering. Consider moving this call to a scheduler task or
+micro task.
+```
+
+Reproduced deterministically in a throwaway probe that completed a visit before
+`hydrateRoot` (which is what leaves a swap pending when the effect runs);
+sonner's `flushSync` calls are wrapped in
+`setTimeout` and Radix's run inside discrete DOM events, so neither can fire
+during a commit. The application itself never navigates from render or from a
+layout effect, and the suite now asserts that a normal boot plus a client visit
+stays clean.
+
+### Fixes
+
+| Area | Change |
+| --- | --- |
+| Homepage | `App\Cms\Content\Homepage` resolves the configured slug and requires `isPubliclyVisible()`; `PublicPageController` uses it, and so do `SitemapController` and `MenuItem::href()`. |
+| Shared state | `HandleAppearance::read()` returns `{appearance, resolved}` once; the root template and `HandleInertiaRequests` both use it (`appearance` shared prop). |
+| Root template | `<html>` carries `class="dark"` plus `data-appearance` / `data-appearance-resolved`; the pre-paint script now also refreshes the `appearance_resolved` cookie so later SSR passes match the browser. |
+| Client store | `use-appearance.tsx` is a single cached snapshot seeded before hydration (`seedAppearance`, called from `withApp`), never resolving `matchMedia` during render; `system` is reconciled in an effect after hydration and on OS change. |
+| Toaster | Receives `resolvedAppearance` instead of `'system'`. |
+| Cookies | `appearance_resolved` added to the `EncryptCookies` exceptions next to `appearance`. |
+| Tests | `resources/js/__tests__/{appearance-hydration,inertia-runtime}.test.tsx` (SSR → hydrate), `tests/Feature/Http/HomeTest.php`, `tests/Feature/Http/AppearanceTest.php`. |
+
+### Verified here
+
+* `npx vitest run` — 6 files, 37 tests, no unhandled errors. `inertia-runtime`
+  covers the four reported URLs (`/`, `/blog`, `/blog/why-we-still-draw-with-a-pencil`
+  plus the shared shell) with a fresh SSR load, hydration and a client visit.
+* `npx eslint` over every changed JS/TS file — clean.
+* `npx prettier --check` over the new files — clean.
+* Before/after in the hydration harness: `/admin/pages` (admin top bar) reported
+  the `aria-label`/icon mismatch before the change and reports nothing after.
+
+### Not executed here
+
+The sandbox has no PHP binary and no `vendor/` this session, so `php artisan
+test`, PHPStan, Pint and the Vite build/SSR build could not run; the PHP changes
+are covered by tests that are written but **unexecuted**. Browser-level checks
+(DevTools console on a live `sail composer dev` session, light/dark/system
+appearance switches, authenticated `/admin/pages`) are likewise **not executed** —
+jsdom reproduces React's hydration and flushSync diagnostics, but it is not a
+browser.

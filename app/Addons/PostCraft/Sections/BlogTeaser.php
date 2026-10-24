@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Addons\PostCraft\Sections;
 
 use App\Addons\PostCraft\Models\Post;

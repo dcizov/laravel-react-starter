@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -65,6 +67,12 @@ class Media extends Model
 
     public function url(): string
     {
+        // Documents are delivered by a controller so they arrive as a download
+        // with `nosniff`; images keep the fast static path.
+        if ($this->type === 'document') {
+            return route('media.download', $this);
+        }
+
         return '/storage/'.ltrim($this->path, '/');
     }
 

@@ -1,7 +1,9 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Eye, Rocket, Trash2 } from 'lucide-react';
+import { ArrowLeft, Eye, ImagePlus, Rocket, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { MediaPicker } from '@/components/media/media-picker';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
@@ -16,7 +18,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 type Post = {
@@ -29,6 +30,13 @@ type Post = {
     category_id: number | null;
     tag_ids: number[];
     published_at_input: string | null;
+    featured_media_id: number | null;
+    featured_image: {
+        id: number;
+        url: string;
+        thumbnail_url: string | null;
+        alt: string | null;
+    } | null;
     is_live: boolean;
     urls: {
         update: string;
@@ -66,7 +74,9 @@ export default function PostEditor({
         category_id: post?.category_id ?? null,
         tag_ids: post?.tag_ids ?? [],
         published_at: post?.published_at_input ?? '',
+        featured_media_id: post?.featured_media_id ?? null,
     });
+    const [pickingImage, setPickingImage] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Content', href: '/admin/posts' },
@@ -95,8 +105,10 @@ export default function PostEditor({
         );
     };
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title={isNew ? 'New post' : `Edit · ${post.title}`} />
 
             <div className="space-y-5">
@@ -297,6 +309,73 @@ export default function PostEditor({
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-sm">
+                                    Featured image
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                {form.data.featured_media_id === null ? (
+                                    <p className="text-xs text-muted-foreground">
+                                        No image. It appears on the blog index
+                                        and at the top of the post.
+                                    </p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <img
+                                            src={
+                                                form.data.featured_media_id ===
+                                                post?.featured_image?.id
+                                                    ? (post?.featured_image
+                                                          ?.thumbnail_url ??
+                                                      post?.featured_image?.url)
+                                                    : undefined
+                                            }
+                                            alt={
+                                                post?.featured_image?.alt ?? ''
+                                            }
+                                            className="aspect-[16/9] w-full rounded-md object-cover"
+                                        />
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Alt text lives with the file — edit
+                                            it in the media library.
+                                        </p>
+                                    </div>
+                                )}
+                                <div className="flex flex-wrap gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setPickingImage(true)}
+                                        disabled={!can.update}
+                                    >
+                                        <ImagePlus className="size-3.5" />
+                                        {form.data.featured_media_id === null
+                                            ? 'Choose image'
+                                            : 'Change image'}
+                                    </Button>
+                                    {form.data.featured_media_id !== null ? (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                form.setData(
+                                                    'featured_media_id',
+                                                    null,
+                                                )
+                                            }
+                                            disabled={!can.update}
+                                        >
+                                            Remove
+                                        </Button>
+                                    ) : null}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm">
                                     Category
                                 </CardTitle>
                             </CardHeader>
@@ -372,6 +451,15 @@ export default function PostEditor({
                     </div>
                 </div>
             </div>
+            <MediaPicker
+                open={pickingImage}
+                onOpenChange={setPickingImage}
+                currentUrl={post?.featured_image?.url ?? null}
+                onSelect={(item) => {
+                    form.setData('featured_media_id', item.id);
+                    setPickingImage(false);
+                }}
+            />
             <ConfirmDialog
                 open={confirmingDelete}
                 onOpenChange={setConfirmingDelete}
@@ -384,6 +472,6 @@ export default function PostEditor({
                     }
                 }}
             />
-        </AppLayout>
+        </>
     );
 }

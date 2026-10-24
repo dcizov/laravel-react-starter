@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -85,6 +87,23 @@ return [
             'media.view', 'media.upload',
             'activity.view',
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reserved slugs
+    |--------------------------------------------------------------------------
+    |
+    | First path segments the application owns. The public catch-all route and
+    | the page validator read the same list, so a page can neither shadow a
+    | real route nor be created under a slug that would never be reachable.
+    |
+    */
+
+    'reserved_slugs' => [
+        'admin', 'api', 'build', 'email', 'invitations', 'login', 'logout',
+        'password', 'preview', 'register', 'settings', 'storage', 'two-factor',
+        'up', 'user', 'verify',
     ],
 
     /*

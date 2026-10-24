@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cms\Console\Commands;
 
 use App\Cms\Repositories\AddonRepository;
@@ -48,6 +50,14 @@ class DoctorCommand extends Command
             $this->twoColumn($row->handle.' '.$row->version, $detail);
             $problems += $row->status === 'error' ? 1 : 0;
         }
+
+        $generated = (string) config('lattice.generated_path');
+        $registries = File::exists($generated.'/addons.ts') && File::exists($generated.'/navigation.ts');
+        $this->twoColumn(
+            'Generated registries',
+            $registries ? '<fg=green>ok</>' : '<fg=red>missing (run lattice:discover)</>',
+        );
+        $problems += $registries ? 0 : 1;
 
         $active = $themes->active();
         $this->twoColumn('Active theme', $active === null ? '<fg=yellow>none</>' : '<fg=green>'.$active->handle.'</>');

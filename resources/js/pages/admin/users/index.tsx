@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { MailPlus, ShieldCheck, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
@@ -25,7 +26,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 type Role = 'Admin' | 'Editor' | 'Author';
@@ -110,8 +110,10 @@ export default function UsersIndex({
         router.patch(user.urls.update, payload, { preserveScroll: true });
     };
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Users" />
 
             <div className="space-y-8">
@@ -443,6 +445,6 @@ export default function UsersIndex({
                     )}
                 </section>
             </div>
-        </AppLayout>
+        </>
     );
 }

@@ -13,6 +13,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { FieldControl } from '@/components/sections/field-control';
 import { SectionRenderer } from '@/components/sections/section-renderer';
 import { StatusBadge } from '@/components/status-badge';
@@ -43,7 +44,6 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
-import AppLayout from '@/layouts/app-layout';
 import { blockIndexFromErrorKey, sectionDef } from '@/lib/sections';
 import type { PageStatus, SectionBlock, SectionDef } from '@/lib/sections';
 import { cn } from '@/lib/utils';
@@ -62,6 +62,7 @@ type PageRecord = {
     published_at: string | null;
     scheduled_at: string | null;
     updated_at: string | null;
+    version: number;
     urls: Record<string, string | null>;
 };
 
@@ -202,11 +203,28 @@ export default function PageEditor({
      * Autosave: Inertia v3 `useHttp` keeps the request out of the page visit
      * pipeline, so typing never causes a navigation.
      */
-    const autosave = useHttp<PagePayload, { saved_at: string }>(
-        'patch',
-        autosaveUrl ?? urls.store,
-        payload,
+    /**
+     * The version the server had when this editor last heard from it. It goes
+     * with every save, and the server refuses the write when someone else has
+     * saved in the meantime — a client-side abort alone cannot promise that an
+     * in-flight request never lands.
+     */
+    const [version, setVersion] = useState<number | null>(
+        page?.version ?? null,
     );
+    const versionRef = useRef(version);
+    versionRef.current = version;
+
+    /** Monotonic id per request; only the newest answer may touch the UI. */
+    const seqRef = useRef(0);
+
+    const autosave = useHttp<
+        PagePayload & { base_version: number | null },
+        { saved_at: string; version: number }
+    >('patch', autosaveUrl ?? urls.store, () => ({
+        ...payload,
+        base_version: versionRef.current,
+    }));
 
     const selected = blocks.find((block) => block.id === selectedId) ?? null;
     const selectedDef = selected
@@ -246,16 +264,29 @@ export default function PageEditor({
         }
 
         const timer = setTimeout(() => {
+            const seq = ++seqRef.current;
+
             setSaveState('saving');
 
             autosave.patch(autosaveUrl, {
                 onStart: () => setSaveState('saving'),
-                onSuccess: () => {
+                onSuccess: (response) => {
+                    // A slow save that finished after a newer one must not
+                    // overwrite the newer answer — neither here nor on the server.
+                    if (seq !== seqRef.current) {
+                        return;
+                    }
+
+                    setVersion(response.version);
                     setSaveState('saved');
                     setLastSavedAt(new Date().toISOString());
                     setFieldErrors({});
                 },
                 onError: (errors) => {
+                    if (seq !== seqRef.current) {
+                        return;
+                    }
+
                     applyErrors(errors as Record<string, string>);
                     setSaveState('error');
                 },
@@ -436,14 +467,14 @@ export default function PageEditor({
         error: 'Could not save',
     }[saveState];
 
+    useBreadcrumbs([
+        { title: 'Content', href: '/admin/pages' },
+        { title: 'Pages', href: '/admin/pages' },
+        { title: isNew ? 'New page' : title || 'Untitled', href: '#' },
+    ]);
+
     return (
-        <AppLayout
-            breadcrumbs={[
-                { title: 'Content', href: '/admin/pages' },
-                { title: 'Pages', href: '/admin/pages' },
-                { title: isNew ? 'New page' : title || 'Untitled', href: '#' },
-            ]}
-        >
+        <>
             <Head title={isNew ? 'New page' : `Edit · ${title}`} />
 
             <div className="space-y-5">
@@ -924,7 +955,7 @@ export default function PageEditor({
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </AppLayout>
+        </>
     );
 }
 

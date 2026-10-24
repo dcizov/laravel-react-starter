@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use App\Cms\Sections\SectionRegistry;
@@ -25,12 +27,15 @@ class UpdatePageRequest extends FormRequest
 
         return array_merge([
             'title' => ['sometimes', 'string', 'min:2', 'max:160'],
-            'slug' => ['sometimes', 'nullable', 'string', 'max:160', 'alpha_dash'],
+            'slug' => ['sometimes', 'nullable', 'string', 'max:160', 'alpha_dash', 'not_in:'.implode(',', (array) config('lattice.reserved_slugs'))],
             'excerpt' => ['sometimes', 'nullable', 'string', 'max:400'],
             'seo_title' => ['sometimes', 'nullable', 'string', 'max:70'],
             'seo_description' => ['sometimes', 'nullable', 'string', 'max:170'],
             'robots' => ['sometimes', 'string', 'in:index,follow,index,nofollow,noindex,follow,noindex,nofollow'],
             'template' => ['sometimes', 'string', 'in:page,landing'],
+            // The version the editor loaded. Optional so the API stays usable
+            // without it, but the editor always sends it.
+            'base_version' => ['sometimes', 'nullable', 'integer', 'min:0'],
         ], $registry->rules()['rules']);
     }
 

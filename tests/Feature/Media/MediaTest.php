@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Cms\Media\MediaLibrary;
 use App\Models\Media;
 use App\Models\MediaFolder;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Addons\Demo\Models\DemoNote;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;

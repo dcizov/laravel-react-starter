@@ -1,17 +1,15 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronRight, Plus } from 'lucide-react';
 import { Fragment } from 'react';
+import { useBreadcrumbItems } from '@/components/breadcrumbs-context';
 import { NotificationBell } from '@/components/notification-bell';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import type { BreadcrumbItem } from '@/types';
 
-export function AdminTopBar({
-    breadcrumbs = [],
-}: {
-    breadcrumbs?: BreadcrumbItem[];
-}) {
+export function AdminTopBar() {
+    const breadcrumbs = useBreadcrumbItems();
+
     return (
         <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur-sm md:px-6">
             <SidebarTrigger className="-ml-1" />
@@ -74,7 +72,11 @@ function NewPageButton() {
     }
 
     return (
-        <Button size="sm" className="ml-1 hidden gap-1.5 sm:inline-flex" asChild>
+        <Button
+            size="sm"
+            className="ml-1 hidden gap-1.5 sm:inline-flex"
+            asChild
+        >
             <Link href="/admin/pages/create">
                 <Plus className="size-4" />
                 New page

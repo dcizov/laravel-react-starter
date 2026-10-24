@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use App\Cms\Sections\SectionRegistry;
@@ -19,7 +21,7 @@ class StorePageRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'min:2', 'max:160'],
-            'slug' => ['nullable', 'string', 'max:160', 'alpha_dash'],
+            'slug' => ['nullable', 'string', 'max:160', 'alpha_dash', 'not_in:'.implode(',', (array) config('lattice.reserved_slugs'))],
             'excerpt' => ['nullable', 'string', 'max:400'],
             'seo_title' => ['nullable', 'string', 'max:70'],
             'seo_description' => ['nullable', 'string', 'max:170'],

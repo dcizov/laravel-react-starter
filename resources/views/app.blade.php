@@ -1,26 +1,45 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html
+    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    @class(['dark' => ($appearanceResolved ?? 'light') === 'dark'])
+    data-appearance="{{ $appearance ?? 'system' }}"
+    data-appearance-resolved="{{ $appearanceResolved ?? 'light' }}"
+>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        <script>
+        {{--
+            Inline script that applies the live light/dark decision before the
+            first paint.
+
+            The server already wrote its own decision into the html element (the
+            `dark` class and the `data-appearance*` attributes) and React reads
+            the same attributes to seed its store, so server and client agree.
+            What the server cannot know is the OS preference behind `system`, so
+            this script corrects the class for the *current* visit and records
+            the answer in a cookie, which makes the next server render match the
+            browser without touching the attributes React hydrates from.
+        --}}
+        <script nonce="{{ Vite::cspNonce() }}">
             (function() {
-                const appearance = '{{ $appearance ?? "system" }}';
+                const appearance = {{ Illuminate\Support\Js::from($appearance ?? 'system') }};
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark);
 
-                if (appearance === 'system') {
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.classList.toggle('dark', isDark);
+                document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 
-                    if (prefersDark) {
-                        document.documentElement.classList.add('dark');
-                    }
+                const resolved = isDark ? 'dark' : 'light';
+
+                if ({{ Illuminate\Support\Js::from($appearanceResolved ?? 'light') }} !== resolved) {
+                    document.cookie = 'appearance_resolved=' + resolved + ';path=/;max-age=31536000;SameSite=Lax';
                 }
             })();
         </script>
 
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
-        <style>
+        <style nonce="{{ Vite::cspNonce() }}">
             html {
                 background-color: oklch(1 0 0);
             }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Addons\PostCraft\Http\Controllers\Admin\PostController;
 use App\Addons\PostCraft\Http\Controllers\Admin\TaxonomyController;
 use App\Cms\Addons\Middleware\EnsureAddonActive;

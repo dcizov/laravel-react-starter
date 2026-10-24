@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Themes\Aperture;
 
 use App\Cms\Sections\Field;

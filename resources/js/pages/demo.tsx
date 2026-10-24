@@ -1,9 +1,9 @@
 import { Head, usePage } from '@inertiajs/react';
 import { FlaskConical } from 'lucide-react';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 type DemoNote = {
@@ -20,8 +20,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Demo() {
     const { notes } = usePage<{ notes: DemoNote[] }>().props;
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Demo addon" />
 
             <div className="space-y-6">
@@ -61,6 +63,6 @@ export default function Demo() {
                     </Card>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }

@@ -23,8 +23,9 @@
         <env name="BCRYPT_ROUNDS" value="12"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value="database/testing.sqlite"/>
+        <!-- The driver is chosen by the environment, so CI exercises Postgres
+             (the shipped default) as well as SQLite. See tests/Pest.php for the
+             SQLite fallback used when nothing is configured. -->
         <env name="DB_URL" value=""/>
         <env name="LATTICE_GENERATED_PATH" value="storage/framework/testing/generated"/>
         <env name="MAIL_MAILER" value="array"/>

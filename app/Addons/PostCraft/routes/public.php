@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Addons\PostCraft\Http\Controllers\BlogController;
 use App\Cms\Addons\Middleware\EnsureAddonActive;
 use Illuminate\Support\Facades\Route;

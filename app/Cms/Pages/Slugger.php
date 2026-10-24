@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cms\Pages;
 
 use App\Models\Page;
@@ -23,7 +25,7 @@ final class Slugger
             $base = 'page';
         }
 
-        $slug = $base;
+        $slug = $this->available($base);
         $suffix = 2;
 
         while ($this->taken($slug, $ignorePageId)) {
@@ -51,6 +53,18 @@ final class Slugger
         ]);
 
         $page->forceFill(['slug' => $newSlug])->save();
+    }
+
+    /**
+     * A generated slug must not collide with a path the application owns
+     * (`/login`, `/admin`, …), so reserved words are qualified.
+     */
+    private function available(string $slug): string
+    {
+        /** @var list<string> $reserved */
+        $reserved = config('lattice.reserved_slugs', []);
+
+        return in_array($slug, $reserved, true) ? $slug.'-page' : $slug;
     }
 
     private function taken(string $slug, ?int $ignorePageId): bool

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Addons\Demo\DemoServiceProvider;
 use App\Cms\Addons\AddonManager;
 use App\Cms\Boot\ProviderLoader;

@@ -3,13 +3,16 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
 
 function Toaster({ ...props }: ToasterProps) {
-    const { appearance } = useAppearance();
+    // Sonner resolves `system` with its own `matchMedia` call during render,
+    // which is exactly the kind of second opinion that makes the SSR markup and
+    // the hydrated tree disagree. Hand it the decision instead.
+    const { resolvedAppearance } = useAppearance();
 
     useFlashToast();
 
     return (
         <Sonner
-            theme={appearance}
+            theme={resolvedAppearance}
             className="toaster group"
             position="bottom-right"
             style={

@@ -9,11 +9,11 @@ import {
     Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
@@ -46,14 +46,31 @@ type ActivityRow = {
     created_at: string | null;
 };
 
-type AddonRow = { handle: string; name: string; version: string; status: string; error: string | null };
+type AddonRow = {
+    handle: string;
+    name: string;
+    version: string;
+    status: string;
+    error: string | null;
+};
 
 type Props = {
     kpis: Kpi[];
-    traffic: { series: Point[]; total: number; previous: number; change: number | null; days: number };
+    traffic: {
+        series: Point[];
+        total: number;
+        previous: number;
+        change: number | null;
+        days: number;
+    };
     recent: ActivityRow[];
     drafts: Draft[];
-    addons: { rows: AddonRow[]; healthy: number; errors: number; inactive: number };
+    addons: {
+        rows: AddonRow[];
+        healthy: number;
+        errors: number;
+        inactive: number;
+    };
 };
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/admin' }];
@@ -65,11 +82,19 @@ const icons: Record<string, LucideIcon> = {
     users: Users,
 };
 
-export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Props) {
+export default function Dashboard({
+    kpis,
+    traffic,
+    recent,
+    drafts,
+    addons,
+}: Props) {
     const { auth } = usePage().props;
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Dashboard" />
 
             <div className="space-y-6">
@@ -86,30 +111,40 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                             </Button>
                             {auth.can?.['pages.create'] ? (
                                 <Button asChild>
-                                    <Link href="/admin/pages/create">New page</Link>
+                                    <Link href="/admin/pages/create">
+                                        New page
+                                    </Link>
                                 </Button>
                             ) : null}
                         </>
                     }
                 />
 
-                <section aria-label="Key figures" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <section
+                    aria-label="Key figures"
+                    className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+                >
                     {kpis.map((kpi) => {
                         const Icon = icons[kpi.icon] ?? FileText;
 
                         return (
                             <Card key={kpi.key} className="gap-2 py-5">
                                 <CardHeader className="flex flex-row items-center justify-between px-5">
-                                    <CardTitle className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                    <CardTitle className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                         {kpi.label}
                                     </CardTitle>
-                                    <Icon className="text-muted-foreground size-4" />
+                                    <Icon className="size-4 text-muted-foreground" />
                                 </CardHeader>
                                 <CardContent className="px-5">
-                                    <p className="text-3xl font-semibold tracking-tight">{kpi.value.toLocaleString()}</p>
-                                    <p className="text-muted-foreground mt-1 text-xs">
+                                    <p className="text-3xl font-semibold tracking-tight">
+                                        {kpi.value.toLocaleString()}
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
                                         {kpi.href ? (
-                                            <Link href={kpi.href} className="hover:text-foreground underline-offset-4 hover:underline">
+                                            <Link
+                                                href={kpi.href}
+                                                className="underline-offset-4 hover:text-foreground hover:underline"
+                                            >
                                                 {kpi.hint}
                                             </Link>
                                         ) : (
@@ -127,11 +162,17 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                         <Card className="h-full">
                             <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
                                 <div>
-                                    <CardTitle className="text-sm">Page views</CardTitle>
-                                    <p className="text-muted-foreground mt-0.5 text-xs">Last {traffic.days} days</p>
+                                    <CardTitle className="text-sm">
+                                        Page views
+                                    </CardTitle>
+                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                        Last {traffic.days} days
+                                    </p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-xl font-semibold tracking-tight">{traffic.total.toLocaleString()}</p>
+                                    <p className="text-xl font-semibold tracking-tight">
+                                        {traffic.total.toLocaleString()}
+                                    </p>
                                     <p
                                         className={cn(
                                             'text-[11px]',
@@ -156,27 +197,43 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
 
                     <section aria-label="Addon health" className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-sm font-semibold">Addon health</h2>
-                            <Link href="/admin/addons" className="text-muted-foreground hover:text-foreground text-xs">
+                            <h2 className="text-sm font-semibold">
+                                Addon health
+                            </h2>
+                            <Link
+                                href="/admin/addons"
+                                className="text-xs text-muted-foreground hover:text-foreground"
+                            >
                                 Manage
                             </Link>
                         </div>
                         <Card className="gap-0 py-0">
                             {addons.rows.length === 0 ? (
-                                <p className="text-muted-foreground px-4 py-6 text-xs">No addons installed yet.</p>
+                                <p className="px-4 py-6 text-xs text-muted-foreground">
+                                    No addons installed yet.
+                                </p>
                             ) : (
                                 <ul className="divide-y divide-border/60 text-sm">
                                     {addons.rows.map((row) => (
-                                        <li key={row.handle} className="flex items-start justify-between gap-2 px-4 py-3">
+                                        <li
+                                            key={row.handle}
+                                            className="flex items-start justify-between gap-2 px-4 py-3"
+                                        >
                                             <div className="min-w-0">
-                                                <p className="truncate text-xs font-medium">{row.name}</p>
+                                                <p className="truncate text-xs font-medium">
+                                                    {row.name}
+                                                </p>
                                                 {row.error ? (
-                                                    <p className="text-status-error mt-0.5 flex items-start gap-1 text-[11px]">
+                                                    <p className="mt-0.5 flex items-start gap-1 text-[11px] text-status-error">
                                                         <CircleAlert className="mt-0.5 size-3 shrink-0" />
-                                                        <span className="line-clamp-2">{row.error}</span>
+                                                        <span className="line-clamp-2">
+                                                            {row.error}
+                                                        </span>
                                                     </p>
                                                 ) : (
-                                                    <p className="text-muted-foreground text-[11px]">v{row.version}</p>
+                                                    <p className="text-[11px] text-muted-foreground">
+                                                        v{row.version}
+                                                    </p>
                                                 )}
                                             </div>
                                             <AddonStatus status={row.status} />
@@ -186,18 +243,29 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                             )}
                         </Card>
                         <Card className="gap-0 py-0">
-                            <ul className="text-muted-foreground divide-y divide-border/60 text-xs">
+                            <ul className="divide-y divide-border/60 text-xs text-muted-foreground">
                                 <li className="flex items-center justify-between px-4 py-2.5">
                                     <span>Active</span>
-                                    <span className="text-foreground font-medium">{addons.healthy}</span>
+                                    <span className="font-medium text-foreground">
+                                        {addons.healthy}
+                                    </span>
                                 </li>
                                 <li className="flex items-center justify-between px-4 py-2.5">
                                     <span>Inactive</span>
-                                    <span className="text-foreground font-medium">{addons.inactive}</span>
+                                    <span className="font-medium text-foreground">
+                                        {addons.inactive}
+                                    </span>
                                 </li>
                                 <li className="flex items-center justify-between px-4 py-2.5">
                                     <span>Errors</span>
-                                    <span className={cn('font-medium', addons.errors > 0 ? 'text-status-error' : 'text-foreground')}>
+                                    <span
+                                        className={cn(
+                                            'font-medium',
+                                            addons.errors > 0
+                                                ? 'text-status-error'
+                                                : 'text-foreground',
+                                        )}
+                                    >
                                         {addons.errors}
                                     </span>
                                 </li>
@@ -210,7 +278,10 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                     <section aria-label="Drafts" className="space-y-3">
                         <div className="flex items-center justify-between">
                             <h2 className="text-sm font-semibold">Drafts</h2>
-                            <Link href="/admin/pages?status=draft" className="text-muted-foreground hover:text-foreground text-xs">
+                            <Link
+                                href="/admin/pages?status=draft"
+                                className="text-xs text-muted-foreground hover:text-foreground"
+                            >
                                 All pages
                             </Link>
                         </div>
@@ -221,7 +292,9 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                                 description="Pages you start but do not publish yet show up here."
                                 action={
                                     <Button size="sm" variant="outline" asChild>
-                                        <Link href="/admin/pages">Open pages</Link>
+                                        <Link href="/admin/pages">
+                                            Open pages
+                                        </Link>
                                     </Button>
                                 }
                             />
@@ -229,7 +302,10 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                             <Card className="gap-0 py-0">
                                 <ul className="divide-y divide-border/60">
                                     {drafts.map((draft) => (
-                                        <li key={draft.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                                        <li
+                                            key={draft.id}
+                                            className="flex items-center justify-between gap-3 px-4 py-3"
+                                        >
                                             <div className="min-w-0">
                                                 <Link
                                                     href={draft.edit_url}
@@ -237,11 +313,12 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                                                 >
                                                     {draft.title}
                                                 </Link>
-                                                <p className="text-muted-foreground text-[11px]">
-                                                    /{draft.slug} · {draft.author ?? 'Unknown'}
+                                                <p className="text-[11px] text-muted-foreground">
+                                                    /{draft.slug} ·{' '}
+                                                    {draft.author ?? 'Unknown'}
                                                 </p>
                                             </div>
-                                            <span className="text-muted-foreground shrink-0 text-[11px]">
+                                            <span className="shrink-0 text-[11px] text-muted-foreground">
                                                 {relative(draft.updated_at)}
                                             </span>
                                         </li>
@@ -253,8 +330,13 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
 
                     <section aria-label="Recent activity" className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-sm font-semibold">Recent activity</h2>
-                            <Link href="/admin/activity" className="text-muted-foreground hover:text-foreground text-xs">
+                            <h2 className="text-sm font-semibold">
+                                Recent activity
+                            </h2>
+                            <Link
+                                href="/admin/activity"
+                                className="text-xs text-muted-foreground hover:text-foreground"
+                            >
                                 Full timeline
                             </Link>
                         </div>
@@ -268,12 +350,19 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                             <Card className="gap-0 py-0">
                                 <ul className="divide-y divide-border/60">
                                     {recent.map((row) => (
-                                        <li key={row.id} className="flex items-start gap-3 px-4 py-3">
-                                            <span className="bg-muted mt-1.5 size-1.5 shrink-0 rounded-full" />
+                                        <li
+                                            key={row.id}
+                                            className="flex items-start gap-3 px-4 py-3"
+                                        >
+                                            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-muted" />
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate text-xs">{row.description}</p>
-                                                <p className="text-muted-foreground text-[11px]">
-                                                    {row.causer ?? 'System'} · {row.log ?? 'lattice'} · {relative(row.created_at)}
+                                                <p className="truncate text-xs">
+                                                    {row.description}
+                                                </p>
+                                                <p className="text-[11px] text-muted-foreground">
+                                                    {row.causer ?? 'System'} ·{' '}
+                                                    {row.log ?? 'lattice'} ·{' '}
+                                                    {relative(row.created_at)}
                                                 </p>
                                             </div>
                                         </li>
@@ -284,7 +373,7 @@ export default function Dashboard({ kpis, traffic, recent, drafts, addons }: Pro
                     </section>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
 
@@ -302,7 +391,10 @@ function AddonStatus({ status }: { status: string }) {
                 addonTone[status] ?? addonTone.inactive,
             )}
         >
-            <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
+            <span
+                className="size-1.5 rounded-full bg-current"
+                aria-hidden="true"
+            />
             {status}
         </span>
     );
@@ -314,14 +406,19 @@ function AddonStatus({ status }: { status: string }) {
  */
 function AreaChart({ series }: { series: Point[] }) {
     if (series.length === 0) {
-        return <p className="text-muted-foreground py-10 text-center text-xs">No traffic recorded yet.</p>;
+        return (
+            <p className="py-10 text-center text-xs text-muted-foreground">
+                No traffic recorded yet.
+            </p>
+        );
     }
 
     const width = 600;
     const height = 140;
     const padding = 6;
     const max = Math.max(1, ...series.map((point) => point.views));
-    const stepX = series.length > 1 ? (width - padding * 2) / (series.length - 1) : 0;
+    const stepX =
+        series.length > 1 ? (width - padding * 2) / (series.length - 1) : 0;
 
     const points = series.map((point, index) => ({
         x: padding + index * stepX,
@@ -329,7 +426,12 @@ function AreaChart({ series }: { series: Point[] }) {
         ...point,
     }));
 
-    const line = points.map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ');
+    const line = points
+        .map(
+            (point, index) =>
+                `${index === 0 ? 'M' : 'L'}${point.x.toFixed(1)},${point.y.toFixed(1)}`,
+        )
+        .join(' ');
     const area = `${line} L${points[points.length - 1].x.toFixed(1)},${height - padding} L${points[0].x.toFixed(1)},${height - padding} Z`;
 
     return (
@@ -342,21 +444,50 @@ function AreaChart({ series }: { series: Point[] }) {
                 preserveAspectRatio="none"
             >
                 <defs>
-                    <linearGradient id="traffic-fill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.28" />
-                        <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.02" />
+                    <linearGradient
+                        id="traffic-fill"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                    >
+                        <stop
+                            offset="0%"
+                            stopColor="var(--color-primary)"
+                            stopOpacity="0.28"
+                        />
+                        <stop
+                            offset="100%"
+                            stopColor="var(--color-primary)"
+                            stopOpacity="0.02"
+                        />
                     </linearGradient>
                 </defs>
                 <path d={area} fill="url(#traffic-fill)" />
-                <path d={line} fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                <path
+                    d={line}
+                    fill="none"
+                    stroke="var(--color-primary)"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    vectorEffect="non-scaling-stroke"
+                />
                 {points.map((point) => (
-                    <circle key={point.date} cx={point.x} cy={point.y} r="2.5" fill="var(--color-primary)" vectorEffect="non-scaling-stroke">
+                    <circle
+                        key={point.date}
+                        cx={point.x}
+                        cy={point.y}
+                        r="2.5"
+                        fill="var(--color-primary)"
+                        vectorEffect="non-scaling-stroke"
+                    >
                         <title>{`${point.label}: ${point.views} views`}</title>
                     </circle>
                 ))}
             </svg>
 
-            <figcaption className="text-muted-foreground flex justify-between text-[11px]">
+            <figcaption className="flex justify-between text-[11px] text-muted-foreground">
                 <span>{series[0].label}</span>
                 <span>peak {max.toLocaleString()}</span>
                 <span>{series[series.length - 1].label}</span>

@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { FileText, Newspaper, Plus, Search, Settings2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
@@ -9,7 +10,6 @@ import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
@@ -26,6 +26,12 @@ type PostRow = {
     updated_at: string | null;
     is_live: boolean;
     reading_minutes: number;
+    featured_image: {
+        id: number;
+        url: string;
+        thumbnail_url: string | null;
+        alt: string | null;
+    } | null;
     urls: {
         edit: string;
         publish: string;
@@ -118,8 +124,10 @@ export default function PostsIndex({
         setPendingDelete(null);
     };
 
+    useBreadcrumbs(breadcrumbs);
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Posts" />
 
             <div className="space-y-5">
@@ -206,21 +214,37 @@ export default function PostsIndex({
                 ) : (
                     <Card className="overflow-hidden py-0">
                         <table className="w-full text-sm">
+                            <caption className="sr-only">Posts</caption>
                             <thead className="bg-muted/50 text-xs text-muted-foreground">
                                 <tr>
-                                    <th className="px-3 py-2 text-left font-medium">
+                                    <th
+                                        scope="col"
+                                        className="px-3 py-2 text-left font-medium"
+                                    >
                                         Title
                                     </th>
-                                    <th className="hidden px-3 py-2 text-left font-medium md:table-cell">
+                                    <th
+                                        scope="col"
+                                        className="hidden px-3 py-2 text-left font-medium md:table-cell"
+                                    >
                                         Category
                                     </th>
-                                    <th className="hidden px-3 py-2 text-left font-medium lg:table-cell">
+                                    <th
+                                        scope="col"
+                                        className="hidden px-3 py-2 text-left font-medium lg:table-cell"
+                                    >
                                         Author
                                     </th>
-                                    <th className="px-3 py-2 text-left font-medium">
+                                    <th
+                                        scope="col"
+                                        className="px-3 py-2 text-left font-medium"
+                                    >
                                         Status
                                     </th>
-                                    <th className="px-3 py-2 text-right font-medium">
+                                    <th
+                                        scope="col"
+                                        className="px-3 py-2 text-right font-medium"
+                                    >
                                         Actions
                                     </th>
                                 </tr>
@@ -239,7 +263,22 @@ export default function PostsIndex({
                                                     router.get(post.urls.edit)
                                                 }
                                             >
-                                                <FileText className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+                                                {post.featured_image ? (
+                                                    <img
+                                                        src={
+                                                            post.featured_image
+                                                                .thumbnail_url ??
+                                                            post.featured_image
+                                                                .url
+                                                        }
+                                                        alt=""
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="size-9 shrink-0 rounded object-cover"
+                                                    />
+                                                ) : (
+                                                    <FileText className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+                                                )}
                                                 <span className="min-w-0">
                                                     <span className="block max-w-72 truncate font-medium">
                                                         {post.title}
@@ -337,6 +376,6 @@ export default function PostsIndex({
                 confirmLabel="Delete post"
                 onConfirm={() => pendingDelete && destroy(pendingDelete)}
             />
-        </AppLayout>
+        </>
     );
 }

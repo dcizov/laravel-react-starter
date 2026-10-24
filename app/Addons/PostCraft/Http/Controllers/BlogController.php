@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Addons\PostCraft\Http\Controllers;
 
 use App\Addons\PostCraft\Models\Category;
@@ -26,7 +28,7 @@ class BlogController
     {
         $posts = Post::query()
             ->published()
-            ->with(['category:id,name,slug', 'author:id,name'])
+            ->with(['category:id,name,slug', 'author:id,name', 'featuredMedia'])
             ->orderByDesc('published_at')
             ->paginate(9)
             ->withQueryString()
@@ -52,7 +54,7 @@ class BlogController
 
     public function show(string $slug): InertiaResponse|Response
     {
-        $post = Post::query()->published()->where('slug', $slug)->first();
+        $post = Post::query()->published()->with('featuredMedia')->where('slug', $slug)->first();
 
         if ($post === null) {
             return Inertia::render($this->themes->component('not_found'), $this->shell())
@@ -66,6 +68,7 @@ class BlogController
             ->when($post->category_id !== null, fn ($query) => $query->where('category_id', $post->category_id))
             ->orderByDesc('published_at')
             ->limit(3)
+            ->with('featuredMedia')
             ->get()
             ->map(fn (Post $other): array => $this->card($other));
 
@@ -130,6 +133,16 @@ class BlogController
             'published_label' => $post->published_at?->format('j F Y'),
             'category' => $post->category === null ? null : ['name' => $post->category->name, 'slug' => $post->category->slug],
             'tags' => $post->relationLoaded('tags') ? $post->tags->pluck('name')->all() : [],
+            // The featured image is the post's only non-text content signal on
+            // the index, so it travels with the card: url, alt and intrinsic
+            // size (no layout shift), never the model.
+            'image' => $post->featuredMedia === null ? null : [
+                'url' => $post->featuredMedia->url(),
+                'thumbnail_url' => $post->featuredMedia->thumbnailUrl(),
+                'alt' => $post->featuredMedia->alt ?? $post->title,
+                'width' => $post->featuredMedia->width,
+                'height' => $post->featuredMedia->height,
+            ],
         ];
     }
 

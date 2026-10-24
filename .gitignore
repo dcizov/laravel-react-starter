@@ -10,6 +10,10 @@
 /resources/js/actions
 /resources/js/routes
 /resources/js/wayfinder
+# Build-time registries written by `php artisan lattice:discover`; `composer
+# setup`, `npm run build`, `npm run types:check` and `npm run check` regenerate
+# them, so they never belong to a commit.
+/resources/js/lib/generated/*.ts
 /vendor
 .DS_Store
 .env
