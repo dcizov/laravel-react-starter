@@ -73,7 +73,7 @@ return [
     |
     */
 
-    'home' => '/dashboard',
+    'home' => '/admin',
 
     /*
     |--------------------------------------------------------------------------
@@ -161,7 +161,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Public registration is disabled: Lattice is an invite-only CMS.
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([
