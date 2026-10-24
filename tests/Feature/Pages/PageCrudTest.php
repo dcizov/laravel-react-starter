@@ -114,6 +114,68 @@ it('autosaves without a redirect and reports the new version', function () {
         ->and($page->revisions()->first()->label)->toBe('Autosaved');
 });
 
+/**
+ * Regression: the robots directives contain commas ("index,follow"), and the
+ * string form of the rule (`in:index,follow,…`) is split on those commas by the
+ * validator — so no valid value could ever match. Every autosave made from the
+ * editor therefore failed with "The selected robots is invalid.", which is what
+ * surfaced as "Could not save" as soon as a section was moved.
+ */
+it('accepts the comma-separated robots directives the editor sends', function () {
+    $page = Page::factory()->create(['robots' => Page::DEFAULT_ROBOTS]);
+
+    $this->actingAs($this->editor)
+        ->patchJson("/admin/pages/{$page->id}/autosave", [
+            'robots' => 'noindex,nofollow',
+            'content' => [
+                ['id' => 'a', 'section' => 'hero', 'enabled' => true, 'content' => ['heading' => 'Moved']],
+            ],
+        ])
+        ->assertOk()
+        ->assertJsonMissingValidationErrors(['robots']);
+
+    expect($page->refresh()->robots)->toBe('noindex,nofollow');
+});
+
+it('keeps the stored robots directive when the editor sends null', function () {
+    $page = Page::factory()->create(['robots' => 'noindex,follow']);
+
+    $this->actingAs($this->editor)
+        ->patchJson("/admin/pages/{$page->id}/autosave", ['robots' => null])
+        ->assertOk();
+
+    expect($page->refresh()->robots)->toBe('noindex,follow');
+});
+
+it('still rejects a robots directive outside the list', function () {
+    $page = Page::factory()->create();
+
+    $this->actingAs($this->editor)
+        ->patchJson("/admin/pages/{$page->id}/autosave", ['robots' => 'index'])
+        ->assertJsonValidationErrors('robots');
+
+    expect($page->refresh()->robots)->toBe(Page::DEFAULT_ROBOTS);
+});
+
+it('normalises an unknown robots directive on create', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/pages', ['title' => 'Imported', 'robots' => null])
+        ->assertRedirect();
+
+    expect(Page::first()->robots)->toBe(Page::DEFAULT_ROBOTS);
+});
+
+it('sends the allowed robots directives to the editor', function () {
+    $page = Page::factory()->create();
+
+    $this->actingAs($this->editor)
+        ->get("/admin/pages/{$page->id}/edit")
+        ->assertInertia(fn ($inertia) => $inertia
+            ->has('robots_options', 4)
+            ->where('robots_options.0.value', 'index,follow')
+            ->where('robots_options.0.label', 'Index, follow'));
+});
+
 it('publishes and unpublishes', function () {
     $page = Page::factory()->create();
 

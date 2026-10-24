@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Cms\Sections\SectionRegistry;
+use App\Models\Page;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StorePageRequest extends FormRequest
 {
@@ -25,7 +27,8 @@ class StorePageRequest extends FormRequest
             'excerpt' => ['nullable', 'string', 'max:400'],
             'seo_title' => ['nullable', 'string', 'max:70'],
             'seo_description' => ['nullable', 'string', 'max:170'],
-            'robots' => ['nullable', 'string', 'in:index,follow,index,nofollow,noindex,follow,noindex,nofollow'],
+            // See UpdatePageRequest: commas in the values rule out `in:…`.
+            'robots' => ['nullable', 'string', Rule::in(Page::ROBOTS)],
         ];
     }
 

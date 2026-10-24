@@ -75,9 +75,13 @@ type Revision = {
     restore_url: string;
 };
 
+type RobotsOption = { value: string; label: string };
+
 type Props = {
     page: PageRecord | null;
     sections: SectionDef[];
+    /** The allowed robots directives, sent by the server that validates them. */
+    robots_options: RobotsOption[];
     draft?: {
         title: string;
         slug: string;
@@ -138,6 +142,7 @@ export default function PageEditor({
     revisions = [],
     urls,
     can,
+    robots_options: robotsOptions,
 }: Props) {
     const isNew = page === null;
 
@@ -152,9 +157,16 @@ export default function PageEditor({
     const [seoDescription, setSeoDescription] = useState(
         page?.seo_description ?? draft?.seo_description ?? '',
     );
-    const [robots, setRobots] = useState(
-        page?.robots ?? draft?.robots ?? 'index,follow',
-    );
+    // A row saved before the directive list was validated can hold anything
+    // (an import, an older release). Anything the select cannot represent is
+    // replaced by the first allowed value, so one legacy row does not make the
+    // editor refuse every save.
+    const [robots, setRobots] = useState(() => {
+        const stored = page?.robots ?? draft?.robots ?? '';
+        const allowed = robotsOptions.some((option) => option.value === stored);
+
+        return allowed ? stored : (robotsOptions[0]?.value ?? 'index,follow');
+    });
     const [blocks, setBlocks] = useState<SectionBlock[]>(
         page?.content ?? draft?.content ?? [],
     );
@@ -857,6 +869,7 @@ export default function PageEditor({
                 slug={slug}
                 excerpt={excerpt}
                 robots={robots}
+                robotsOptions={robotsOptions}
                 onTitle={setSeoTitle}
                 onDescription={setSeoDescription}
                 onSlug={(value) => {
@@ -967,6 +980,7 @@ function SeoDialog({
     slug,
     excerpt,
     robots,
+    robotsOptions,
     onTitle,
     onDescription,
     onSlug,
@@ -980,6 +994,7 @@ function SeoDialog({
     slug: string;
     excerpt: string;
     robots: string;
+    robotsOptions: RobotsOption[];
     onTitle: (value: string) => void;
     onDescription: (value: string) => void;
     onSlug: (value: string) => void;
@@ -1100,15 +1115,14 @@ function SeoDialog({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="index,follow">
-                                    Index, follow
-                                </SelectItem>
-                                <SelectItem value="noindex,follow">
-                                    No index, follow
-                                </SelectItem>
-                                <SelectItem value="noindex,nofollow">
-                                    No index, no follow
-                                </SelectItem>
+                                {robotsOptions.map((option) => (
+                                    <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

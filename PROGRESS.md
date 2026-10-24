@@ -1217,3 +1217,47 @@ did nothing.
 `npm run types:check` (PHPStan) and `php artisan test` still need a machine with
 `vendor/`; the two PHP-side changes in this pass (`SecurityHeaders`, its Pest
 cases) remain unrun in this sandbox.
+
+## Fix: "The selected robots is invalid." on every page save
+
+Symptom: in the page editor, any change — moving a section, renaming, retyping —
+turned the save indicator into **Could not save** and raised the banner
+"The selected robots is invalid.". Nothing was saved.
+
+Cause: `robots` was validated with the _string_ form of the rule:
+
+```php
+'robots' => ['sometimes', 'string', 'in:index,follow,index,nofollow,noindex,follow,noindex,nofollow'],
+```
+
+Laravel splits an `in:` parameter on commas, so the allowed set was actually
+`["index", "follow", "noindex"]` — and every real value is a pair
+(`index,follow`). No value the editor could send was ever valid. Because
+`UpdatePageRequest` also lacked `nullable` (unlike `StorePageRequest`), an empty
+submit failed the same way.
+
+The trigger is the autosave, not the section move: the editor sends the whole
+payload on every debounce, so moving a section merely pushed the first failing
+request. That also explains why no test caught it — every existing test sent only
+`title`, and `sometimes` skipped the rule.
+
+Fix, in one place:
+
+| File                                     | Change                                                                                                                                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `app/Models/Page.php`                    | `ROBOTS` (the four directives), `DEFAULT_ROBOTS`, `robotsOptions()` (value + label) and `normalizeRobots()` as the single source of truth.                                           |
+| `UpdatePageRequest` / `StorePageRequest` | `Rule::in(Page::ROBOTS)`, which quotes values containing commas; `nullable` on update too.                                                                                           |
+| `PageRepository`                         | Writes through `normalizeRobots()`, so a null, an empty string or junk from an import falls back to the stored value and then the default instead of being saved.                    |
+| `PageController`                         | `create`/`edit` share `robots_options`; the draft uses `Page::DEFAULT_ROBOTS`.                                                                                                       |
+| `pages/admin/pages/edit.tsx`             | The SEO dialog renders the server's options instead of a second hard-coded copy, and an unrecognised stored value is replaced on load rather than making the row unsaveable forever. |
+
+Tests (`tests/Feature/Pages/PageCrudTest.php`, +5): an autosave carrying
+`noindex,nofollow` succeeds and persists; `null` keeps the stored directive; a
+bare `index` is still rejected; create normalises a null; the editor receives the
+four options with labels.
+
+### Not executed here
+
+No PHP binary, so these five Pest cases and `pint` are **unexecuted** in this
+sandbox. `npx vp check` (0 errors, 0 warnings), `npx tsc --noEmit` and
+`npx vitest run` (9 files, 56 tests) were run and are green.

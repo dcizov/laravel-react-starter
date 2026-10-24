@@ -101,13 +101,14 @@ class PageController extends Controller
         return Inertia::render('admin/pages/edit', [
             'page' => null,
             'sections' => $this->sections->list(),
+            'robots_options' => Page::robotsOptions(),
             'draft' => [
                 'title' => '',
                 'slug' => '',
                 'excerpt' => '',
                 'seo_title' => '',
                 'seo_description' => '',
-                'robots' => 'index,follow',
+                'robots' => Page::DEFAULT_ROBOTS,
                 'template' => 'page',
                 'content' => $this->sections->blankPage(),
             ],
@@ -147,6 +148,7 @@ class PageController extends Controller
                 'published_at' => $page->published_at?->toIso8601String(),
             ],
             'sections' => $this->sections->list(),
+            'robots_options' => Page::robotsOptions(),
             'revisions' => $page->revisions()->with('user:id,name')->limit(20)->get()->map(fn (PageRevision $revision): array => [
                 'id' => $revision->id,
                 'label' => $revision->label,

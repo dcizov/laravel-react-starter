@@ -39,7 +39,7 @@ final class PageRepository
             'content' => $this->sections->normalize($data['content'] ?? $this->sections->blankPage()),
             'seo_title' => $data['seo_title'] ?? null,
             'seo_description' => $data['seo_description'] ?? null,
-            'robots' => (string) ($data['robots'] ?? 'index,follow'),
+            'robots' => Page::normalizeRobots($data['robots'] ?? null),
         ]);
 
         $this->snapshot($page, $author, 'Created');
@@ -91,7 +91,7 @@ final class PageRepository
                 : $page->content,
             'seo_title' => array_key_exists('seo_title', $data) ? $data['seo_title'] : $page->seo_title,
             'seo_description' => array_key_exists('seo_description', $data) ? $data['seo_description'] : $page->seo_description,
-            'robots' => $data['robots'] ?? $page->robots,
+            'robots' => Page::normalizeRobots($data['robots'] ?? null, $page->robots),
             'template' => $data['template'] ?? $page->template,
             'version' => $page->version + 1,
         ])->save();

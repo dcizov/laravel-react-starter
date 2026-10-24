@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Cms\Sections\SectionRegistry;
+use App\Models\Page;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class UpdatePageRequest extends FormRequest
@@ -31,7 +33,11 @@ class UpdatePageRequest extends FormRequest
             'excerpt' => ['sometimes', 'nullable', 'string', 'max:400'],
             'seo_title' => ['sometimes', 'nullable', 'string', 'max:70'],
             'seo_description' => ['sometimes', 'nullable', 'string', 'max:170'],
-            'robots' => ['sometimes', 'string', 'in:index,follow,index,nofollow,noindex,follow,noindex,nofollow'],
+            // `Rule::in`, not `in:…`: the allowed directives contain commas, and
+            // the string form is split on them, so no valid value could pass.
+            // Nullable because the editor may legitimately send nothing, which
+            // must keep the stored value rather than fail the whole save.
+            'robots' => ['sometimes', 'nullable', 'string', Rule::in(Page::ROBOTS)],
             'template' => ['sometimes', 'string', 'in:page,landing'],
             // The version the editor loaded. Optional so the API stays usable
             // without it, but the editor always sends it.

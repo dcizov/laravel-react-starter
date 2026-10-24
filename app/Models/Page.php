@@ -45,6 +45,59 @@ class Page extends Model
 
     public const STATUSES = [self::STATUS_DRAFT, self::STATUS_SCHEDULED, self::STATUS_PUBLISHED];
 
+    public const DEFAULT_ROBOTS = 'index,follow';
+
+    /**
+     * Robots directives a page may carry.
+     *
+     * Every value contains a comma, which is why validation must use
+     * `Rule::in(self::ROBOTS)`: the string form `in:index,follow,…` is split on
+     * commas by the validator, so no value with a comma in it could ever match.
+     *
+     * @var list<string>
+     */
+    public const ROBOTS = [
+        'index,follow',
+        'index,nofollow',
+        'noindex,follow',
+        'noindex,nofollow',
+    ];
+
+    /**
+     * Labels for the editor's select, so the client never keeps a second copy
+     * of the allowed values.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    public static function robotsOptions(): array
+    {
+        $labels = [
+            'index,follow' => 'Index, follow',
+            'index,nofollow' => 'Index, no follow',
+            'noindex,follow' => 'No index, follow',
+            'noindex,nofollow' => 'No index, no follow',
+        ];
+
+        return array_map(
+            fn (string $value): array => ['value' => $value, 'label' => $labels[$value]],
+            self::ROBOTS,
+        );
+    }
+
+    /**
+     * Coerce a submitted value to something storable: a known directive wins,
+     * anything else (null, empty string, junk from an import) falls back to the
+     * current value and finally to the default.
+     */
+    public static function normalizeRobots(mixed $value, ?string $fallback = null): string
+    {
+        if (is_string($value) && in_array($value, self::ROBOTS, true)) {
+            return $value;
+        }
+
+        return $fallback ?? self::DEFAULT_ROBOTS;
+    }
+
     protected $fillable = [
         'title', 'slug', 'status', 'template', 'parent_id', 'author_id', 'excerpt',
         'featured_media_id', 'content', 'seo_title', 'seo_description', 'og_media_id',
