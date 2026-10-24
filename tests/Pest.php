@@ -16,6 +16,23 @@ use Tests\TestCase;
 |
 */
 
+/*
+|--------------------------------------------------------------------------
+| Test database
+|--------------------------------------------------------------------------
+|
+| `phpunit.xml` pins the suite to SQLite so `sail artisan test` works whatever
+| the application's `.env` points at (Postgres under Sail, SQLite without it).
+| The file is gitignored, so a fresh clone has to create it once.
+|
+*/
+
+$testingDatabase = dirname(__DIR__).'/database/testing.sqlite';
+
+if (! file_exists($testingDatabase)) {
+    touch($testingDatabase);
+}
+
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature/Auth', 'Feature/Settings', 'Feature/Http', 'Feature/Admin', 'Feature/Pages', 'Feature/Media', 'Feature/Themes');

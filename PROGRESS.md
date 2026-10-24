@@ -842,3 +842,31 @@ The committed registries were regenerated from the demo install, so they now
 match what `lattice:install --demo` produces (`PostCraft` active, `Posts` in the
 Content nav).
 
+### S8.8 — Postgres back in the default stack
+
+`compose.pgsql.yaml` was the wrong shape: the rest of the repo (and `main`)
+treats Postgres as part of `sail up -d`, so an override nobody passes means
+`sail up -d` silently starts a half stack and the app dies at
+`connection refused at 127.0.0.1:5432`.
+
+**Restored, as on `main`:** the `pgsql` service (`postgres:18-alpine`, the
+`create-testing-database.sql` mount, the health check, the `sail-pgsql` volume)
+and `depends_on: pgsql` for `laravel.test`. The override file is gone.
+
+**Aligned with it:** `.env.example` now ships `DB_CONNECTION=pgsql` with
+`DB_HOST=pgsql`, `DB_DATABASE=lattice`, `DB_USERNAME=sail`, `DB_PASSWORD=secret`
+— the values the container creates — and documents the SQLite block as the
+no-Docker alternative. The README quickstart is `sail up -d` →
+`sail composer setup:demo` → `sail composer dev` → `http://localhost:8000`,
+with a "Without Docker" section for SQLite and a "Switching databases" note.
+
+**Tests stay on SQLite** (`phpunit.xml` pins `DB_CONNECTION=sqlite` +
+`database/testing.sqlite`), so a Postgres `.env` cannot break the suite and the
+suite needs no database server. The file is gitignored, so `tests/Pest.php`
+creates it when missing and `composer setup` touches both `database.sqlite` and
+`testing.sqlite`.
+
+Not verifiable here: this sandbox has no Docker, so `sail up -d` itself is not
+exercised — the compose file is validated as YAML, the service definition is
+copied from `main`, and the suite (179 tests) still runs on SQLite.
+

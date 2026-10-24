@@ -14,7 +14,7 @@ invites people from `/admin/users`.
 | Backend | Laravel 13, PHP 8.3+ |
 | Frontend | React 19 (strict TypeScript), Inertia v3, Vite |
 | Styling | Tailwind 4, shadcn/ui, lucide-react, bundled Inter |
-| Database | SQLite by default (any Laravel driver works) |
+| Database | PostgreSQL 18 under Sail (SQLite for a no-server setup); tests always run on SQLite |
 | Tests | Pest, Pint |
 | Extra packages | `spatie/laravel-permission`, `spatie/laravel-activitylog` |
 
@@ -26,16 +26,17 @@ Everything else — permissions, addons, themes, sections, navigation — is par
 ```bash
 git clone <repository> lattice && cd lattice
 
-composer setup          # install, .env, key, SQLite file, Lattice, assets
-composer setup:demo     # ...and the demo site
-php artisan serve
+sail up -d              # app + postgres + mailpit
+sail composer setup:demo  # install, .env, key, migrations, Lattice, demo, assets
+sail composer dev       # server + queue + logs + Vite
 ```
 
+Then open <http://localhost:8000>.
+
 `composer setup` is the one command that does the whole install: it copies
-`.env.example` to `.env` (skipping an existing `.env`), generates the key,
-creates `database/database.sqlite`, runs `lattice:install`, then installs the
-npm packages and builds the assets. `composer setup:demo` adds
-`--demo` to the seed.
+`.env.example` to `.env` (skipping an existing `.env`), generates the key, runs
+`lattice:install`, then installs the npm packages and builds the assets.
+`composer setup:demo` adds `--demo` to the seed.
 
 <details>
 <summary>Same steps by hand</summary>
@@ -44,7 +45,6 @@ npm packages and builds the assets. `composer setup:demo` adds
 composer install
 cp .env.example .env
 php artisan key:generate
-touch database/database.sqlite
 
 npm install && npm run build
 
@@ -54,32 +54,26 @@ php artisan serve
 
 </details>
 
-`.env.example` ships with `DB_CONNECTION=sqlite` and `MAIL_MAILER=log`, so
-nothing else has to run for a first boot. Coming from the plain Laravel starter
-with an existing `.env`? `composer setup` keeps it — set `DB_CONNECTION=sqlite`
-there (and drop the `pgsql` host lines) or start over with
-`rm .env && composer setup`.
+`.env.example` points at the Sail containers — `DB_CONNECTION=pgsql`,
+`DB_HOST=pgsql` and the `lattice` database the Postgres service creates — so
+`composer setup` needs `sail up -d` first. Coming from an older checkout with an
+existing `.env`? `composer setup` keeps it; `rm .env && cp .env.example .env`
+gets the current values.
 
-### With Sail
+### Without Docker
+
+SQLite needs no server: set `DB_CONNECTION=sqlite` in `.env` (drop the
+`DB_HOST`/`DB_PORT`/`DB_DATABASE`/`DB_USERNAME`/`DB_PASSWORD` lines), then
 
 ```bash
-sail up -d              # containers
-sail composer setup:demo
-sail composer dev       # server + queue + logs + Vite, all in one
+composer setup:demo
+php artisan serve      # http://localhost:8000
 ```
 
-`composer dev` runs `php artisan serve` on **port 8000**, so with Sail that is
-<http://localhost:8000> — matching the default `APP_URL`. Two pieces make it
-reachable from the host: `compose.yaml` publishes `8000:8000`, and the container
-sets `SERVER_HOST=0.0.0.0` because `artisan serve` otherwise listens on
-loopback only. Change the host port with `FORWARD_SERVE_PORT` if 8000 is taken
-(then update `APP_URL` too).
-
-Prefer the container's own nginx — no extra process, one less port? Then run
-`sail up -d` and just `sail npm run dev`, and open <http://localhost> with
-`APP_URL=http://localhost`.
-
-Vite is published on <http://localhost:5173> either way.
+The schema, the seeders and the queries are driver-agnostic, so both setups run
+the same code. Tests do not care either way: `phpunit.xml` pins
+`DB_CONNECTION=sqlite` with `database/testing.sqlite`, so `sail artisan test`
+runs on the file database while the app talks to Postgres.
 
 `lattice:install --demo` migrates the core, installs the addons and themes found
 on disk, links storage, regenerates the frontend registries and seeds the demo
@@ -94,7 +88,7 @@ site (Northwind Studio):
   eight weeks of page views for the dashboard chart.
 - **`Shopper`** sits on disk and deliberately refuses to install (`lattice ^2.0`).
 
-Then open <http://localhost:8000> — or <http://localhost> under Sail.
+Then open <http://localhost:8000>.
 
 ### Demo accounts
 
@@ -127,34 +121,19 @@ php artisan theme:activate meridian    # switch the public theme
 php artisan pages:publish-scheduled    # publish due pages (also runs every minute)
 ```
 
-## Postgres instead of SQLite
+## Switching databases
 
-SQLite is the default because it needs no server, but nothing in Lattice is
-SQLite-specific — the schema, the seeders and the queries all go through
-Eloquent. To run on Postgres:
+`sail up -d` always brings up Postgres, and `.env.example` matches it. To move an
+existing SQLite install onto it (or the other way round), change the `DB_*`
+block in `.env`, then rebuild the schema:
 
 ```bash
-# 1. start Sail with the Postgres override
-SAIL_FILES=compose.yaml:compose.pgsql.yaml sail up -d
-
-# 2. point .env at it
-DB_CONNECTION=pgsql
-DB_HOST=pgsql
-DB_PORT=5432
-DB_DATABASE=lattice
-DB_USERNAME=sail
-DB_PASSWORD=secret
-
-# 3. build the schema and (optionally) the demo
-sail artisan lattice:reset-demo --force
-# or, without demo content:
-sail artisan migrate --force && sail artisan lattice:install
+sail artisan lattice:reset-demo --force   # demo data
+# or: sail artisan migrate:fresh --force
 ```
 
-`compose.pgsql.yaml` is opt-in and harmless when unused — the base
-`compose.yaml` starts only the app and Mailpit. Tests always run on SQLite
-(`phpunit.xml` pins `DB_CONNECTION=sqlite` and `database/testing.sqlite`), so
-the suite does not need the database server.
+Going back to SQLite: set `DB_CONNECTION=sqlite`, remove `DB_DATABASE` (a value
+there is read as a file path), and run the same command.
 
 ## Quality gates
 
@@ -210,9 +189,9 @@ a provider, one route, one migration and an activation hook.
   predates the `setup:demo` composer script. `git log --oneline -1` and pull.
 - **The browser cannot reach `localhost:8000` under Sail** — the port is
   published only by the current `compose.yaml`; older checkouts served nginx on
-  `80` instead. Pull, `sail build --no-cache && sail up -d`, then check
-  `sail ps` (both `8000` and `5173` should be forwarded).
-- **`could not translate host name "pgsql"`** — an old `.env` still points at
-  Postgres. Set `DB_CONNECTION=sqlite` and drop the `DB_HOST`/`DB_PORT`/
-  `DB_DATABASE`/`DB_USERNAME`/`DB_PASSWORD` lines, or `rm .env` and re-run
-  `composer setup`.
+  `80` instead. Pull, `sail down && sail up -d`, then check `sail ps` (both
+  `8000` and `5173` should be forwarded).
+- **`could not translate host name "pgsql"` / `connection refused at
+  127.0.0.1:5432`** — Postgres is not running or is not the host `.env` expects.
+  `sail up -d` starts it; keep `DB_HOST=pgsql` (not `127.0.0.1`, which is the
+  container's own loopback). Without Docker, switch to `DB_CONNECTION=sqlite`.
