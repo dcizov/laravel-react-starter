@@ -21,7 +21,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type FieldOption = { value: string; label: string };
 
-type SettingsField = {
+export type SettingsField = {
     key: string;
     label: string;
     type:
@@ -406,16 +406,25 @@ export default function Settings({ groups, group, can }: Props) {
     );
 }
 
-function initial(field: SettingsField): FormValue {
+export function initial(field: SettingsField): FormValue {
     if (field.type === 'secret') {
         return '';
     }
 
-    if (field.value === null || field.value === undefined) {
+    const { value } = field;
+
+    if (value === null || value === undefined) {
         return field.type === 'media' ? null : '';
     }
 
-    return typeof field.value === 'number' ? field.value : String(field.value);
+    if (typeof value === 'number') {
+        return value;
+    }
+
+    // The schema only produces scalars here — booleans are saved on their own
+    // and never enter the form. The prop itself is `unknown`, so anything else
+    // degrades to an empty input rather than the string "[object Object]".
+    return typeof value === 'string' ? value : '';
 }
 
 /**

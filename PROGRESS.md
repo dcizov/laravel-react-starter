@@ -1180,3 +1180,40 @@ all pre-existing type warnings in files this pass did not otherwise touch.
 PHP: no binary and no `vendor/` in this sandbox, so the three new Pest cases are
 written but **unexecuted**; `pint` likewise. `npx vitest run` (48 tests),
 `npx tsc --noEmit` and `npx vp check` were executed and are green.
+
+## Fix: `npm run check` failed on lint warnings, not just formatting
+
+`vp check` runs with `denyWarnings: true`, so the four type-aware warnings that
+survived the formatting fix were fatal for `composer ci:check`. Two of them were
+not cosmetic:
+
+| File                                | Warning                                       | What it actually was                                                                                                                                                                             |
+| ----------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `components/admin-top-bar.tsx`      | `String(item.href)` may stringify an object   | Inertia accepts `string \| { url, method }`, so every breadcrumb whose `href` was a pair keyed as `[object Object]`. Unwrapped with `hrefToString()` in `lib/url.ts`.                            |
+| `pages/admin/settings/index.tsx`    | `String(field.value)` may stringify an object | The same shape of bug on a settings input: an unexpected structured value was submitted as `[object Object]` instead of an empty field. `initial()` now narrows explicitly and degrades to `''`. |
+| `components/media/media-picker.tsx` | floating promise                              | `browse.get(...)` inside `useEffect` — `void`ed, the promise is handled by its callbacks.                                                                                                        |
+| `pages/admin/pages/edit.tsx`        | floating promise                              | `autosave.patch(...)` inside the debounce — `void`ed for the same reason.                                                                                                                        |
+
+`initial()` and `SettingsField` are now exported so the conversion is unit
+tested (`__tests__/settings-form-values.test.tsx`, 5 cases including the
+`[object Object]` regression), and `hrefToString` is covered in `url.test.ts`.
+
+The reformat also left a stale `eslint-disable-next-line` in
+`sections/field-control.tsx`: the directive sat above the `<li>` while the rule
+now reports on the `key` attribute two lines below. Since the formatter keeps
+those on separate lines, the suppression is now a documented `eslint-disable`
+for that one rule above `RepeaterControl`, instead of a directive that silently
+did nothing.
+
+### Verified here
+
+- `npx vp check` — 143 files formatted, 124 files linted, **0 errors, 0 warnings**, exit 0.
+- `npx eslint resources/js` — exit 0, no output.
+- `npx tsc --noEmit` — clean apart from the absent Wayfinder stubs.
+- `npx vitest run` — 9 files, 56 tests.
+
+### Not executed here
+
+`npm run types:check` (PHPStan) and `php artisan test` still need a machine with
+`vendor/`; the two PHP-side changes in this pass (`SecurityHeaders`, its Pest
+cases) remain unrun in this sandbox.

@@ -179,6 +179,17 @@ function renderControl(
     }
 }
 
+/*
+ * Repeater rows are stored as a plain array of field maps — the schema has no
+ * room for an id, and adding one would leak a bookkeeping key into saved
+ * content. Position is therefore the only stable identity a row has, so the
+ * `key` below is index based on purpose.
+ *
+ * `eslint-disable-next-line` cannot express this: it only applies to the line
+ * that follows it, and the formatter keeps `key` on its own line, away from the
+ * comment. Hence the rule is switched off for this component only.
+ */
+/* eslint-disable @eslint-react/no-array-index-key */
 function RepeaterControl({
     field,
     value,
@@ -248,7 +259,6 @@ function RepeaterControl({
                 <ul className="space-y-2">
                     {items.map((item, slot) => (
                         // Repeater rows carry no id, so their position is the only stable key.
-                        // eslint-disable-next-line @eslint-react/no-array-index-key
                         <li
                             key={`${field.key}-${slot}`}
                             className="rounded-md border border-border bg-muted/30 p-3"

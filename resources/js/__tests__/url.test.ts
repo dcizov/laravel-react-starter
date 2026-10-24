@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { safeHref } from '@/lib/url';
+import { hrefToString, safeHref } from '@/lib/url';
 
 describe('safeHref', () => {
     it.each([
@@ -23,5 +23,23 @@ describe('safeHref', () => {
         [undefined],
     ])('refuses %s', (input) => {
         expect(safeHref(input)).toBeNull();
+    });
+});
+
+describe('hrefToString', () => {
+    it('passes a plain href through', () => {
+        expect(hrefToString('/admin/pages')).toBe('/admin/pages');
+    });
+
+    it('unwraps an Inertia { url, method } pair', () => {
+        expect(
+            hrefToString({ url: '/admin/pages/3', method: 'post' } as never),
+        ).toBe('/admin/pages/3');
+    });
+
+    it('never produces an object string', () => {
+        expect(hrefToString({ url: '/x' })).not.toContain('object');
+        expect(hrefToString(null)).toBe('');
+        expect(hrefToString(undefined)).toBe('');
     });
 });

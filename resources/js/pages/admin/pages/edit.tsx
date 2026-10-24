@@ -268,7 +268,7 @@ export default function PageEditor({
 
             setSaveState('saving');
 
-            autosave.patch(autosaveUrl, {
+            void autosave.patch(autosaveUrl, {
                 onStart: () => setSaveState('saving'),
                 onSuccess: (response) => {
                     // A slow save that finished after a newer one must not

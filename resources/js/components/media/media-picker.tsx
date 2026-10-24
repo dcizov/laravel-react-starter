@@ -93,7 +93,7 @@ export function MediaPicker({
 
         queryRef.current = { q: query, folder: folder === 'all' ? '' : folder };
 
-        browse.get(BROWSE_URL, {
+        void browse.get(BROWSE_URL, {
             onStart: () => setLoading(true),
             onSuccess: (response) => {
                 setItems(response.media);

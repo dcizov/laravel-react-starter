@@ -6,6 +6,7 @@ import { NotificationBell } from '@/components/notification-bell';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { hrefToString } from '@/lib/url';
 
 export function AdminTopBar() {
     const breadcrumbs = useBreadcrumbItems();
@@ -21,7 +22,7 @@ export function AdminTopBar() {
                     ) : (
                         breadcrumbs.map((item, index) => {
                             const isLast = index === breadcrumbs.length - 1;
-                            const key = `${item.title}:${String(item.href)}`;
+                            const key = `${item.title}:${hrefToString(item.href)}`;
 
                             return (
                                 <Fragment key={key}>
