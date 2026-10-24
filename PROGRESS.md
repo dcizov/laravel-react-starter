@@ -870,3 +870,8 @@ Not verifiable here: this sandbox has no Docker, so `sail up -d` itself is not
 exercised — the compose file is validated as YAML, the service definition is
 copied from `main`, and the suite (179 tests) still runs on SQLite.
 
+`depends_on` was upgraded from the list form to the long form with
+`condition: service_healthy` for `pgsql`, so `sail composer setup` immediately
+after `sail up -d` cannot race the database — the health check that already
+existed now actually gates the app container.
+

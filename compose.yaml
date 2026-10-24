@@ -27,8 +27,12 @@ services:
         networks:
             - sail
         depends_on:
-            - pgsql
-            - mailpit
+            pgsql:
+                # Wait for the health check, otherwise `sail composer setup`
+                # right after `sail up -d` races the database.
+                condition: service_healthy
+            mailpit:
+                condition: service_started
     pgsql:
         image: 'postgres:18-alpine'
         ports:
