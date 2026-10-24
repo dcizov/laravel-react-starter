@@ -901,3 +901,23 @@ that the built entry now contains the resolver
 (`layout:e=>{switch(!0){case e.startsWith(\`auth/\`)…default:return null}}`), and
 added a troubleshooting row for exactly this symptom.
 
+### S8.10 — `lattice:doctor` reports the frontend it is serving
+
+Two reports (a duplicated admin shell, a theme switch that does nothing) had the
+same cause and no visible symptom of their own: the browser was running
+JavaScript older than the checkout, because `public/build` is gitignored and a
+leftover `public/hot` points the page at a dev server. Nothing in the app says
+which bundle it is.
+
+`lattice:doctor` now ends with a `Frontend assets` row:
+
+| Output | Meaning |
+|---|---|
+| `built 2026-10-24 13:21` | production assets, newer than every source file |
+| `dev server http://localhost:5173` | `public/hot` exists — Vite is the source of truth |
+| `stale (sources changed after the build — run npm run build)` | the build predates the code |
+| `not built (run npm run build)` | no manifest; counted as a problem |
+
+`tests/Feature/Cms/DoctorTest.php` covers the hot-file and stale branches (the
+second restores both mtimes, so the checkout is left as it was).
+

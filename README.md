@@ -187,10 +187,16 @@ a provider, one route, one migration and an activation hook.
   reason; nothing else in the installation is affected.
 - **`There are no commands defined in the "setup" namespace`** — the checkout
   predates the `setup:demo` composer script. `git log --oneline -1` and pull.
-- **The public site renders inside the admin sidebar** — you are looking at a
-  front-end build from before the layout fix (assets are not committed, so a
-  `git pull` alone does not change them). Run `npm run build` and hard-reload,
-  or keep `sail npm run dev` (Vite) running so the source is used instead.
+- **The public site renders inside the admin sidebar, or the admin shows two
+  sidebars** — the browser is loading JavaScript that predates your checkout.
+  `public/build` is gitignored, so `git pull` never updates it, and a leftover
+  `public/hot` makes Laravel serve from a Vite dev server instead. Ask
+  `php artisan lattice:doctor` — it reports `Frontend assets` as
+  `built <date>`, `dev server <url>` or `stale (… run npm run build)`. Fix with
+  `rm -f public/hot && npm run build` and a hard reload.
+- **`Error: Port 5173 is already in use`** — another `composer dev` is still
+  running (two terminals, or a leftover container). Run one: `sail down &&
+  sail up -d`, then `sail composer dev` in a single terminal.
 - **The browser cannot reach `localhost:8000` under Sail** — the port is
   published only by the current `compose.yaml`; older checkouts served nginx on
   `80` instead. Pull, `sail down && sail up -d`, then check `sail ps` (both

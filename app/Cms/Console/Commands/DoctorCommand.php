@@ -62,7 +62,56 @@ class DoctorCommand extends Command
         $storage = public_path('storage');
         $this->twoColumn('Storage link', File::exists($storage) ? '<fg=green>ok</>' : '<fg=yellow>missing (run storage:link)</>');
 
+        $problems += $this->frontend();
+
         return $this->summary($problems);
+    }
+
+    /**
+     * Which JavaScript the browser is actually loading.
+     *
+     * A stale `public/build` is invisible otherwise: the page renders, just with
+     * an older UI than the source on disk — the classic "my fix isn't there".
+     */
+    private function frontend(): int
+    {
+        $hot = public_path('hot');
+        $manifest = public_path('build/manifest.json');
+
+        if (File::exists($hot)) {
+            $url = trim((string) File::get($hot));
+            $this->twoColumn('Frontend assets', '<fg=yellow>dev server</> '.$url);
+
+            return 0;
+        }
+
+        if (! File::exists($manifest)) {
+            $this->twoColumn('Frontend assets', '<fg=red>not built (run npm run build)</>');
+
+            return 1;
+        }
+
+        $built = File::lastModified($manifest);
+        $newest = 0;
+
+        foreach (['js', 'css'] as $dir) {
+            foreach (File::allFiles(resource_path($dir)) as $file) {
+                $newest = max($newest, $file->getMTime());
+            }
+        }
+
+        if ($newest > $built) {
+            $this->twoColumn(
+                'Frontend assets',
+                '<fg=yellow>stale (sources changed after the build — run npm run build)</>',
+            );
+
+            return 0;
+        }
+
+        $this->twoColumn('Frontend assets', '<fg=green>built</> '.date('Y-m-d H:i', $built));
+
+        return 0;
     }
 
     private function twoColumn(string $label, string $value): void
