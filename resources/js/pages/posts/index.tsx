@@ -1,50 +1,30 @@
 import { Head, router } from '@inertiajs/react';
-import { FileText, Newspaper, Plus, Search, Settings2 } from 'lucide-react';
+import { Newspaper, Plus, Settings2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+
 import { useBreadcrumbs } from '@/components/breadcrumbs-context';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import {
+    DataTable,
+    DataTableFilterTabs,
+    DataTableSearch,
+    DataTableToolbar,
+} from '@/components/data-table';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
-import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
-type PostRow = {
-    id: number;
-    title: string;
-    slug: string;
-    status: 'draft' | 'published';
-    excerpt: string | null;
-    category: string | null;
-    tags: string[];
-    author: string | null;
-    published_at: string | null;
-    updated_at: string | null;
-    is_live: boolean;
-    reading_minutes: number;
-    featured_image: {
-        id: number;
-        url: string;
-        thumbnail_url: string | null;
-        alt: string | null;
-    } | null;
-    urls: {
-        edit: string;
-        publish: string;
-        unpublish: string;
-        destroy: string;
-        public: string | null;
-    };
-};
+import { createPostColumns } from './columns';
+import type { PostRow } from './columns';
 
 type Paginated<T> = {
     data: T[];
-    links: { url: string | null; label: string; active: boolean }[];
     total: number;
+    current_page: number;
+    last_page: number;
+    per_page: number;
 };
 
 type Props = {
@@ -68,9 +48,8 @@ export default function PostsIndex({
     can,
 }: Props) {
     const [pendingDelete, setPendingDelete] = useState<PostRow | null>(null);
-    const [search, setSearch] = useState(filters.q);
 
-    const visit = (params: Record<string, string | undefined>) => {
+    const visit = (params: Record<string, string | number | undefined>) => {
         router.get(urls.index, params, {
             preserveState: true,
             preserveScroll: true,
@@ -157,215 +136,85 @@ export default function PostsIndex({
                     }
                 />
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative min-w-48 flex-1">
-                        <Search className="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
-                        <Input
-                            value={search}
-                            placeholder="Search posts"
-                            className="pl-8"
-                            onChange={(event) => setSearch(event.target.value)}
-                            onKeyDown={(event) => {
-                                if (event.key === 'Enter') {
-                                    visit({
-                                        q: search,
-                                        status: filters.status || undefined,
-                                    });
-                                }
-                            }}
-                        />
-                    </div>
-
-                    {['', 'draft', 'published'].map((status) => (
-                        <Button
-                            key={status || 'all'}
-                            size="sm"
-                            variant={
-                                filters.status === status
-                                    ? 'secondary'
-                                    : 'ghost'
+                <DataTable
+                    caption="Posts"
+                    columns={createPostColumns({
+                        can,
+                        onToggle: toggle,
+                        onDelete: setPendingDelete,
+                    })}
+                    data={posts.data}
+                    getRowId={(post) => String(post.id)}
+                    serverPagination={{
+                        pageIndex: Math.max(0, posts.current_page - 1),
+                        pageSize: posts.per_page,
+                        pageCount: Math.max(1, posts.last_page),
+                        total: posts.total,
+                    }}
+                    onPageChange={(pageIndex) =>
+                        visit({ ...filters, page: pageIndex + 1 })
+                    }
+                    emptyState={
+                        <EmptyState
+                            icon={Newspaper}
+                            title={
+                                filters.q
+                                    ? 'No posts match that search'
+                                    : 'No posts yet'
                             }
-                            onClick={() =>
-                                visit({
-                                    q: search,
-                                    status: status || undefined,
-                                })
+                            description={
+                                filters.q
+                                    ? 'Try a shorter search term or a different status.'
+                                    : can.create
+                                      ? 'Write the first one — it stays a draft until you publish it.'
+                                      : 'Nothing has been written yet.'
+                            }
+                        />
+                    }
+                    toolbar={
+                        <DataTableToolbar
+                            filters={
+                                <DataTableFilterTabs
+                                    value={filters.status}
+                                    options={[
+                                        {
+                                            value: '',
+                                            label: 'All',
+                                            count: counts.all,
+                                        },
+                                        {
+                                            value: 'draft',
+                                            label: 'Drafts',
+                                            count: counts.draft,
+                                        },
+                                        {
+                                            value: 'published',
+                                            label: 'Published',
+                                            count: counts.published,
+                                        },
+                                    ]}
+                                    onChange={(status) =>
+                                        visit({
+                                            q: filters.q || undefined,
+                                            status: status || undefined,
+                                        })
+                                    }
+                                />
                             }
                         >
-                            {status === ''
-                                ? 'All'
-                                : status === 'draft'
-                                  ? 'Drafts'
-                                  : 'Published'}
-                        </Button>
-                    ))}
-                </div>
-
-                {posts.data.length === 0 ? (
-                    <EmptyState
-                        icon={Newspaper}
-                        title="No posts yet"
-                        description={
-                            can.create
-                                ? 'Write the first one — it stays a draft until you publish it.'
-                                : 'Nothing has been written yet.'
-                        }
-                    />
-                ) : (
-                    <Card className="overflow-hidden py-0">
-                        <table className="w-full text-sm">
-                            <caption className="sr-only">Posts</caption>
-                            <thead className="bg-muted/50 text-xs text-muted-foreground">
-                                <tr>
-                                    <th
-                                        scope="col"
-                                        className="px-3 py-2 text-left font-medium"
-                                    >
-                                        Title
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="hidden px-3 py-2 text-left font-medium md:table-cell"
-                                    >
-                                        Category
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="hidden px-3 py-2 text-left font-medium lg:table-cell"
-                                    >
-                                        Author
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-3 py-2 text-left font-medium"
-                                    >
-                                        Status
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-3 py-2 text-right font-medium"
-                                    >
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {posts.data.map((post) => (
-                                    <tr
-                                        key={post.id}
-                                        className="border-t border-border/60"
-                                    >
-                                        <td className="px-3 py-2">
-                                            <button
-                                                type="button"
-                                                className="flex items-start gap-2 text-left"
-                                                onClick={() =>
-                                                    router.get(post.urls.edit)
-                                                }
-                                            >
-                                                {post.featured_image ? (
-                                                    <img
-                                                        src={
-                                                            post.featured_image
-                                                                .thumbnail_url ??
-                                                            post.featured_image
-                                                                .url
-                                                        }
-                                                        alt=""
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                        className="size-9 shrink-0 rounded object-cover"
-                                                    />
-                                                ) : (
-                                                    <FileText className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                                                )}
-                                                <span className="min-w-0">
-                                                    <span className="block max-w-72 truncate font-medium">
-                                                        {post.title}
-                                                    </span>
-                                                    <span className="block truncate text-[11px] text-muted-foreground">
-                                                        /blog/{post.slug} ·{' '}
-                                                        {post.reading_minutes}{' '}
-                                                        min
-                                                    </span>
-                                                </span>
-                                            </button>
-                                        </td>
-                                        <td className="hidden px-3 py-2 text-xs md:table-cell">
-                                            {post.category ?? '—'}
-                                        </td>
-                                        <td className="hidden px-3 py-2 text-xs lg:table-cell">
-                                            {post.author ?? '—'}
-                                        </td>
-                                        <td className="px-3 py-2">
-                                            <StatusBadge
-                                                status={
-                                                    post.is_live
-                                                        ? 'published'
-                                                        : 'draft'
-                                                }
-                                            />
-                                        </td>
-                                        <td className="px-3 py-2 text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                {post.urls.public ? (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-7"
-                                                        asChild
-                                                    >
-                                                        <a
-                                                            href={
-                                                                post.urls.public
-                                                            }
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                        >
-                                                            View
-                                                        </a>
-                                                    </Button>
-                                                ) : null}
-                                                {can.publish ? (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className={cn(
-                                                            'h-7',
-                                                            post.is_live &&
-                                                                'text-muted-foreground',
-                                                        )}
-                                                        onClick={() =>
-                                                            toggle(post)
-                                                        }
-                                                    >
-                                                        {post.is_live
-                                                            ? 'Unpublish'
-                                                            : 'Publish'}
-                                                    </Button>
-                                                ) : null}
-                                                {can.delete ? (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-7 text-status-error"
-                                                        onClick={() =>
-                                                            setPendingDelete(
-                                                                post,
-                                                            )
-                                                        }
-                                                    >
-                                                        Delete
-                                                    </Button>
-                                                ) : null}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </Card>
-                )}
+                            <DataTableSearch
+                                defaultValue={filters.q}
+                                placeholder="Search posts"
+                                onSearch={(q) =>
+                                    visit({
+                                        q: q || undefined,
+                                        status: filters.status || undefined,
+                                    })
+                                }
+                            />
+                        </DataTableToolbar>
+                    }
+                />
             </div>
 
             <ConfirmDialog
