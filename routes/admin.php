@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AppearanceController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,10 @@ Route::middleware(['auth', 'verified', 'active'])->prefix('admin')->group(functi
     Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 
     Route::get('activity', [ActivityController::class, 'index'])->name('admin.activity.index');
+
+    Route::get('settings', [SettingsController::class, 'index'])->name('admin.settings.index');
+    Route::get('settings/{group}', [SettingsController::class, 'show'])->name('admin.settings.show');
+    Route::patch('settings/{group}', [SettingsController::class, 'update'])->name('admin.settings.update');
 
     Route::get('addons', [AddonController::class, 'index'])->name('admin.addons.index');
     Route::post('addons/{handle}/install', [AddonController::class, 'install'])->name('admin.addons.install');

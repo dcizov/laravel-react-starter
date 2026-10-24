@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Cms\Boot\ProviderLoader;
 use App\Cms\Permissions\AbilityMap;
 use App\Cms\Registries\Navigation;
+use App\Cms\Settings\SettingRepository;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -53,6 +54,9 @@ class HandleInertiaRequests extends Middleware
                 'can' => fn (): array => app(AbilityMap::class)->for($request->user()),
             ],
             'navigation' => fn (): array => $this->navigation($request),
+            'settings' => [
+                'public' => fn (): array => app(SettingRepository::class)->publicValues(),
+            ],
             'flash' => [
                 'toast' => fn (): ?array => $request->session()->get('toast'),
             ],

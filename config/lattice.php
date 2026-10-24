@@ -105,7 +105,7 @@ return [
         ['section' => 'Site', 'label' => 'Addons', 'route' => '/admin/addons', 'icon' => 'plug', 'order' => 50],
         ['section' => 'Team', 'label' => 'Users', 'route' => '/admin/users', 'icon' => 'users', 'order' => 60],
         ['section' => 'Team', 'label' => 'Activity', 'route' => '/admin/activity', 'icon' => 'activity', 'order' => 70],
-        ['section' => 'System', 'label' => 'Settings', 'route' => '/admin/settings', 'icon' => 'settings', 'order' => 80],
+        ['section' => 'System', 'label' => 'Settings', 'route' => '/admin/settings', 'icon' => 'settings', 'permission' => 'settings.view', 'order' => 80],
     ],
 
     /*

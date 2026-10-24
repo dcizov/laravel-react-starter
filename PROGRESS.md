@@ -470,4 +470,48 @@ Full suite: **146 tests / 947 assertions**; pint (173 files), `tsc`, eslint
 `/blog/rss.xml`, `/admin/posts` and `/admin/posts/taxonomy` answer 200 for
 admin/editor/author (per-role abilities enforced in the controllers).
 
-**Next: S7 — dashboard, settings and activity.**
+## S7 — Dashboard, settings, activity
+
+Split into S7.1 (settings), S7.2 (dashboard + notifications) and S7.3 (activity
+polish) — the step is far larger than twelve files.
+
+**Done (S7.1)**
+
+- `settings` table (key unique, group, type, json value, `is_public`) plus
+  `App\Models\Setting`.
+- `App\Cms\Settings\SettingSchema` declares five groups — General, Branding,
+  SEO, Content, Mail — with typed fields (`string`, `text`, `integer`,
+  `boolean`, `select`, `email`, `secret`, `media`, `color`), defaults, hints,
+  options, validation and which values are public. Adding a setting is a data
+  change: no controller, no form, no migration.
+- `App\Cms\Settings\SettingRepository` is the only reader/writer: typed casts,
+  one row per key, a single `PATCH` that saves whatever keys it receives (so a
+  lone switch and a whole form share an endpoint), encrypted `secret` values,
+  a cached `publicValues()` payload, and `applyToConfig()` which copies the
+  saved identity over `config('lattice.site.*')` at boot. That is why the
+  public site picks up a new name/logo without any controller knowing about
+  settings.
+- `SettingsController` + `UpdateSettingsRequest`: rules generated from the
+  schema, `settings.view` to look and `settings.update` to write; a blank
+  secret keeps the stored one. Nav entry now carries `settings.view`, so
+  authors no longer see a screen they cannot open.
+- `admin/settings/index.tsx`: group tabs, schema-driven fields (switch, select,
+  textarea, colour, media picker, masked secret with a "stored" placeholder),
+  a dirty-state save bar with Discard/Save and a processing label, and
+  optimistic boolean switches (`router.optimistic`, rollback toast on refusal).
+  `ThemeShell` renders the saved logo in the public header.
+
+**Accept (S7.1):** 9 feature tests — schema-driven screen and redirect from
+`/admin/settings`, editor read-only screen and author 403 (index included),
+general save persists and the public page reports the new name, a logo save
+reaches `settings.public.logo` in the public payload, per-type validation
+(integer, select option, email, required), single-switch partial save, secret
+encrypted at rest and never sent to the browser while a blank save keeps it,
+unknown group 404, and the change lands in the activity log.
+Full suite: **155 tests / 1037 assertions**; pint (180 files), tsc, eslint and
+build green. Smoke: `/admin/settings` 302 → general for admin/editor, 403 for
+author; saving a name in the live DB changed the rendered public header and
+removing it restored the config default.
+
+**Next: S7.2 — dashboard** (KPI cards, seeded page-view chart, recent activity,
+drafts, addon health, ≤ 12 queries) **+ the notification bell.**

@@ -7,6 +7,7 @@ use App\Cms\Registries\Navigation;
 use App\Cms\Repositories\AddonRepository;
 use App\Cms\Repositories\ThemeRepository;
 use App\Cms\Sections\SectionRegistry;
+use App\Cms\Settings\SettingRepository;
 use App\Cms\Support\SafeMode;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +34,8 @@ class CoreServiceProvider extends ServiceProvider
             $app->make(AddonRepository::class),
             $app->make(ThemeRepository::class),
         ));
+        // Scoped: the repository memoises the settings table for one request.
+        $this->app->scoped(SettingRepository::class, fn (Application $app): SettingRepository => new SettingRepository($app));
         $this->app->singleton(SafeMode::class, fn (Application $app): SafeMode => new SafeMode(
             $app,
             $app->make(AddonRepository::class),
@@ -52,6 +55,11 @@ class CoreServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerCoreNavigation();
+
+        // Public chrome reads `config('lattice.site.*')`; the saved identity
+        // overrides those keys once instead of being threaded through every
+        // controller.
+        $this->app->make(SettingRepository::class)->applyToConfig();
     }
 
     /**

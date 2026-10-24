@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,9 @@ export function ThemeShell({
     const cta = main.length > 1 ? main[main.length - 1] : null;
     const links = cta === null ? main : main.slice(0, -1);
     const accent = theme.tokens.accent ?? 'oklch(0.51 0.19 264)';
+    // Branding is site identity, so it arrives once in the shared props rather
+    // than being threaded through every public controller.
+    const logo = usePage<{ settings?: { public?: { logo?: string | null } } }>().props.settings?.public?.logo ?? null;
 
     return (
         <div
@@ -85,13 +89,17 @@ export function ThemeShell({
                         className="flex items-center gap-2.5 text-sm font-semibold tracking-tight"
                         aria-label={`${site.name} — home`}
                     >
-                        <span
-                            className="flex size-7 items-center justify-center rounded-[calc(var(--theme-radius)/1.5)] text-white"
-                            style={{ backgroundColor: accent }}
-                        >
-                            <AppLogoIcon className="size-4" />
-                        </span>
-                        {site.name}
+                        {logo ? (
+                            <img src={logo} alt="" className="h-7 w-auto max-w-40 object-contain" />
+                        ) : (
+                            <span
+                                className="flex size-7 items-center justify-center rounded-[calc(var(--theme-radius)/1.5)] text-white"
+                                style={{ backgroundColor: accent }}
+                            >
+                                <AppLogoIcon className="size-4" />
+                            </span>
+                        )}
+                        {logo ? <span className="sr-only">{site.name}</span> : site.name}
                     </a>
 
                     {links.length > 0 || cta !== null ? (
