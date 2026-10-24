@@ -895,3 +895,9 @@ Checked every page: each one is either `own-layout` (admin, posts, dashboard,
 demo), `theme-shell` (public, blog, themes, preview) or `resolver` (auth,
 settings). `tsc`, eslint and `npm run build` are clean.
 
+**Stale-asset note:** `public/build` is gitignored, so `git pull` never ships the
+fix — the checkout has to run `npm run build` or keep Vite running. Verified
+that the built entry now contains the resolver
+(`layout:e=>{switch(!0){case e.startsWith(\`auth/\`)…default:return null}}`), and
+added a troubleshooting row for exactly this symptom.
+

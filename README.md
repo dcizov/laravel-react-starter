@@ -187,6 +187,10 @@ a provider, one route, one migration and an activation hook.
   reason; nothing else in the installation is affected.
 - **`There are no commands defined in the "setup" namespace`** — the checkout
   predates the `setup:demo` composer script. `git log --oneline -1` and pull.
+- **The public site renders inside the admin sidebar** — you are looking at a
+  front-end build from before the layout fix (assets are not committed, so a
+  `git pull` alone does not change them). Run `npm run build` and hard-reload,
+  or keep `sail npm run dev` (Vite) running so the source is used instead.
 - **The browser cannot reach `localhost:8000` under Sail** — the port is
   published only by the current `compose.yaml`; older checkouts served nginx on
   `80` instead. Pull, `sail down && sail up -d`, then check `sail ps` (both
