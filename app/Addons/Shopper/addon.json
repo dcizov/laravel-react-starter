@@ -1,0 +1,26 @@
+{
+    "handle": "Shopper",
+    "name": "Shopper",
+    "version": "2.4.0",
+    "description": "Storefront addon built for Lattice 2.x. Kept here on purpose: it proves the installer refuses an addon whose version constraint this install cannot meet.",
+    "author": "Northwind Commerce",
+    "provider": "App\\Addons\\Shopper\\ShopperServiceProvider",
+    "requires": {
+        "php": "^8.5",
+        "lattice": "^2.0",
+        "addons": ["Payments"]
+    },
+    "permissions": ["shopper:view"],
+    "navigation": [
+        {
+            "section": "Content",
+            "label": "Shop",
+            "route": "/admin/shop",
+            "icon": "shopping-bag",
+            "permission": "shopper:view",
+            "order": 35
+        }
+    ],
+    "migrations": true,
+    "seeders": []
+}

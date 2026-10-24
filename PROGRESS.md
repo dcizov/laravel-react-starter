@@ -388,4 +388,44 @@ themed 404; the theme's section shows up in the editor's schema. 2 new feature
 tests. Full suite: 129 tests / 796 assertions; pint (155 files), tsc, eslint
 (0 warnings) and build green.
 
-**Next: S6 — addons UI and PostCraft.**
+## S6 — Addons: UI + PostCraft
+
+Split into S6.1 (addons screen, done) and S6.2 (PostCraft addon).
+
+**Done (S6.1)**
+
+- `App\Cms\Addons\AddonCatalog`: read model for the screen. Cards come from
+  installed rows **plus** folders found on disk, in three states —
+  `active`/`inactive` (row decides), `discovered` (folder, never installed) and
+  `blocked` (folder whose `requires` cannot be met, with the exact reason kept
+  in `error`). Card includes permissions, nav entries, sections, resources,
+  `can_uninstall` (only addons inside `app/Addons` may have files deleted) and a
+  `urls` object so the client never builds addon URLs.
+- `AddonController` (`index`, `install`, `activate`, `deactivate`, `uninstall`)
+  delegates every mutation to `AddonManager`, so the invariants stay in one
+  place: constraints checked before activation, migrations rolled back when an
+  activation fails, data kept on deactivate, uninstall only touching that
+  addon's own migrations and folder. Uninstall requires the handle typed back
+  (`in:<handle>` validation) and takes explicit `delete_data` / `delete_files`
+  flags.
+- Authorization: `addons.view` to look, `addons.manage` to change — Editor gets
+  a read-only screen, Author gets 403.
+- `app/Addons/Shopper/` ships on disk with `requires: {php: ^8.5,
+  lattice: ^2.0, addons: [Payments]}`: the catalog shows it as *Incompatible*
+  with the readable reason and installing it is refused before anything changes.
+- Screen `pages/admin/addons/index.tsx`: status cards, optimistic
+  activate/deactivate with a "Change reverted" toast, details sheet (requires,
+  permissions, nav, sections, resources, timestamps), and an uninstall dialog
+  with typed confirmation plus keep/delete data + delete-files switches.
+
+**Accept (S6.1):** 8 feature tests — list with the blocked addon and correct
+counts, exact incompatibility reason, HTTP install refused with a readable
+error, activate/deactivate keeping the row and stamping `activated_at`,
+editor read-only (403 on writes) and author 403 on the screen,
+typed-handle confirmation enforced, uninstall keeping the folder when asked,
+unknown handle rejected. Full suite: 137 tests / 854 assertions; pint
+(159 files), tsc, eslint (0 warnings) and build green; `/admin/addons` renders
+200 for admin/editor and 403 for author.
+
+**Next: S6.2 — PostCraft** (posts/categories/tags, admin CRUD, public `/blog`
++ `/blog/{slug}`, RSS and a blog-teaser section).

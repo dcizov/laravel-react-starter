@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\AppearanceController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
@@ -28,6 +29,12 @@ Route::middleware(['auth', 'verified', 'active'])->prefix('admin')->group(functi
     Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 
     Route::get('activity', [ActivityController::class, 'index'])->name('admin.activity.index');
+
+    Route::get('addons', [AddonController::class, 'index'])->name('admin.addons.index');
+    Route::post('addons/{handle}/install', [AddonController::class, 'install'])->name('admin.addons.install');
+    Route::post('addons/{handle}/activate', [AddonController::class, 'activate'])->name('admin.addons.activate');
+    Route::post('addons/{handle}/deactivate', [AddonController::class, 'deactivate'])->name('admin.addons.deactivate');
+    Route::delete('addons/{handle}', [AddonController::class, 'uninstall'])->name('admin.addons.uninstall');
 
     Route::get('appearance', [AppearanceController::class, 'index'])->name('admin.appearance.index');
     Route::post('appearance/{handle}/activate', [AppearanceController::class, 'activate'])->name('admin.appearance.activate');
