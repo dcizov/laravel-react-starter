@@ -270,5 +270,27 @@ non-empty-delete guard, and search/type/trash filters. Full suite: 108 tests /
 624 assertions; pint (144 files), tsc, eslint (0 warnings) and build green;
 `/admin/media` renders 200 for admin, editor and author.
 
-**Next: S4.3 — `MediaPicker`** shared by the editor's `media` fields, then
-S5 themes and the public site.
+**Done (S4.3)**
+
+- `admin.media.browse` JSON endpoint (newest 60 matches, `q` + `folder`
+  filters, folders and `can.upload` in the payload) — the picker reads the
+  library without a page visit, so opening it inside the editor never reloads
+  or discards the page being edited. Guests get 401, users without `media.view`
+  403.
+- `resources/js/components/media/media-picker.tsx`: `MediaPicker` dialog
+  (search, folder filter, thumbnail grid, current selection marked, skeletons
+  while loading) plus `MediaField`, the editor control that shows a preview with
+  Replace/Remove and stores the file's public URL — the value the renderer
+  already uses and the usage scanner already matches on.
+- `field-control.tsx`'s `media` case is now that control instead of a free-text
+  input, so every section with an image field (hero today, themes and addons
+  later) gets the picker for free.
+
+**Accept (S4.3):** upload 3 files → pick one into a hero section → the value
+round-trips as a `/storage/...` URL and a `media_usages` row appears → alt edit
+persists on the file → deleting the used image warns and offers undo. Browse
+endpoint covered by 2 feature tests (payload, filters, protection). Full suite:
+110 tests / 635 assertions; pint (144 files), tsc, eslint (0 warnings) and build
+green; browse endpoint returns 200 for editor and author.
+
+**Next: S5 — themes and the public site.**

@@ -11,6 +11,7 @@ use App\Models\Media;
 use App\Models\MediaFolder;
 use App\Models\MediaUsage;
 use App\Models\Page;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -76,6 +77,53 @@ class MediaController extends Controller
                 'update' => $request->user()?->can('media.update') ?? false,
                 'delete' => $request->user()?->can('media.delete') ?? false,
                 'folders' => $request->user()?->can('manageFolders', Media::class) ?? false,
+            ],
+        ]);
+    }
+
+    /**
+     * Lightweight browser for the picker modal: no pagination chrome, just the
+     * newest 60 matches plus the folder list. The editor never renders this as
+     * a page, so it is deliberately JSON.
+     */
+    public function browse(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Media::class);
+
+        $search = trim((string) $request->query('q', ''));
+        $folder = $request->filled('folder') ? (int) $request->query('folder') : null;
+
+        $media = Media::query()
+            ->with(['folder:id,name'])
+            ->withCount('usages')
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search): void {
+                $query->where('original_name', 'like', "%{$search}%")
+                    ->orWhere('alt', 'like', "%{$search}%");
+            }))
+            ->when($folder !== null, fn ($query) => $query->where('folder_id', $folder))
+            ->orderByDesc('id')
+            ->limit(60)
+            ->get()
+            ->map(fn (Media $item): array => [
+                'id' => $item->id,
+                'url' => $item->url(),
+                'thumbnail_url' => $item->thumbnailUrl(),
+                'original_name' => $item->original_name,
+                'alt' => $item->alt,
+                'type' => $item->type,
+                'human_size' => $item->humanSize(),
+                'dimension_label' => $item->dimensionLabel(),
+                'folder' => $item->folder?->name,
+                'usages' => (int) $item->usages_count,
+            ])
+            ->values();
+
+        return response()->json([
+            'media' => $media,
+            'folders' => $this->library->folderTree(),
+            'upload_url' => route('admin.media.upload'),
+            'can' => [
+                'upload' => $request->user()?->can('create', Media::class) ?? false,
             ],
         ]);
     }

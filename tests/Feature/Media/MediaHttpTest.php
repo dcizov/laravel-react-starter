@@ -242,3 +242,38 @@ it('filters the library by search term, type and trash', function () {
         ->get('/admin/media')
         ->assertInertia(fn ($page) => $page->has('media.data', 1)->where('counts.trashed', 1));
 });
+
+it('serves the picker browse endpoint with folders and upload capability', function () {
+    $folder = MediaFolder::query()->create(['name' => 'Brand', 'slug' => 'brand']);
+
+    $this->actingAs($this->editor)->post('/admin/media', [
+        'folder_id' => $folder->id,
+        'files' => [UploadedFile::fake()->image('studio-shot.jpg')],
+    ]);
+
+    $this->actingAs($this->editor)
+        ->getJson('/admin/media/browse')
+        ->assertOk()
+        ->assertJsonPath('media.0.original_name', 'studio-shot.jpg')
+        ->assertJsonPath('media.0.folder', 'Brand')
+        ->assertJsonPath('folders.0.name', 'Brand')
+        ->assertJsonPath('can.upload', true);
+
+    $this->actingAs($this->editor)
+        ->getJson("/admin/media/browse?folder={$folder->id}")
+        ->assertOk()
+        ->assertJsonCount(1, 'media');
+
+    $this->actingAs($this->editor)
+        ->getJson('/admin/media/browse?q=nothing-matches')
+        ->assertOk()
+        ->assertJsonCount(0, 'media');
+});
+
+it('protects the browse endpoint', function () {
+    $this->getJson('/admin/media/browse')->assertUnauthorized();
+
+    $viewer = User::factory()->create();
+
+    $this->actingAs($viewer)->getJson('/admin/media/browse')->assertForbidden();
+});

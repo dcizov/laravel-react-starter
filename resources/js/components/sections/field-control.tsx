@@ -1,4 +1,5 @@
 import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { MediaField } from '@/components/media/media-picker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -126,14 +127,11 @@ function renderControl(
             );
 
         case 'media':
-            // The media picker arrives with the media library; a reference is
-            // enough for the editor to round-trip the value today.
             return (
-                <Input
+                <MediaField
                     id={id}
-                    value={typeof value === 'string' ? value : value === null ? '' : String(value)}
-                    onChange={(event) => onChange(event.target.value === '' ? null : event.target.value)}
-                    placeholder="Media id or URL"
+                    value={typeof value === 'string' && value !== '' ? value : null}
+                    onChange={(next) => onChange(next)}
                 />
             );
 
