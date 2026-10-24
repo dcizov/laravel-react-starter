@@ -761,3 +761,37 @@ disagreed with each other and the README described a fourth.
 `DB_CONNECTION=sqlite DB_DATABASE=/tmp/fresh.sqlite php artisan lattice:install
 --demo --force`) installs, seeds and discovers end to end in ~5 s; the full
 suite is unchanged at **179 tests / 1324 assertions**.
+
+### S8.5 — Sail and Postgres
+
+Two follow-ups from the same local run:
+
+- **Sail serves port 80.** `composer dev` prints `http://127.0.0.1:8000` from
+  inside the container, but `compose.yaml` publishes `${APP_PORT:-80}:80`, so
+  the browser has to open `http://localhost`. The README now says so, next to a
+  Sail quickstart (`sail up -d`, `sail composer setup:demo`,
+  `sail npm run dev`) and the matching `APP_URL`.
+- **Postgres is possible.** `compose.pgsql.yaml` is an opt-in override that adds
+  the `pgsql` service and volume back without touching the base file:
+
+  ```
+  SAIL_FILES=compose.yaml:compose.pgsql.yaml sail up -d
+  ```
+
+  Sail reads `SAIL_FILES` itself (`vendor/laravel/sail/bin/sail`), so the
+  command works without `docker compose -f …`. The README documents the `.env`
+  block and `lattice:reset-demo --force` for the first build. Nothing in the
+  code is SQLite-specific any more; `phpunit.xml` now pins
+  `DB_CONNECTION=sqlite` so the suite still runs on the file database whatever
+  the app is configured to use.
+
+  Postgres itself could not be exercised here (no Docker in this sandbox) — the
+  override file is validated as YAML and the credentials match Sail's
+  conventions, but the first real `sail up` on a machine with Docker is the
+  proof.
+
+Two stale-checkout traps are now in the README's troubleshooting section:
+`There are no commands defined in the "setup" namespace` means the clone
+predates `composer setup:demo`, and `could not translate host name "pgsql"`
+means an `.env` copied from the old starter.
+

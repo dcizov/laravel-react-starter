@@ -1,0 +1,38 @@
+# Opt-in Postgres for Lattice.
+#
+# Lattice ships on SQLite; this override adds a Postgres server without touching
+# compose.yaml. Sail only reads one compose file, so name both:
+#
+#   SAIL_FILES=compose.yaml:compose.pgsql.yaml sail up -d
+#
+# Then point .env at it and rebuild the schema:
+#
+#   DB_CONNECTION=pgsql
+#   DB_HOST=pgsql
+#   DB_PORT=5432
+#   DB_DATABASE=lattice
+#   DB_USERNAME=sail
+#   DB_PASSWORD=secret
+#
+#   sail artisan lattice:reset-demo --force   # or migrate --seed for no demo
+services:
+    pgsql:
+        image: 'postgres:18-alpine'
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+        environment:
+            PGPASSWORD: '${DB_PASSWORD:-secret}'
+            POSTGRES_DB: '${DB_DATABASE:-lattice}'
+            POSTGRES_USER: '${DB_USERNAME:-sail}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+        volumes:
+            - 'sail-pgsql:/var/lib/postgresql'
+        networks:
+            - sail
+        healthcheck:
+            test: ['CMD', 'pg_isready', '-q', '-d', '${DB_DATABASE:-lattice}', '-U', '${DB_USERNAME:-sail}']
+            retries: 3
+            timeout: 5s
+volumes:
+    sail-pgsql:
+        driver: local
