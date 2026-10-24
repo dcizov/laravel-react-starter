@@ -10,16 +10,21 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
+    /**
+     * Only the pages that do not render their own chrome get one here.
+     *
+     * Admin screens (`admin/*`, `posts/*`, `dashboard`) render <AppLayout>
+     * themselves, and the public site renders <ThemeShell>, so neither may be
+     * wrapped again — that used to put the admin sidebar around the homepage.
+     */
     layout: (name) => {
         switch (true) {
-            case name === 'welcome':
-                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:
-                return AppLayout;
+                return null;
         }
     },
     strictMode: true,

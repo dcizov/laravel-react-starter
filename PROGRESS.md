@@ -875,3 +875,23 @@ copied from `main`, and the suite (179 tests) still runs on SQLite.
 after `sail up -d` cannot race the database — the health check that already
 existed now actually gates the app container.
 
+### S8.9 — The admin shell wrapped the public site
+
+Reported from a real browser: `/` rendered the homepage *inside* the admin
+sidebar. `createInertiaApp({ layout })` in `resources/js/app.tsx` defaulted to
+`AppLayout` for every component name that was not `auth/*` or `settings/*` —
+including `public/page`, `blog/*` and `themes/*`, all of which already render
+their own `<ThemeShell>`. Admin screens additionally render `<AppLayout>`
+themselves, so they were wrapped twice: two fixed-position shells stacked
+exactly on top of each other, which is why the sidebar only looked like one.
+
+**Fixed:** the resolver now only supplies chrome to the two page families that
+have none — `auth/*` → `AuthLayout`, `settings/*` → `[AppLayout,
+SettingsLayout]` — and returns `null` for everything else. Admin screens keep
+their single shell, the public site renders full width without a sidebar, and
+`welcome` no longer needs its special case.
+
+Checked every page: each one is either `own-layout` (admin, posts, dashboard,
+demo), `theme-shell` (public, blog, themes, preview) or `resolver` (auth,
+settings). `tsc`, eslint and `npm run build` are clean.
+
